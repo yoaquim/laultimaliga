@@ -1,70 +1,85 @@
 'use client'
 
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signInUser } from './actions'
 import Spinner from '@/ui/spinner'
 
+function SignInForm({onSubmit, loading, error,}: {
+    onSubmit: (formData: FormData) => Promise<void>
+    loading: boolean
+    error: string | null
+}) {
 
-function SignInForm({onSubmit, loading, error,}:
-                    {
-                        onSubmit: (formData: FormData) => Promise<void>
-                        loading: boolean
-                        error: string | null
-                    }
-) {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        await onSubmit(formData)
+    }
+
     return (
-        <form
-            onSubmit={async (e) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                await onSubmit(formData)
-            }}
-            className="lg:w-1/3 lg:mx-0 w-5/6 flex flex-col space-y-4 px-8 py-8 border border-white rounded-sm text-lul-grey font-medium"
-        >
-            <div className="flex flex-col space-y-2">
-                <label htmlFor="email" className="font-medium text-white">Email</label>
-                <input
-                    className="p-2 bg-white rounded-sm"
-                    type="email"
-                    name="email"
-                    placeholder="email@example.com"
-                    required
-                />
-            </div>
+        <div className="lg:mt-16 lg:w-1/3 h-5/6 w-full px-6 flex flex-col">
 
-            <div className="flex flex-col space-y-2">
-                <label htmlFor="password" className="font-medium text-white">Password</label>
-                <input
-                    className="p-2 bg-white rounded-sm"
-                    type="password"
-                    name="password"
-                    required
-                />
-            </div>
+            {/* Header */}
+            <h1 className="lg:self-start lg:mt-0 py-4 mt-4 text-xl font-medium text-white text-center">Sign In</h1>
 
-            {error && (
-                <p className="w-full text-center text-lul-red">{error}</p>
-            )}
 
-            <div className="w-full">
+            {/* Form */}
+            <form
+                onSubmit={handleSubmit}
+                className="w-full mx-auto p-6 bg-lul-grey/20 rounded-sm shadow-md space-y-6"
+            >
+                {/* Email Field */}
+                <div className="flex flex-col">
+                    <label htmlFor="email" className="text-white">Email</label>
+                    <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        placeholder="email@example.com"
+                        required
+                        className="p-2 rounded-sm bg-white text-black"
+                    />
+                </div>
+
+                {/* Password Field */}
+                <div className="flex flex-col">
+                    <label htmlFor="password" className="text-white">Password</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        required
+                        className="p-2 rounded-sm bg-white text-black"
+                    />
+                </div>
+
+                {/* Error Message */}
+                {error && <p className="text-center text-lul-red">{error}</p>}
+
+                {/* Submit Button */}
                 <button
                     type="submit"
-                    className="w-full mt-4 py-3 bg-lul-blue text-white rounded-sm text-sm"
+                    disabled={loading}
+                    className="w-full py-3 text-white bg-lul-blue rounded-sm text-lg font-medium hover:bg-lul-blue/80 transition"
                 >
-                    {true ? <Spinner/> : 'Sign In'}
+                    {loading ? <Spinner/> : 'Sign In'}
                 </button>
-            </div>
 
-            <p className="text-lul-light-grey text-center">
-                Don&#39;t have an account?{' '}
-                <a href="/sign-up" className="text-lul-blue font-medium">Sign Up</a>
-            </p>
-        </form>
+                {/* Redirect to Sign Up */}
+                <p className="text-center text-lul-light-grey">
+                    Don&#39;t have an account?{' '}
+                    <a href="/sign-up" className="text-lul-blue font-medium">
+                        Sign Up
+                    </a>
+                </p>
+            </form>
+        </div>
     )
 }
 
-export default function Page() {
+export default function SignInPage() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -74,16 +89,14 @@ export default function Page() {
         setError(null)
 
         try {
-            const {redirectTo} = await signInUser(formData) // Invoke the server action
-            router.push(redirectTo)
+            const {redirectTo} = await signInUser(formData) // Invoke server action
+            router.push(redirectTo) // Redirect on successful sign-in
         } catch (err: any) {
-            setError(err.message || 'Unknown error occurred')
+            setError(err.message || 'Invalid email or password')
         } finally {
             setLoading(false)
         }
     }
 
-    return (
-        <SignInForm onSubmit={handleSubmit} loading={loading} error={error}/>
-    )
+    return <SignInForm onSubmit={handleSubmit} loading={loading} error={error}/>
 }

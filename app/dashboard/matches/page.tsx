@@ -32,7 +32,7 @@ export default async function Page() {
                         <Link
                             key={match.id}
                             href={`/dashboard/matches/${match.id}`}
-                            className="p-4 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
+                            className="p-4 bg-lul-grey/20 rounded-sm hover:bg-lul-grey/30 transition cursor-pointer"
                         >
                             {/* Match Teams */}
                             <div className="flex items-center justify-between mb-4">
