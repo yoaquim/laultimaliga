@@ -1,10 +1,18 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 import Link from 'next/link'
+
+type MatchWithTeams = Prisma.MatchGetPayload<{
+    include: {
+        season: true;
+        homeTeam: true;
+        awayTeam: true;
+    };
+}>;
 
 const prisma = new PrismaClient()
 
 export default async function Page() {
-    const matches = await prisma.match.findMany({
+    const matches: MatchWithTeams[] = await prisma.match.findMany({
         where: {
             season: {
                 isActive: true,
@@ -27,7 +35,7 @@ export default async function Page() {
             {/* Matches Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {matches
-                    .sort((match1, match2) => new Date(match1.date).getTime() - new Date(match2.date).getTime())
+                    .sort((match1: MatchWithTeams, match2: MatchWithTeams) => new Date(match1.date).getTime() - new Date(match2.date).getTime())
                     .map((match) => (
                         <Link
                             key={match.id}
