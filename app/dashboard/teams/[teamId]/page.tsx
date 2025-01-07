@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export default async function TeamDetailsPage({params}: { params: { teamId: string } }) {
+export default async function TeamDetailsPage({params}: { params: Promise<{ teamId: string }> }) {
     const {teamId} = await params
 
     // Fetch team details, players, matches, and stats
