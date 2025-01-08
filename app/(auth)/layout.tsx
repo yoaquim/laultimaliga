@@ -12,9 +12,20 @@ function AuthHeader() {
 
 export default function AuthLayout({children}: { children: ReactNode }) {
     return (
-        <div className="h-screen w-screen pt-10 flex flex-col justify-center items-center  bg-lul-black">
+        <div className="lg:pt-24 h-screen w-screen pt-10 flex flex-col items-center bg-gradient-to-br from-lul-black to-lul-grey">
             <AuthHeader/>
-            {children}
+
+            <div className="lg:mt-16 lg:w-1/3 w-full mt-10 px-8 flex flex-col items-center">
+                <div className="w-full flex flex-col">
+                    {children}
+                </div>
+
+                <div className="w-full mt-6 flex justify-between text-lul-light-grey text-sm">
+                    <span>© La Ultima Liga, LLC</span>
+                    <span>Privacy Policy</span>
+                    <span>Terms of Service</span>
+                </div>
+            </div>
         </div>
     )
 }

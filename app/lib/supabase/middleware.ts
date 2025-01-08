@@ -1,14 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { DEFAULT_URL_WHEN_AUTHENTICATED, DEFAULT_URL_WHEN_NOT_AUTHENTICATED } from '@/lib/utils'
 
-const UNRESTRICTED_PATHS: string[] = [
-    '/',
+const PUBLIC_PATHS = [
     '/sign-in',
     '/sign-up',
-    '/auth',
+    '/auth'
+]
+
+const PRIVATE_PATHS = [
+    '/dashboard',
 ]
 
 export async function updateSession(request: NextRequest) {
+    const {pathname, clone} = request.nextUrl
     let supabaseResponse = NextResponse.next({
         request,
     })
@@ -40,17 +45,22 @@ export async function updateSession(request: NextRequest) {
 
     // IMPORTANT: DO NOT REMOVE auth.getUser()
 
-    const {
-        data: {user},
-    } = await supabase.auth.getUser()
+    const {data: {user}} = await supabase.auth.getUser()
 
-    if (
-        !user &&
-        !UNRESTRICTED_PATHS.some(path => request.nextUrl.pathname.startsWith(path))
-    ) {
-        // no user, potentially respond by redirecting the user to the login page
+    const isPublicPath = pathname === '/' || PUBLIC_PATHS.some((path) => pathname.startsWith(path))
+    const isPrivatePath = PRIVATE_PATHS.some((path) => pathname.startsWith(path))
+
+    // Redirect unauthenticated users trying to access private paths
+    if (!user && !isPublicPath) {
         const url = request.nextUrl.clone()
-        url.pathname = '/sign-in'
+        url.pathname = DEFAULT_URL_WHEN_NOT_AUTHENTICATED
+        return NextResponse.redirect(url)
+    }
+
+    // Redirect authenticated users trying to access public paths
+    if (user && !isPrivatePath) {
+        const url = request.nextUrl.clone()
+        url.pathname = DEFAULT_URL_WHEN_AUTHENTICATED
         return NextResponse.redirect(url)
     }
 

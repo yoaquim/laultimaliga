@@ -3,7 +3,7 @@ export const DOMAIN: string = process.env.NODE_ENV === 'production'
     : 'localhost:3000'
 
 export const DEFAULT_URL_WHEN_AUTHENTICATED = '/dashboard/matches'
-export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/'
+export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/sign-in'
 
 export const ERRORS = {
     INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password',

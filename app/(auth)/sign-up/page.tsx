@@ -6,13 +6,11 @@ import Spinner from '@/ui/spinner'
 
 function SignUpSuccess() {
     return (
-        <div className="lg:mt-4 h-5/6 w-full p-6 mt-10 flex flex-col items-center justify-center bg-lul-black text-white">
-            <p className="lg:w-1/3 w-full px-12 text-white font-medium text-center">
-                We&#39;ve sent a confirmation email to the address provided.
-                <br/>
-                Follow the instructions there to continue.
-            </p>
-        </div>
+        <p className="w-full h-72 mt-10 px-12 text-white font-medium text-center">
+            We&#39;ve sent a confirmation email to the address provided.
+            <br/>
+            Follow the instructions there to continue.
+        </p>
     )
 }
 
@@ -29,9 +27,9 @@ function SignUpForm({onSubmit, loading, error,}: {
     // const sizes: string[] = ['SMALL', 'MEDIUM', 'LARGE', 'X_LARGE', 'XX_LARGE']
 
     return (
-        <div className="lg:w-1/3 lg:mt-16 w-full h-5/6 px-6 flex flex-col items-center">
+        <>
 
-            <h1 className="lg:self-start lg:mt-0 mt-4 py-4 text-xl font-medium text-white text-center">Sign Up</h1>
+            <h1 className="mt-4 py-4 text-xl font-medium text-white text-left">Sign Up</h1>
 
             {/* Form */}
             <form
@@ -122,7 +120,7 @@ function SignUpForm({onSubmit, loading, error,}: {
                     </a>
                 </p>
             </form>
-        </div>
+        </>
     )
 }
 
@@ -146,6 +144,5 @@ export default function SignUpPage() {
     }
 
     if (success) return <SignUpSuccess/>
-
     return <SignUpForm onSubmit={handleSubmit} loading={loading} error={error}/>
 }

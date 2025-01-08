@@ -18,64 +18,63 @@ function SignInForm({onSubmit, loading, error,}: {
     }
 
     return (
-        <div className="lg:mt-16 lg:w-1/3 h-5/6 w-full px-6 flex flex-col">
-
+        <>
             {/* Header */}
-            <h1 className="lg:self-start lg:mt-0 py-4 mt-4 text-xl font-medium text-white text-center">Sign In</h1>
+                <h1 className="text-left lg:mt-0 py-4 mt-4 text-xl font-medium text-white">Sign In</h1>
 
 
             {/* Form */}
-            <form
-                onSubmit={handleSubmit}
-                className="w-full mx-auto p-6 bg-lul-grey/20 rounded-sm shadow-md space-y-6"
-            >
-                {/* Email Field */}
-                <div className="flex flex-col">
-                    <label htmlFor="email" className="text-white">Email</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="email@example.com"
-                        required
-                        className="p-2 rounded-sm bg-white text-black"
-                    />
-                </div>
-
-                {/* Password Field */}
-                <div className="flex flex-col">
-                    <label htmlFor="password" className="text-white">Password</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        required
-                        className="p-2 rounded-sm bg-white text-black"
-                    />
-                </div>
-
-                {/* Error Message */}
-                {error && <p className="text-center text-lul-red">{error}</p>}
-
-                {/* Submit Button */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 text-white bg-lul-blue rounded-sm text-lg font-medium hover:bg-lul-blue/80 transition"
+                <form
+                    onSubmit={handleSubmit}
+                    className="w-full mx-auto p-6 bg-lul-grey/20 rounded-sm shadow-md space-y-6"
                 >
-                    {loading ? <Spinner/> : 'Sign In'}
-                </button>
+                    {/* Email Field */}
+                    <div className="flex flex-col">
+                        <label htmlFor="email" className="text-white">Email</label>
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="email@example.com"
+                            required
+                            className="p-2 rounded-sm bg-white text-black"
+                        />
+                    </div>
 
-                {/* Redirect to Sign Up */}
-                <p className="text-center text-lul-light-grey">
-                    Don&#39;t have an account?{' '}
-                    <a href="/sign-up" className="text-lul-blue font-medium">
-                        Sign Up
-                    </a>
-                </p>
-            </form>
-        </div>
+                    {/* Password Field */}
+                    <div className="flex flex-col">
+                        <label htmlFor="password" className="text-white">Password</label>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            placeholder="Enter your password"
+                            required
+                            className="p-2 rounded-sm bg-white text-black"
+                        />
+                    </div>
+
+                    {/* Error Message */}
+                    {error && <p className="text-center text-lul-red">{error}</p>}
+
+                    {/* Submit Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3 text-white bg-lul-blue rounded-sm text-lg font-medium hover:bg-lul-blue/80 transition"
+                    >
+                        {loading ? <Spinner/> : 'Sign In'}
+                    </button>
+
+                    {/* Redirect to Sign Up */}
+                    <p className="text-center text-lul-light-grey">
+                        Don&#39;t have an account?{' '}
+                        <a href="/sign-up" className="text-lul-blue font-medium">
+                            Sign Up
+                        </a>
+                    </p>
+                </form>
+        </>
     )
 }
 

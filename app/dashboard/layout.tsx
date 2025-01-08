@@ -7,7 +7,7 @@ export default function Dashboard({children}: { children: ReactNode }) {
     return (
         <div className="w-screen h-screen relative bg-lul-black">
             <Navbar/>
-            <div className="lg:pl-24 lg:pb-0 w-full h-full flex justify-center pb-16">
+            <div className="lg:pl-32 w-full h-full p-6 pb-14 flex flex-col gap-y-8 bg-lul-black text-white overflow-y-scroll">
                 {children}
             </div>
         </div>
