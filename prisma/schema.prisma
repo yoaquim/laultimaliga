@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // Used for regular operations
+  directUrl = env("DIRECT_URL") // Used for migrations
 }
 
 enum Size {
@@ -130,6 +131,7 @@ model Match {
 model Season {
   id          String        @id @default(cuid())
   name        String
+  shortName   String?
   startDate   DateTime
   endDate     DateTime
   isActive    Boolean       @default(true)

@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
+import clsx from 'clsx'
 
 type MatchWithTeams = Prisma.MatchGetPayload<{
     include: {
@@ -35,38 +36,32 @@ export default async function Page() {
                     <Link
                         key={match.id}
                         href={`/dashboard/matches/${match.id}`}
-                        className="p-4 bg-lul-grey/20 rounded-sm hover:bg-lul-grey/30 transition cursor-pointer"
+                        className="flex flex-col p-4 px-6 bg-lul-grey/20 rounded-sm hover:bg-lul-grey/30 transition cursor-pointer gap-y-8"
                     >
-                        {/* Match Teams */}
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-xl font-semibold">
-                                {match.homeTeam.name} vs {match.awayTeam.name}
-                            </h2>
-                            <p className="text-lul-blue">{match.season.name}</p>
+                        {/* Match Status */}
+                        <div className="flex flex-col items-center gap-y-2">
+                            <h1
+                                className={clsx('text-2xl font-bold',
+                                    {
+                                        'text-lul-yellow': match.status === 'SCHEDULED',
+                                        'text-lul-green': match.status === 'ONGOING',
+                                        'text-lul-blue': match.status === 'COMPLETED',
+                                        'text-lul-red': match.status === 'CANCELED',
+                                    })}
+                            >
+                                {match.status}
+                            </h1>
+                            <h1 className="text-lg font-bold text-center">{new Date(match.date).toLocaleDateString()}</h1>
                         </div>
 
                         {/* Match Date */}
-                        <div className="text-center mb-4">
-                            <p className="text-lg">Date</p>
-                            <p className="text-2xl font-bold">{new Date(match.date).toLocaleDateString()}</p>
-                        </div>
 
-                        {/* Match Status */}
-                        <div className="text-center">
-                            <p className="text-lg">Status</p>
-                            <p
-                                className={`text-2xl font-bold ${
-                                    match.status === 'SCHEDULED'
-                                        ? 'text-lul-yellow'
-                                        : match.status === 'ONGOING'
-                                            ? 'text-lul-green'
-                                            : match.status === 'COMPLETED'
-                                                ? 'text-lul-blue'
-                                                : 'text-lul-red'
-                                }`}
-                            >
-                                {match.status}
-                            </p>
+
+                        {/* Match Teams */}
+                        <div className="grid grid-cols-3 text-xl font-semibold gap-x-2">
+                            <div>{match.homeTeam.name}</div>
+                            <div className="pt-4 text-center text-4xl">⚡️</div>
+                            <div className="text-right">{match.awayTeam.name}</div>
                         </div>
                     </Link>
                 ))}

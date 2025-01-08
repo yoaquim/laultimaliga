@@ -52,26 +52,31 @@ export default function Page() {
 
     if (!match) return <div>Match not found</div>
 
+    const date = new Date(match.date).toLocaleDateString('en-US', {month: 'long', year: 'numeric', day: 'numeric'})
+
     return (
         <div className="lg:mt-4 w-full p-6 mt-10 flex flex-col gap-y-8 bg-lul-black text-white overflow-y-scroll">
             {/* Match Header */}
-            <div className="flex flex-col lg:flex-row items-center justify-between">
-                <h1 className="text-3xl font-bold">
-                    {match.homeTeam.name} vs {match.awayTeam.name}
-                </h1>
-                <p className="text-lul-blue text-lg">{match.season.name}</p>
+            <div className="flex flex-col items-center justify-between gap-y-2">
+                <div className="w-full flex justify-center gap-x-6 text-3xl font-bold">
+                    <h1>{match.homeTeam.name}</h1>
+                    <h1>⚡️</h1>
+                    <h1>{match.awayTeam.name}</h1>
+                </div>
+                <div className="flex flex-col items-center">
+                    <p className="text-lul-blue text-lg">{match.season.name}</p>
+                    <h1 className="text-lg">{date}</h1>
+                </div>
             </div>
 
             {/* Match Details */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-lul-grey/20 p-4 rounded-md">
-                <div className="flex flex-col items-center">
-                    <p className="text-lg">Status</p>
-                    <p className="text-2xl font-bold">{status}</p>
-                </div>
-                <div className="flex flex-col items-center">
-                    <p className="text-lg">Date</p>
-                    <p className="text-2xl font-bold">{new Date(match.date).toLocaleDateString()}</p>
-                </div>
+            <div className={clsx('relative w-full flex justify-center items-center py-2 text-center rounded-md text-lul-grey',
+                {
+                    'bg-lul-yellow': status === 'SCHEDULED',
+                    'bg-lul-green': status === 'ONGOING',
+                    'bg-lul-blue': status === 'COMPLETED',
+                })}>
+                <h1 className="text-2xl font-bold">{status}</h1>
             </div>
 
             {/* Update Match Status */}
@@ -94,7 +99,7 @@ export default function Page() {
 
             {/* Player Stats */}
             <div className="w-full h-fit p-4 pt-0 rounded-md overflow-y-scroll border border-lul-blue">
-                <h2 className="text-2xl font-semibold pt-4 bg-lul-black border-b border-lul-blue pb-2 sticky top-0">Player Stats</h2>
+                <h2 className="text-2xl font-semibold pt-4 bg-lul-black border-b border-lul-blue pb-2 sticky top-0 z-10">Player Stats</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
                     {match.playerStats.map((playerStat: any) => (
                         <div key={playerStat.id} className="p-4 bg-lul-light-grey/10 rounded-md">
