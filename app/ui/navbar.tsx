@@ -41,7 +41,7 @@ export default function Navbar() {
                         className={clsx(
                             'flex flex-col justify-center items-center gap-y-2 min-w-[64px] text-lul-blue',
                             {
-                                'bg-lul-blue p-2 rounded text-white': pathname === link.href,
+                                'bg-lul-blue p-2 rounded text-white': pathname.startsWith(link.href),
                             }
                         )}
                     >

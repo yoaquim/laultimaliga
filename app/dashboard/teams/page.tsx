@@ -47,7 +47,8 @@ export default async function Page() {
                     >
                         {/* Team Name and Season */}
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="pr-8 text-2xl font-semibold border-b border-lul-blue">{team.name}</h2>
+                            <h2 className="pr-8 text-2xl font-semibold ">{team.name}</h2>
+                            <h2 className="pr-8 text-2xl font-semibold ">{team.name}</h2>
                             <p className="text-lul-blue">{team.season.name}</p>
                         </div>
 
