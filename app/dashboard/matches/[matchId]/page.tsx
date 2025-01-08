@@ -60,8 +60,8 @@ export default function Page() {
             <div className="flex flex-col items-center justify-between gap-y-2">
                 <div className="w-full flex justify-center gap-x-6 text-3xl font-bold">
                     <h1>{match.homeTeam.name}</h1>
-                    <h1>⚡️</h1>
-                    <h1>{match.awayTeam.name}</h1>
+                    <h1 className="text-5xl">⚡️</h1>
+                    <h1 className="lg:text-left text-right">{match.awayTeam.name}</h1>
                 </div>
                 <div className="flex flex-col items-center">
                     <p className="text-lul-blue text-lg">{match.season.name}</p>
@@ -70,7 +70,7 @@ export default function Page() {
             </div>
 
             {/* Match Details */}
-            <div className={clsx('relative w-full flex justify-center items-center py-2 text-center rounded-md text-lul-grey',
+            <div className={clsx('relative w-full flex justify-center items-center py-2 text-center rounded-md text-lul-black',
                 {
                     'bg-lul-yellow': status === 'SCHEDULED',
                     'bg-lul-green': status === 'ONGOING',

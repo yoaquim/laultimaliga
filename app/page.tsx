@@ -14,8 +14,8 @@ export default function Page() {
             </header>
 
             <div className="mt-10 flex space-x-4">
-                <Link href="/sign-up" className="py-3 px-8 bg-lul-blue text-white rounded-sm antialiased">Sign Up</Link>
-                <Link href="/sign-in" className="py-3 px-8 text-white border border-white rounded-sm antialiased">Log In</Link>
+                <Link href="/sign-up" className="py-3 px-8 bg-lul-blue text-white rounded-md antialiased">Sign Up</Link>
+                <Link href="/sign-in" className="py-3 px-8 text-white border border-white rounded-md antialiased">Log In</Link>
             </div>
         </main>
     )

@@ -37,8 +37,15 @@ export default async function Page() {
                         <Link
                             key={match.id}
                             href={`/dashboard/matches/${match.id}`}
-                            className="flex flex-col p-4 px-6 bg-lul-grey/20 rounded-sm hover:bg-lul-grey/30 transition cursor-pointer gap-y-8"
+                            className="relative flex flex-col p-4 px-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer gap-y-8"
                         >
+                            {/* Match Teams */}
+                            <div className="grid grid-cols-3 text-xl font-semibold gap-x-2">
+                                <div>{match.homeTeam.name}</div>
+                                <div className="pt-4 text-center text-4xl">⚡️</div>
+                                <div className="text-right">{match.awayTeam.name}</div>
+                            </div>
+
                             {/* Match Status */}
                             <div className="flex flex-col items-center gap-y-2">
                                 <h1
@@ -54,14 +61,14 @@ export default async function Page() {
                                 </h1>
 
                                 {/* Match Date */}
-                                <h1 className="text-lg font-bold text-center">{date}</h1>
+                                <h1 className="font-bold text-center">{date}</h1>
                             </div>
 
-                            {/* Match Teams */}
-                            <div className="grid grid-cols-3 text-xl font-semibold gap-x-2">
-                                <div>{match.homeTeam.name}</div>
-                                <div className="pt-4 text-center text-4xl">⚡️</div>
-                                <div className="text-right">{match.awayTeam.name}</div>
+                            <div className="absolute bottom-2 right-2 text-lul-blue text-sm font-semibold uppercase">
+                                {match.season.shortName
+                                    ? match.season.shortName
+                                    : match.season.name
+                                }
                             </div>
                         </Link>
                     )

@@ -34,7 +34,7 @@ function SignUpForm({onSubmit, loading, error,}: {
             {/* Form */}
             <form
                 onSubmit={handleSubmit}
-                className="w-full mx-auto p-6 bg-lul-grey/20 rounded-sm shadow-md space-y-6"
+                className="w-full mx-auto p-6 bg-lul-grey/20 rounded-md shadow-md space-y-6"
             >
                 {/* Email Field */}
                 <div className="flex flex-col">
@@ -45,7 +45,7 @@ function SignUpForm({onSubmit, loading, error,}: {
                         type="email"
                         placeholder="email@example.com"
                         required
-                        className="p-2 rounded-sm bg-white text-black"
+                        className="p-2 rounded-md bg-white text-black"
                     />
                 </div>
 
@@ -58,7 +58,7 @@ function SignUpForm({onSubmit, loading, error,}: {
                         type="text"
                         placeholder="Juan Doe"
                         required
-                        className="p-2 rounded-sm bg-white text-black"
+                        className="p-2 rounded-md bg-white text-black"
                     />
                 </div>
 
@@ -71,14 +71,14 @@ function SignUpForm({onSubmit, loading, error,}: {
                         type="tel"
                         placeholder="787-555-6789"
                         required
-                        className="p-2 rounded-sm bg-white text-black"
+                        className="p-2 rounded-md bg-white text-black"
                     />
                 </div>
 
                 {/* Size Field */}
                 {/*<div className="flex flex-col space-y-2">*/}
                 {/*    <label htmlFor="size" className="font-medium text-white">Size</label>*/}
-                {/*    <select className="p-2 bg-white rounded-sm" name="size" id="size" required>*/}
+                {/*    <select className="p-2 bg-white rounded-md" name="size" id="size" required>*/}
                 {/*        {sizes.map((size) => (*/}
                 {/*            <option key={size} value={size}>*/}
                 {/*                {size.replace('_', '-')}*/}
@@ -96,7 +96,7 @@ function SignUpForm({onSubmit, loading, error,}: {
                         type="password"
                         placeholder="Enter your password"
                         required
-                        className="p-2 rounded-sm bg-white text-black"
+                        className="p-2 rounded-md bg-white text-black"
                     />
                 </div>
 
@@ -107,7 +107,7 @@ function SignUpForm({onSubmit, loading, error,}: {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 text-white bg-lul-blue rounded-sm text-lg font-medium hover:bg-lul-blue/80 transition"
+                    className="w-full py-3 text-white bg-lul-blue rounded-md text-lg font-medium hover:bg-lul-blue/80 transition"
                 >
                     {loading ? <Spinner/> : 'Sign Up'}
                 </button>

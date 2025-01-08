@@ -46,7 +46,7 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
             </div>
 
             {/* Team Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-lul-grey/20 p-4 rounded-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-lul-grey/20 p-4 rounded-md">
                 <div className="flex flex-col items-center">
                     <p className="text-lg">Total Matches</p>
                     <p className="text-2xl font-bold">{totalMatches}</p>
@@ -63,7 +63,7 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
 
             <div className="lg:flex-row lg:justify-between lg:gap-x-8 w-full h-5/6 pb-20 flex flex-col gap-y-6">
                 {/* Players List */}
-                <div className="w-full h-fit bg-lul-grey/20 p-4 rounded-sm">
+                <div className="w-full h-fit bg-lul-grey/20 p-4 rounded-md">
                     <h2 className="text-2xl font-semibold border-b border-lul-blue pb-2">Players</h2>
                     <ul className="mt-4 space-y-2">
                         {team.players.map((player) => (
@@ -79,7 +79,7 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
                 </div>
 
                 {/* Matches */}
-                <div className="w-full h-fit bg-lul-grey/20 p-4 rounded-sm">
+                <div className="w-full h-fit bg-lul-grey/20 p-4 rounded-md">
                     <h2 className="text-2xl font-semibold border-b border-lul-blue pb-2">Matches</h2>
 
                     <div className="mt-4">

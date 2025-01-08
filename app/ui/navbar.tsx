@@ -30,7 +30,7 @@ export default function Navbar() {
     ]
 
     return (
-        <nav className="lg:flex lg:flex-col lg:items-center lg:h-screen lg:w-fit lg:px-4 lg:py-8 lg:border-r lg:border-t-0 lg:left-0 lg:absolute bg-lul-black fixed bottom-0 w-full px-4 border-t border-white z-10">
+        <nav className="lg:flex lg:flex-col lg:items-center lg:h-screen lg:w-fit lg:px-4 lg:py-8 lg:border-r lg:border-t-0 lg:left-0 lg:absolute bg-gradient-to-r from-lul-black to-lul-grey/25  fixed bottom-0 w-full px-4 border-t border-white z-10">
             <img src="/alt-logo-lul.svg" alt="Logo" className="h-16 lg:flex hidden"/>
 
             <div className="lg:flex lg:flex-col lg:justify-normal lg:h-full lg:mt-10 lg:py-2 lg:space-y-10 lg:overflow-y-scroll flex justify-between h-fit w-full py-4 gap-x-10 overflow-x-scroll scroll-m-6 scroll-smooth">

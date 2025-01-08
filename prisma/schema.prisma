@@ -97,6 +97,7 @@ model PlayerMatchStats {
 model Team {
   id           String     @id @default(cuid())
   name         String
+  logo         String?
   season       Season     @relation(fields: [seasonId], references: [id])
   seasonId     String
   players      Player[]   @relation("TeamPlayers")

@@ -26,7 +26,7 @@ function SignInForm({onSubmit, loading, error,}: {
             {/* Form */}
                 <form
                     onSubmit={handleSubmit}
-                    className="w-full mx-auto p-6 bg-lul-grey/20 rounded-sm shadow-md space-y-6"
+                    className="w-full mx-auto p-6 bg-lul-grey/20 rounded-md shadow-md space-y-6"
                 >
                     {/* Email Field */}
                     <div className="flex flex-col">
@@ -37,7 +37,7 @@ function SignInForm({onSubmit, loading, error,}: {
                             type="email"
                             placeholder="email@example.com"
                             required
-                            className="p-2 rounded-sm bg-white text-black"
+                            className="p-2 rounded-md bg-white text-black"
                         />
                     </div>
 
@@ -50,7 +50,7 @@ function SignInForm({onSubmit, loading, error,}: {
                             type="password"
                             placeholder="Enter your password"
                             required
-                            className="p-2 rounded-sm bg-white text-black"
+                            className="p-2 rounded-md bg-white text-black"
                         />
                     </div>
 
@@ -61,7 +61,7 @@ function SignInForm({onSubmit, loading, error,}: {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 text-white bg-lul-blue rounded-sm text-lg font-medium hover:bg-lul-blue/80 transition"
+                        className="w-full py-3 text-white bg-lul-blue rounded-md text-lg font-medium hover:bg-lul-blue/80 transition"
                     >
                         {loading ? <Spinner/> : 'Sign In'}
                     </button>
