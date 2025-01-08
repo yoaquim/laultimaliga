@@ -45,20 +45,10 @@ export default async function Page() {
                         href={`/dashboard/teams/${team.id}`}
                         className="relative px-4 py-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
                     >
-                        {/* Team Name and Win Rate */}
+                        {/* Team Name */}
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="pr-8 text-2xl font-semibold ">{team.name}</h2>
+                            <h2 className="pr-8 text-3xl font-semibold ">{team.name}</h2>
 
-                            <div className={`font-bold text-lg ${
-                                team.totalMatches === 0
-                                    ? 'text-lul-red'
-                                    : team.matchesWon / team.totalMatches > 0.5
-                                        ? 'text-lul-green'
-                                        : 'text-lul-yellow'
-                            }`}
-                            >
-                                {team.winRate}%
-                            </div>
                         </div>
 
                         {/* Stats */}
@@ -74,8 +64,19 @@ export default async function Page() {
                         </div>
 
 
-                        {/* Season */
-                        }
+                        {/* Win Rate */}
+                        <div className={`absolute top-3 right-2 font-bold text-lg ${
+                            team.totalMatches === 0
+                                ? 'text-lul-red'
+                                : team.matchesWon / team.totalMatches > 0.5
+                                    ? 'text-lul-green'
+                                    : 'text-lul-yellow'
+                        }`}
+                        >
+                            {team.winRate}%
+                        </div>
+
+                        {/* Season */}
                         <div className="absolute bottom-2 right-2 text-lul-blue text-sm font-semibold uppercase">
                             {team.season.shortName
                                 ? team.season.shortName
