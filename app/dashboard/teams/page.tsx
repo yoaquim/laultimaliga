@@ -43,7 +43,7 @@ export default async function Page() {
                     <Link
                         key={team.id}
                         href={`/dashboard/teams/${team.id}`}
-                        className="relative px-4 py-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
+                        className="relative px-4 py-8 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
                     >
                         {/* Team Name */}
                         <div className="flex items-center justify-between mb-4">

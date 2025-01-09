@@ -1,33 +1,30 @@
 'use server'
 
 import { PrismaClient, MatchStatus } from '@prisma/client'
-import { StatType } from '@/dashboard/matches/[matchId]/types'
+import { StatType } from './types'
 
 const prisma = new PrismaClient()
 
-export async function getMatch(matchId: string): Promise<any> {
-    try {
-        return await prisma.match.findUnique({
-            where: {id: matchId},
-            include: {
-                homeTeam: true,
-                awayTeam: true,
-                playerStats: {
-                    include: {
-                        player: {
-                            include: {
-                                user: true,
-                            },
+export async function getMatch(matchId: string) {
+    return prisma.match.findUnique({
+        where: {id: matchId},
+        include: {
+            homeTeam: true,
+            awayTeam: true,
+            season: true,
+            participations: {
+                include: {
+                    player: {
+                        include: {
+                            user: true,
+                            team: true
                         },
                     },
+                    stats: true,
                 },
-                season: true,
             },
-        })
-    } catch (error) {
-        console.error('Error fetching match:', error)
-        throw new Error('Failed to fetch match.')
-    }
+        },
+    })
 }
 
 export async function updateMatchStatus(matchId: string, status: MatchStatus) {
@@ -42,11 +39,7 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
     }
 }
 
-export async function updatePlayerStat(
-    playerStatId: string,
-    statType: StatType,
-    increment: boolean
-) {
+export async function updatePlayerStat(playerStatId: string, statType: StatType, increment: boolean) {
     try {
         return await prisma.playerMatchStats.update({
             where: {id: playerStatId},

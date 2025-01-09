@@ -40,7 +40,7 @@ export default async function Page() {
                             className="relative flex flex-col p-4 px-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer gap-y-8"
                         >
                             {/* Match Teams */}
-                            <div className="grid grid-cols-3 text-xl font-semibold gap-x-2">
+                            <div className="grid grid-cols-3 text-2xl font-semibold gap-x-2">
                                 <div>{match.homeTeam.name}</div>
                                 <div className="pt-4 text-center text-4xl">⚡️</div>
                                 <div className="text-right">{match.awayTeam.name}</div>

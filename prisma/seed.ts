@@ -2,7 +2,7 @@ import { MatchStatus, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Large list of adjectives and nouns for generating unique [teamId] names
+// Large list of adjectives and nouns for generating unique team names
 const adjectives = [
     'Fierce', 'Brave', 'Mighty', 'Swift', 'Legendary', 'Epic', 'Noble', 'Fearless',
     'Gallant', 'Dynamic', 'Savage', 'Bold', 'Valiant', 'Invincible', 'Majestic',
@@ -55,7 +55,7 @@ function generatePlayerName(): { firstName: string; lastName: string } {
 function getRandomMatchStatus(): MatchStatus {
     const statuses = [
         {status: 'SCHEDULED', weight: 0.4}, // 40%
-        {status: 'ONGOING', weight: 0.3},   // 30%
+        {status: 'ONGOING', weight: 0.3}, // 30%
         {status: 'COMPLETED', weight: 0.25}, // 25%
         {status: 'CANCELED', weight: 0.05}, // 5%
     ]
@@ -70,7 +70,6 @@ function getRandomMatchStatus(): MatchStatus {
             return status as MatchStatus
         }
     }
-
     return 'SCHEDULED' // Fallback, though this should never occur
 }
 
@@ -90,12 +89,13 @@ async function seed() {
                 isActive: i === 5, // Last season is active
             },
         })
+        console.log(`Created Season: ${season.name}`)
         seasonIds.push(season.id)
     }
 
     // Create Teams and Players
     const teamIds = []
-    const playerIds = []
+    const playerData = []
     for (const seasonId of seasonIds) {
         for (let i = 1; i <= 10; i++) {
             const teamName = generateUniqueTeamName(existingTeamNames)
@@ -105,6 +105,7 @@ async function seed() {
                     seasonId,
                 },
             })
+            console.log(`Created Team: ${team.name}`)
             teamIds.push(team.id)
 
             for (let j = 1; j <= 12; j++) {
@@ -123,14 +124,15 @@ async function seed() {
                         number: j,
                         team: {connect: {id: team.id}},
                     },
+                    include: {user: true},
                 })
-                playerIds.push(player.id)
+                console.log(`Created Player: ${player.user.name} in Team: ${team.name}`)
+                playerData.push({id: player.id, teamId: team.id})
             }
         }
     }
 
-    // Create Matches and Stats
-    const matchIds = []
+    // Create Matches and Participations
     for (const seasonId of seasonIds) {
         for (let i = 1; i <= 50; i++) {
             const homeTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
@@ -151,23 +153,43 @@ async function seed() {
                     date: new Date(
                         `${new Date().getFullYear()}-${Math.floor(Math.random() * 12) + 1}-${
                             Math.floor(Math.random() * 28) + 1
-                        }`
+                        }`,
                     ),
                     winnerId,
                 },
             })
-            matchIds.push(match.id)
+            console.log(`Created Match: ${match.id} between ${homeTeamId} and ${awayTeamId}`)
 
-            for (let j = 0; j < 10; j++) {
-                await prisma.playerMatchStats.create({
+            const homePlayers = playerData.filter((player) => player.teamId === homeTeamId)
+            const awayPlayers = playerData.filter((player) => player.teamId === awayTeamId)
+
+            for (const {id: playerId} of [...homePlayers, ...awayPlayers]) {
+                const participation = await prisma.playerMatchParticipation.create({
                     data: {
-                        playerId: playerIds[Math.floor(Math.random() * playerIds.length)],
+                        playerId,
                         matchId: match.id,
-                        points: Math.floor(Math.random() * 30),
-                        assists: Math.floor(Math.random() * 10),
-                        rebounds: Math.floor(Math.random() * 15),
                     },
                 })
+                console.log(`Player ${playerId} participated in Match: ${match.id}`)
+
+                const stats =
+                    status === 'ONGOING' || status === 'COMPLETED'
+                        ? {
+                            points: Math.floor(Math.random() * 30),
+                            assists: Math.floor(Math.random() * 10),
+                            rebounds: Math.floor(Math.random() * 15),
+                        }
+                        : {points: 0, assists: 0, rebounds: 0}
+
+                await prisma.playerMatchStats.create({
+                    data: {
+                        playerMatchParticipationId: participation.id,
+                        ...stats,
+                    },
+                })
+                console.log(
+                    `Stats created for Player ${playerId} in Match: ${match.id} with Points: ${stats.points}, Assists: ${stats.assists}, Rebounds: ${stats.rebounds}`
+                )
             }
         }
     }
@@ -175,9 +197,12 @@ async function seed() {
     console.log('Seeding complete!')
 }
 
+// Cleanup function remains unchanged
+
 async function cleanup() {
     console.log('Deleting ALL data...')
     await prisma.playerMatchStats.deleteMany({})
+    await prisma.playerMatchParticipation.deleteMany({})
     await prisma.playerTotalStats.deleteMany({})
     await prisma.seasonStats.deleteMany({})
     await prisma.transfer.deleteMany({})
@@ -189,7 +214,7 @@ async function cleanup() {
     console.log('All data deleted!')
 }
 
-// Parse command-line arguments
+// Parse command-line arguments remains unchanged
 const args = process.argv.slice(2)
 
 if (args.includes('--seed')) {

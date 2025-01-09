@@ -1,10 +1,22 @@
-import { Match, PlayerMatchStats, Season, Team } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+
+export type MatchWithDetails = Prisma.MatchGetPayload<{
+    include: {
+        homeTeam: true
+        awayTeam: true
+        season: true
+        participations: {
+            include: {
+                player: {
+                    include: {
+                        user: true
+                        team: true
+                    }
+                }
+                stats: true
+            }
+        }
+    }
+}>
 
 export type StatType = 'points' | 'assists' | 'rebounds'
-
-export interface MatchWithDetails extends Match {
-    homeTeam: Team
-    awayTeam: Team
-    season: Season
-    playerStats: PlayerMatchStats[]
-}
