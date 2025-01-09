@@ -2,6 +2,8 @@ import { Prisma, PrismaClient } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import clsx from 'clsx'
+import Empty from '@/ui/empty'
+import { EMPTY_MESSAGES } from '@/lib/utils'
 
 type MatchWithTeams = Prisma.MatchGetPayload<{
     include: {
@@ -29,7 +31,8 @@ export default async function Page() {
 
     return (
         <Grid title="Matches">
-            {matches
+            {matches.length === 0 && <Empty message={EMPTY_MESSAGES.NO_MATCHES}/>}
+            {matches.length > 0 && matches
                 .sort((match1: MatchWithTeams, match2: MatchWithTeams) => new Date(match1.date).getTime() - new Date(match2.date).getTime())
                 .map((match) => {
                     const date = new Date(match.date).toLocaleDateString('en-US', {month: 'long', year: 'numeric', day: 'numeric'})

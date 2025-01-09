@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client'
+import Empty from '@/ui/empty'
+import { EMPTY_MESSAGES } from '@/lib/utils'
 
 const prisma = new PrismaClient()
 
@@ -29,9 +31,7 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
         },
     })
 
-    if (!team) {
-        throw new Error('Team not found')
-    }
+    if (!team) return <Empty message={EMPTY_MESSAGES.TEAM_DOES_NOT_EXIST}/>
 
     const totalMatches = team.homeMatches.length + team.awayMatches.length
     const matchesWon = team.wins.length

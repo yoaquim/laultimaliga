@@ -107,9 +107,18 @@ function SignUpForm({onSubmit, loading, error,}: {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 text-white bg-lul-blue rounded-md text-lg font-medium hover:bg-lul-blue/80 transition"
+                    className="w-full py-3 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
                 >
-                    {loading ? <Spinner/> : 'Sign Up'}
+                    {loading
+                        ?
+                        <div className="flex justify-center items-center gap-x-4">
+                            <div className="w-4 h-4">
+                                <Spinner/>
+                            </div>
+                            Signing Up...
+                        </div>
+                        : 'Sign Up'
+                    }
                 </button>
 
                 {/* Redirect to Sign In */}

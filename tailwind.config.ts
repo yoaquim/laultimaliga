@@ -1,3 +1,4 @@
+import defaultTheme from 'tailwindcss/defaultTheme'
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
@@ -24,11 +25,17 @@ const config: Config = {
                 'lul-muted-orange': '#FFB266',
                 'lul-light-grey': '#afafaf',
                 'lul-grey': '#404040',
+                'lul-dark-grey': '#2a2a2a',
                 'lul-black': '#1A1A1A',
             },
         },
+        animation: {
+            shimmer: 'shimmer 2s infinite',
+        },
         keyframes: {
+            ...defaultTheme.keyframes,
             shimmer: {
+                '0%': {transform: 'translateX(-100%)'},
                 '100%': {
                     transform: 'translateX(100%)',
                 },

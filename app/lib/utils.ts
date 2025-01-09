@@ -13,3 +13,10 @@ export const ERRORS = {
     ERROR_SIGNING_UP_USER_IN_SUPABASE: 'Error signing up user in Supabase',
     INVALID_CREDENTIALS: 'Invalid credentials',
 }
+
+export const EMPTY_MESSAGES = {
+    MATCH_DOES_NOT_EXIST: 'This Match does not exist.',
+    TEAM_DOES_NOT_EXIST: 'This Team does not exist.',
+    NO_MATCHES: 'There aren\'t any matches yet.',
+    NO_TEAMS: 'There aren\'t any teams yet.',
+}

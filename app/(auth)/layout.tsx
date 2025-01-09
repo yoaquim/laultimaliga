@@ -12,10 +12,10 @@ function AuthHeader() {
 
 export default function AuthLayout({children}: { children: ReactNode }) {
     return (
-        <div className="lg:pt-24 h-screen w-screen pt-10 flex flex-col items-center bg-gradient-to-br from-lul-black to-lul-grey">
+        <div className="lg:pt-24 md:pt-16 h-screen w-screen flex flex-col items-center bg-gradient-to-br from-lul-black to-lul-grey">
             <AuthHeader/>
 
-            <div className="lg:mt-16 lg:w-1/3 w-full mt-10 px-8 flex flex-col items-center">
+            <div className="lg:mt-12 lg:w-1/3 w-full mt-2 px-8 flex flex-col items-center">
                 <div className="w-full flex flex-col">
                     {children}
                 </div>

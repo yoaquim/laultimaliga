@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
+import Empty from '@/ui/empty'
+import { EMPTY_MESSAGES } from '@/lib/utils'
 
 const prisma = new PrismaClient()
 
@@ -37,7 +39,8 @@ export default async function Page() {
 
     return (
         <Grid title="Teams">
-            {teamsWithStats
+            {teamsWithStats.length === 0 && <Empty message={EMPTY_MESSAGES.NO_TEAMS}/>}
+            {teamsWithStats.length > 0 && teamsWithStats
                 .sort((a, b) => b.matchesWon - a.matchesWon) // Sort by matches won
                 .map((team) => (
                     <Link
