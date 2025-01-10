@@ -1,9 +1,8 @@
 'use server'
 
-import { PrismaClient, MatchStatus } from '@prisma/client'
+import { MatchStatus } from '@prisma/client'
 import { StatType } from './types'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export async function getMatch(matchId: string) {
     return prisma.match.findUnique({

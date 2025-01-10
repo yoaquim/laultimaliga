@@ -4,6 +4,7 @@ import { Grid } from '@/ui/grid'
 import clsx from 'clsx'
 import Empty from '@/ui/empty'
 import { EMPTY_MESSAGES } from '@/lib/utils'
+import { prisma } from '@/lib/prisma'
 
 type MatchWithTeams = Prisma.MatchGetPayload<{
     include: {
@@ -12,8 +13,6 @@ type MatchWithTeams = Prisma.MatchGetPayload<{
         awayTeam: true;
     };
 }>;
-
-const prisma = new PrismaClient()
 
 export default async function Page() {
     const matches: MatchWithTeams[] = await prisma.match.findMany({

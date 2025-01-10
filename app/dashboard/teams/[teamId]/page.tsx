@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 import Empty from '@/ui/empty'
 import { EMPTY_MESSAGES } from '@/lib/utils'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
 
 export default async function TeamDetailsPage({params}: { params: Promise<{ teamId: string }> }) {
     const {teamId} = await params

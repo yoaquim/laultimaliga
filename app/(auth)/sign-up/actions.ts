@@ -1,10 +1,8 @@
 'use server'
 
-import { PrismaClient } from '@prisma/client'
 import { createClient } from '@/lib/supabase/server'
 import { ERRORS, DOMAIN } from '@/lib/utils'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 async function userExists(email: string) {
     return prisma.user.findUnique({where: {email}})

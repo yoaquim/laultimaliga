@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
 import { EMPTY_MESSAGES } from '@/lib/utils'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 export default async function Page() {
     // Fetch teams data
