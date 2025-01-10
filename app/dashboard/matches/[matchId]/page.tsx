@@ -72,7 +72,7 @@ export default function Page() {
 
     if (loading) return (
         <div className="relative w-full h-full flex flex-col justify-center items-center">
-            <div className="w-1/3 h-2">
+            <div className="lg:w-1/3 w-full h-2">
                 <Shimmer/>
             </div>
         </div>
@@ -91,10 +91,10 @@ export default function Page() {
                 close={() => setModalIsOpen(false)}
                 action={modalAction}
             />
-           
+
             <div className={clsx(
-                'w-full pt-2 mt-10 flex flex-col gap-y-8 text-white overflow-y-scroll',
-                'lg:mt-4 '
+                'w-full h-full py-10 flex flex-col gap-y-8 text-white',
+                'lg:mt-4 lg:py-5'
             )}>
 
                 {/* Match Header */}
@@ -141,21 +141,20 @@ export default function Page() {
                 </div>
 
                 {/* Team Stats */}
-                <div className="lg:flex-row lg:gap-x-8 w-full h-fit flex flex-col gap-y-9 overflow-y-scroll">
+                <div className="lg:overflow-y-scroll lg:flex-row lg:pb-0 lg:gap-x-8 w-full flex flex-col gap-y-8 pb-10 ">
                     {[{team: match.homeTeam, teamName: match.homeTeam.name}, {team: match.awayTeam, teamName: match.awayTeam.name}].map(({team, teamName}) => (
-                        <div key={teamName} className="w-full h-fit p-4 pt-0 rounded-md overflow-y-scroll border border-lul-blue">
+                        <div key={teamName} className="lg:overflow-y-scroll w-full p-4 pt-0 rounded-md border border-lul-blue">
                             <div className="flex items-baseline text-2xl font-semibold pt-4 bg-lul-black border-b border-lul-blue pb-2 sticky top-0 z-10">
                                 <h1 className="flex flex-1">{teamName}</h1>
                                 <h3 className="uppercase text-sm">Player Stats</h3>
-
                             </div>
 
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 overflow-y-scroll">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                                 {/* Players */}
                                 {match.participations
                                     .filter((p) => p.player.teamId === team.id)
                                     .map((participation) => (
-                                        <div key={participation.id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md overflow-y-scroll">
+                                        <div key={participation.id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md ">
                                             <h3 className="flex-1 text-2xl font-bold">{participation.player.user.name}</h3>
                                             <div className="w-full mt-4 flex justify-between gap-2">
                                                 {['points', 'assists', 'rebounds'].map((stat) => (

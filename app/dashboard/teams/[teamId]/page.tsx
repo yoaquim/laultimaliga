@@ -38,7 +38,7 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
     const winRate = totalMatches > 0 ? ((matchesWon / totalMatches) * 100).toFixed(2) : 'N/A'
 
     return (
-        <div className="lg:mt-4 w-full h-full p-6 pb-10 mt-10 flex flex-col gap-y-8 bg-lul-black text-white">
+        <div className="lg:mt-4 w-full h-full p-6 pb-10 mt-10 flex flex-col gap-y-8 text-white overflow-y-scroll">
             {/* Team Header */}
             <div className="flex flex-col lg:flex-row items-center justify-between">
                 <h1 className="text-3xl font-bold">{team.name}</h1>
