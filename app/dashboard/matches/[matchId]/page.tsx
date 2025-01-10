@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import { useParams } from 'next/navigation'
 import { MatchStatus } from '@prisma/client'
@@ -99,10 +99,13 @@ export default function Page() {
 
                 {/* Match Header */}
                 <div className="flex flex-col items-center justify-between gap-y-2">
-                    <div className="w-full flex justify-center gap-x-6 text-3xl font-bold">
-                        <h1>{match.homeTeam.name}</h1>
-                        <h1 className="text-5xl">⚡️</h1>
-                        <h1 className="text-right">{match.awayTeam.name}</h1>
+                    <div className="w-full max-w-screen-md flex justify-between text-3xl font-bold">
+                        <h1 className="w-1/3">{match.homeTeam.name}</h1>
+                        {/*<div className="w-1/3 text-5xl flex justify-center items-center">*/}
+                        {/*    <img src="/ball.svg" alt="ball" className="h-12 lg:flex hidden"/>*/}
+                        {/*</div>*/}
+                        <h1 className="w-1/3 text-5xl text-center">⚡️</h1>
+                        <h1 className="w-1/3 text-right">{match.awayTeam.name}</h1>
                     </div>
                     <div className="flex flex-col items-center">
                         <p className="text-lul-blue text-lg">{match.season.name}</p>
@@ -117,13 +120,18 @@ export default function Page() {
                         'bg-lul-yellow': status === 'SCHEDULED',
                         'bg-lul-green': status === 'ONGOING',
                         'bg-lul-blue': status === 'COMPLETED',
+                        'bg-lul-red': status === 'CANCELED',
                     }
                 )}>
                     <h1 className="text-2xl font-bold">{status}</h1>
                 </div>
 
                 {/* Match Controls */}
-                <div className="flex justify-between items-center">
+                <div className={clsx('flex justify-between items-center',
+                    {
+                        'hidden': status === 'CANCELED'
+                    }
+                )}>
                     <button
                         onClick={() => handleStatusChange('ONGOING')}
                         className={`uppercase text-sm font-bold py-2 px-4 bg-lul-green text-white rounded-md ${status === 'ONGOING' ? 'opacity-50' : ''}`}
@@ -144,16 +152,20 @@ export default function Page() {
                 <div className="lg:overflow-y-scroll lg:flex-row lg:pb-0 lg:gap-x-8 w-full flex flex-col gap-y-8 pb-10 ">
                     {[{team: match.homeTeam, teamName: match.homeTeam.name}, {team: match.awayTeam, teamName: match.awayTeam.name}].map(({team, teamName}) => (
                         <div key={teamName} className="lg:overflow-y-scroll w-full p-4 pt-0 rounded-md border border-lul-blue">
-                            <div className="flex items-baseline text-2xl font-semibold pt-4 bg-lul-black border-b border-lul-blue pb-2 sticky top-0 z-10">
+
+                            {/*Header*/}
+                            <div className="sticky top-0 z-10 bg-gradient-to-br from-lul-black to-lul-dark-grey bg-clip-padding border-b border-lul-blue text-2xl font-semibold pt-4 pb-2 flex items-baseline">
                                 <h1 className="flex flex-1">{teamName}</h1>
                                 <h3 className="uppercase text-sm">Player Stats</h3>
                             </div>
 
+
+                            {/* Players */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-                                {/* Players */}
                                 {match.participations
                                     .filter((p) => p.player.teamId === team.id)
                                     .map((participation) => (
+                                        // Player
                                         <div key={participation.id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md ">
                                             <h3 className="flex-1 text-2xl font-bold">{participation.player.user.name}</h3>
                                             <div className="w-full mt-4 flex justify-between gap-2">
