@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { EmailOtpType } from '@supabase/auth-js'
 import { DEFAULT_URL_WHEN_AUTHENTICATED, ERRORS } from '@/lib/utils'
@@ -6,9 +7,7 @@ import { DEFAULT_URL_WHEN_AUTHENTICATED, ERRORS } from '@/lib/utils'
 export async function GET(request: Request) {
     const url = new URL(request.url)
     const token_hash = url.searchParams.get('token_hash')
-    const type: EmailOtpType | null = url.searchParams.get(
-        'type'
-    ) as EmailOtpType
+    const type: EmailOtpType | null = url.searchParams.get('type') as EmailOtpType
 
     if (token_hash && type) {
         const supabase = await createClient()
@@ -19,11 +18,8 @@ export async function GET(request: Request) {
             return new Response(ERRORS.EMAIL_VERIFICATION_FAILED, {status: 400})
         }
 
-        return NextResponse.redirect(DEFAULT_URL_WHEN_AUTHENTICATED)
+        return redirect(DEFAULT_URL_WHEN_AUTHENTICATED)
     }
 
-    return new Response(
-        ERRORS.EMAIL_VERIFICATION_FAILED_TOKEN_INVALID,
-        {status: 400}
-    )
+    return redirect('/sign-in')
 }
