@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { EmailOtpType } from '@supabase/auth-js'

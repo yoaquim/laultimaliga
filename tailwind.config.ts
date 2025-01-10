@@ -30,6 +30,7 @@ const config: Config = {
             },
         },
         animation: {
+            ...defaultTheme.animation,
             shimmer: 'shimmer 2s infinite',
         },
         keyframes: {
