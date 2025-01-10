@@ -38,7 +38,7 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
     const winRate = totalMatches > 0 ? ((matchesWon / totalMatches) * 100).toFixed(2) : 'N/A'
 
     return (
-        <div className="lg:mt-4 h-5/6 6 w-full p-6 mt-10 flex flex-col gap-y-8 bg-lul-black text-white overflow-y-scroll">
+        <div className="lg:mt-4 w-full h-full p-6 pb-10 mt-10 flex flex-col gap-y-8 bg-lul-black text-white">
             {/* Team Header */}
             <div className="flex flex-col lg:flex-row items-center justify-between">
                 <h1 className="text-3xl font-bold">{team.name}</h1>
@@ -61,9 +61,11 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
                 </div>
             </div>
 
-            <div className="lg:flex-row lg:justify-between lg:gap-x-8 w-full h-5/6 pb-20 flex flex-col gap-y-6">
+            {/* Players & Matches */}
+            <div className="lg:flex-row lg:justify-between lg:gap-x-8 w-full h-full flex flex-col gap-y-6 ">
+
                 {/* Players List */}
-                <div className="w-full h-fit bg-lul-grey/20 p-4 rounded-md">
+                <div className="w-full h-full bg-lul-grey/20 p-4 rounded-md overflow-y-scroll">
                     <h2 className="text-2xl font-semibold border-b border-lul-blue pb-2">Players</h2>
                     <ul className="mt-4 space-y-2">
                         {team.players.map((player) => (
@@ -79,11 +81,11 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
                 </div>
 
                 {/* Matches */}
-                <div className="w-full h-fit bg-lul-grey/20 p-4 rounded-md">
+                <div className="w-full h-full bg-lul-grey/20 p-4 rounded-md overflow-y-scroll">
                     <h2 className="text-2xl font-semibold border-b border-lul-blue pb-2">Matches</h2>
 
                     <div className="mt-4">
-                        <h3 className="text-xl font-semibold text-lul-light-grey">Home Matches</h3>
+                        <h3 className="font-semibold text-lul-light-grey uppercase">Home Matches</h3>
                         <ul className="mt-2 space-y-2">
                             {team.homeMatches.map((match) => (
                                 <li
@@ -102,8 +104,8 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
                         </ul>
                     </div>
 
-                    <div className="mt-6">
-                        <h3 className="text-xl font-semibold text-lul-light-grey">Away Matches</h3>
+                    <div className="mt-10">
+                        <h3 className="font-semibold text-lul-light-grey uppercase">Away Matches</h3>
                         <ul className="mt-2 space-y-2">
                             {team.awayMatches.map((match) => (
                                 <li

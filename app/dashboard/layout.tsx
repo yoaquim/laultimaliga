@@ -5,11 +5,14 @@ import Navbar from '@/ui/navbar'
 
 export default function Dashboard({children}: { children: ReactNode }) {
     return (
-        <div className="w-screen h-screen relative">
-            <Navbar/>
-            <div className="lg:pl-32 lg:pr-8 lg:pb-14 w-full h-full pb-28 flex flex-col gap-y-8 bg-lul-black text-white overflow-y-scroll">
+        <div className="flex flex-col lg:flex-row w-screen h-screen bg-gradient-to-br from-lul-black to-lul-black/95">
+            {/* Page Content */}
+            <div className="lg:order-2 lg:px-10 px-8 flex-1 order-1 pb-8 text-white overflow-y-auto">
                 {children}
             </div>
+
+            {/* Navbar */}
+            <Navbar className="lg:order-1 order-2"/>
         </div>
     )
 }

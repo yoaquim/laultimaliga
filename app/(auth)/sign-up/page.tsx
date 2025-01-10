@@ -144,11 +144,10 @@ export default function SignUpPage() {
 
         try {
             await signUpUser(formData)
+            setLoading(false)
             setSuccess(true)
         } catch (err: any) {
             setError(err.message || 'An unknown error occurred')
-        } finally {
-            setLoading(false)
         }
     }
 

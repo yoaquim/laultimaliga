@@ -46,7 +46,7 @@ export default async function Page() {
                     <Link
                         key={team.id}
                         href={`/dashboard/teams/${team.id}`}
-                        className="relative px-4 py-8 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
+                        className="relative px-4 pt-5 pb-10 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
                     >
                         {/* Team Name */}
                         <div className="flex items-center justify-between mb-4">
@@ -68,7 +68,7 @@ export default async function Page() {
 
 
                         {/* Win Rate */}
-                        <div className={`absolute top-3 right-2 font-bold text-lg ${
+                        <div className={`absolute top-3 right-3 font-bold text-lg ${
                             team.totalMatches === 0
                                 ? 'text-lul-red'
                                 : team.matchesWon / team.totalMatches > 0.5
@@ -80,7 +80,7 @@ export default async function Page() {
                         </div>
 
                         {/* Season */}
-                        <div className="absolute bottom-2 right-2 text-lul-blue text-sm font-semibold uppercase">
+                        <div className="absolute bottom-3 right-3 text-lul-blue text-sm font-semibold uppercase">
                             {team.season.shortName
                                 ? team.season.shortName
                                 : team.season.name

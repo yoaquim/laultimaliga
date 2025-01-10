@@ -61,7 +61,7 @@ function SignInForm({onSubmit, loading, error,}: {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
+                    className="w-full py-2 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
                 >
                     {loading
                         ?
@@ -99,10 +99,9 @@ export default function SignInPage() {
         try {
             const {redirectTo} = await signInUser(formData) // Invoke server action
             router.push(redirectTo) // Redirect on successful sign-in
+            setLoading(false)
         } catch (err: any) {
             setError(err.message || 'Invalid email or password')
-        } finally {
-            setLoading(false)
         }
     }
 

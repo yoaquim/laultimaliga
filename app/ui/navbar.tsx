@@ -7,7 +7,7 @@ import { IoBasketballSharp, IoSettingsSharp } from 'react-icons/io5'
 import { RiTeamFill, RiShieldUserFill, RiIdCardFill } from 'react-icons/ri'
 import { createClient } from '@/lib/supabase/client'
 
-export default function Navbar() {
+export default function Navbar({className}: { className?: string }) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
@@ -15,7 +15,7 @@ export default function Navbar() {
     const handleSignOut = async () => {
         try {
             await supabase.auth.signOut()
-            router.push('/sign-in') // Redirect to the sign-in page after signing out
+            router.push('/sign-in')
         } catch (error) {
             console.error('Error signing out:', error)
         }
@@ -30,32 +30,43 @@ export default function Navbar() {
     ]
 
     return (
-        <nav className="lg:flex lg:flex-col lg:items-center lg:h-screen lg:w-fit lg:px-4 lg:py-8 lg:border-r lg:border-t-0 lg:left-0 lg:absolute bg-gradient-to-r from-lul-black to-lul-grey/25  fixed bottom-0 w-full px-4 border-t border-white z-10">
+        <nav
+            className={clsx(
+                'w-full flex border-t border-white py-3 px-6',
+                'lg:w-fit lg:flex-col lg:h-screen lg:px-4 lg:py-8 lg:border-r lg:border-t-0',
+                className
+            )}
+        >
             <img src="/alt-logo-lul.svg" alt="Logo" className="h-16 lg:flex hidden"/>
 
-            <div className="lg:flex lg:flex-col lg:justify-normal lg:h-full lg:mt-10 lg:py-2 lg:space-y-10 lg:overflow-y-scroll flex justify-between h-fit w-full py-4 gap-x-10 overflow-x-scroll scroll-m-6 scroll-smooth">
+
+            {/* Links */}
+            <div className={clsx(
+                'w-full flex flex-row flex-1 justify-around items-center gap-x-10 overflow-x-scroll',
+                'lg:flex-col lg:justify-start lg:space-y-6 lg:py-8 lg:overflow-x-auto'
+            )}>
+                {/*<div className="">*/}
                 {links.map((link, i) => (
                     <Link
                         key={i}
                         href={link.href}
                         className={clsx(
-                            'flex flex-col justify-center items-center gap-y-2 min-w-[64px] text-lul-blue',
+                            'flex flex-col items-center gap-y-1 text-lul-blue',
                             {
-                                'bg-lul-blue p-2 rounded text-white': pathname.startsWith(link.href),
+                                'bg-lul-blue text-white p-2 rounded-md': pathname.startsWith(link.href),
                             }
                         )}
                     >
-                        <div className="text-3xl">
-                            <link.icon className="antialiased"/>
-                        </div>
-                        <p className="text-white text-xs antialiased">{link.name}</p>
+                        <link.icon className="text-2xl"/>
+                        <span className="text-xs text-white">{link.name}</span>
                     </Link>
                 ))}
             </div>
 
+            {/* Sign Out */}
             <button
                 onClick={handleSignOut}
-                className="mt-10 text-lul-blue text-sm self-end align-bottom antialiased lg:block hidden"
+                className="hidden lg:block text-lul-blue text-sm mt-auto lg:pt-4"
             >
                 Sign Out
             </button>

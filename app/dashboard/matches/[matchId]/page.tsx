@@ -91,7 +91,11 @@ export default function Page() {
                 close={() => setModalIsOpen(false)}
                 action={modalAction}
             />
-            <div className="lg:mt-4 lg:p-6 w-full px-6 py-2 mt-10 flex flex-col gap-y-8 bg-lul-black text-white overflow-y-scroll">
+           
+            <div className={clsx(
+                'w-full pt-2 mt-10 flex flex-col gap-y-8 text-white overflow-y-scroll',
+                'lg:mt-4 '
+            )}>
 
                 {/* Match Header */}
                 <div className="flex flex-col items-center justify-between gap-y-2">
@@ -137,9 +141,9 @@ export default function Page() {
                 </div>
 
                 {/* Team Stats */}
-                <div className="lg:flex-row lg:gap-x-8 w-full flex flex-col gap-y-9 overflow-y-scroll">
+                <div className="lg:flex-row lg:gap-x-8 w-full h-fit flex flex-col gap-y-9 overflow-y-scroll">
                     {[{team: match.homeTeam, teamName: match.homeTeam.name}, {team: match.awayTeam, teamName: match.awayTeam.name}].map(({team, teamName}) => (
-                        <div key={teamName} className="w-full p-4 pt-0 rounded-md overflow-y-scroll border border-lul-blue">
+                        <div key={teamName} className="w-full h-fit p-4 pt-0 rounded-md overflow-y-scroll border border-lul-blue">
                             <div className="flex items-baseline text-2xl font-semibold pt-4 bg-lul-black border-b border-lul-blue pb-2 sticky top-0 z-10">
                                 <h1 className="flex flex-1">{teamName}</h1>
                                 <h3 className="uppercase text-sm">Player Stats</h3>
