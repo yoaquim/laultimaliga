@@ -18,7 +18,7 @@ async function createUser(userSignUpData: any, email: string, name: string, phon
 
 async function registerUser(email: string, password: string) {
     const supabase = await createClient()
-    const emailRedirectTo = `${DOMAIN}/auth/confirm`
+    const emailRedirectTo = `${DOMAIN}/api/auth/confirm`
 
     const {data, error} = await supabase.auth.signUp({
         email,

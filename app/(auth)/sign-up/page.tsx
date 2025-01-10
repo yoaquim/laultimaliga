@@ -6,7 +6,7 @@ import Spinner from '@/ui/spinner'
 
 function SignUpSuccess() {
     return (
-        <p className="w-full h-72 mt-10 px-12 text-white font-medium text-center">
+        <p className="w-full mt-10 text-white font-medium text-center">
             We&#39;ve sent a confirmation email to the address provided.
             <br/>
             Follow the instructions there to continue.

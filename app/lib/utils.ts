@@ -11,6 +11,9 @@ export const ERRORS = {
     ERROR_CREATING_USER_IN_PRISMA: 'Error creating user in prisma.',
     ERROR_SIGNING_UP_USER: 'Error signing up user.',
     ERROR_SIGNING_UP_USER_IN_SUPABASE: 'Error signing up user in Supabase',
+    ERROR_VERIFYING_EMAIL: 'Error verifying email:',
+    EMAIL_VERIFICATION_FAILED: 'Email verification failed',
+    EMAIL_VERIFICATION_FAILED_TOKEN_INVALID: 'Email verification failed Token is missing or invalid',
     INVALID_CREDENTIALS: 'Invalid credentials',
 }
 
