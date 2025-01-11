@@ -8,9 +8,13 @@ import { prisma } from '@/lib/prisma'
 type PlayerWithDetails = Prisma.PlayerGetPayload<{
     include: {
         user: true
-        team: {
+        seasonDetails: {
             include: {
-                season: true
+                team: {
+                    include: {
+                        season: true
+                    }
+                }
             }
         }
         totalStats: true
@@ -21,23 +25,47 @@ export default async function Page() {
     const players: PlayerWithDetails[] = await prisma.player.findMany({
         include: {
             user: true,
-            team: {
+            seasonDetails: {
                 include: {
-                    season: true,
+                    team: {
+                        include: {
+                            season: true,
+                        },
+                    },
                 },
             },
-            totalStats: true,
+            participations: {
+                include: {
+                    stats: true, // Include individual game stats
+                },
+            },
+            totalStats: true, // Include cumulative stats
         },
     })
 
-    // Helper function to compute stats averages
-    const calculateStatsAverage = (stats: PlayerWithDetails['totalStats']) => {
-        if (!stats) return {points: 0, assists: 0, rebounds: 0, gamesPlayed: 0}
-        const {points, assists, rebounds, gamesPlayed} = stats
+    const calculateStatsAverage = (participations: PlayerWithDetails[]) => {
+        if (!participations || participations.length === 0) {
+            return {points: 0, assists: 0, rebounds: 0, gamesPlayed: 0}
+        }
+
+        let totalPoints = 0
+        let totalAssists = 0
+        let totalRebounds = 0
+        let totalGames = 0
+
+        participations.forEach((p) => {
+            if (p.stats) {
+                totalPoints += p.stats.points || 0
+                totalAssists += p.stats.assists || 0
+                totalRebounds += p.stats.rebounds || 0
+                totalGames += 1
+            }
+        })
+
         return {
-            points: gamesPlayed > 0 ? (points / gamesPlayed).toFixed(1) : '0.0',
-            assists: gamesPlayed > 0 ? (assists / gamesPlayed).toFixed(1) : '0.0',
-            rebounds: gamesPlayed > 0 ? (rebounds / gamesPlayed).toFixed(1) : '0.0',
+            points: totalGames > 0 ? (totalPoints / totalGames).toFixed(1) : '0.0',
+            assists: totalGames > 0 ? (totalAssists / totalGames).toFixed(1) : '0.0',
+            rebounds: totalGames > 0 ? (totalRebounds / totalGames).toFixed(1) : '0.0',
         }
     }
 
@@ -46,7 +74,7 @@ export default async function Page() {
             {players.length === 0 && <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>}
             {players.length > 0 &&
                 players.map((player) => {
-                    const statsAverage = calculateStatsAverage(player.totalStats)
+                    const statsAverage = calculateStatsAverage(player.participations)
 
                     return (
                         <Link
@@ -59,12 +87,12 @@ export default async function Page() {
 
                             {/* Player Team */}
                             <div className="text-lul-blue text-lg">
-                                {player.team?.name || 'Free Agent'}
+                                {player.seasonDetails[0]?.team?.name || 'Free Agent'}
                             </div>
 
                             {/* Jersey Number */}
                             <div className="absolute top-3 right-3 text-white text-2xl font-semibold uppercase">
-                                #{player.number}
+                                {`#${player.seasonDetails[0]?.number}` || 'N/A'}
                             </div>
 
                             {/* Player Size */}
@@ -72,16 +100,34 @@ export default async function Page() {
                                 {player.size}
                             </div>
 
+                            {/* Total Stats */}
+                            {player.totalStats && (
+                                <div className="flex flex-col mt-2 gap-y-1 text-lul-light-grey text-sm">
+                                    <p>
+                                        Total Points: <span className="text-lul-green">{player.totalStats.points}</span>
+                                    </p>
+                                    <p>
+                                        Total Assists: <span className="text-lul-green">{player.totalStats.assists}</span>
+                                    </p>
+                                    <p>
+                                        Total Rebounds: <span className="text-lul-green">{player.totalStats.rebounds}</span>
+                                    </p>
+                                    <p>
+                                        Games Played: <span className="text-lul-green">{player.totalStats.gamesPlayed}</span>
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Stats Averages */}
                             <div className="flex flex-col mt-2 gap-y-1 text-lul-light-grey text-sm">
                                 <p>
-                                    Points: <span className="text-lul-green">{statsAverage.points}</span>
+                                    Avg. Points: <span className="text-lul-green">{statsAverage.points}</span>
                                 </p>
                                 <p>
-                                    Assists: <span className="text-lul-green">{statsAverage.assists}</span>
+                                    Avg. Assists: <span className="text-lul-green">{statsAverage.assists}</span>
                                 </p>
                                 <p>
-                                    Rebounds: <span className="text-lul-green">{statsAverage.rebounds}</span>
+                                    Avg. Rebounds: <span className="text-lul-green">{statsAverage.rebounds}</span>
                                 </p>
                             </div>
                         </Link>
