@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import clsx from 'clsx'

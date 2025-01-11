@@ -2,7 +2,7 @@ import { MatchStatus, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Large list of adjectives and nouns for generating unique team names
+// Adjectives and nouns for unique team names
 const adjectives = [
     'Fierce', 'Brave', 'Mighty', 'Swift', 'Legendary', 'Epic', 'Noble', 'Fearless',
     'Gallant', 'Dynamic', 'Savage', 'Bold', 'Valiant', 'Invincible', 'Majestic',
@@ -17,7 +17,6 @@ const nouns = [
     'Raptors', 'Cobras', 'Foxes', 'Wizards', 'Guardians', 'Stallions', 'Monarchs',
 ]
 
-// List of first names and last names for players
 const firstNames = [
     'James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph',
     'Thomas', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven',
@@ -32,16 +31,13 @@ const lastNames = [
     'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'King', 'Wright', 'Lopez', 'Hill',
 ]
 
-// Increment counter for generating unique emails
-let playerCounter = 0
-
 function generateUniqueTeamName(existingNames: Set<string>): string {
     let name = ''
     do {
         const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
         const noun = nouns[Math.floor(Math.random() * nouns.length)]
         name = `${adjective} ${noun}`
-    } while (existingNames.has(name)) // Ensure unique name
+    } while (existingNames.has(name))
     existingNames.add(name)
     return name
 }
@@ -49,36 +45,36 @@ function generateUniqueTeamName(existingNames: Set<string>): string {
 function generatePlayerName(): { firstName: string; lastName: string } {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
-    return {firstName, lastName}
+    return { firstName, lastName }
 }
 
 function getRandomMatchStatus(): MatchStatus {
     const statuses = [
-        {status: 'SCHEDULED', weight: 0.4}, // 40%
-        {status: 'ONGOING', weight: 0.3}, // 30%
-        {status: 'COMPLETED', weight: 0.25}, // 25%
-        {status: 'CANCELED', weight: 0.05}, // 5%
+        { status: 'SCHEDULED', weight: 0.4 },
+        { status: 'ONGOING', weight: 0.3 },
+        { status: 'COMPLETED', weight: 0.25 },
+        { status: 'CANCELED', weight: 0.05 },
     ]
 
     const totalWeight = statuses.reduce((sum, s) => sum + s.weight, 0)
     const random = Math.random() * totalWeight
 
     let cumulativeWeight = 0
-    for (const {status, weight} of statuses) {
+    for (const { status, weight } of statuses) {
         cumulativeWeight += weight
         if (random < cumulativeWeight) {
             return status as MatchStatus
         }
     }
-    return 'SCHEDULED' // Fallback, though this should never occur
+    return 'SCHEDULED'
 }
 
 async function seed() {
     console.log('Seeding test data...')
 
     const existingTeamNames = new Set<string>()
+    const existingPlayers = new Map<string, string>()
 
-    // Create Seasons
     const seasonIds = []
     for (let i = 1; i <= 5; i++) {
         const season = await prisma.season.create({
@@ -86,16 +82,15 @@ async function seed() {
                 name: `${2020 + i} Season`,
                 startDate: new Date(`${2020 + i}-01-01`),
                 endDate: new Date(`${2020 + i}-12-31`),
-                isActive: i === 5, // Last season is active
+                isActive: i === 5,
             },
         })
-        console.log(`Created Season: ${season.name}`)
         seasonIds.push(season.id)
     }
 
-    // Create Teams and Players
     const teamIds = []
-    const playerData = []
+    const playerMap: Record<string, string[]> = {}
+
     for (const seasonId of seasonIds) {
         for (let i = 1; i <= 10; i++) {
             const teamName = generateUniqueTeamName(existingTeamNames)
@@ -105,34 +100,46 @@ async function seed() {
                     seasonId,
                 },
             })
-            console.log(`Created Team: ${team.name}`)
             teamIds.push(team.id)
+            playerMap[team.id] = []
 
             for (let j = 1; j <= 12; j++) {
-                const {firstName, lastName} = generatePlayerName()
-                const player = await prisma.player.create({
-                    data: {
-                        user: {
-                            create: {
-                                email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}.${playerCounter++}@example.com`,
-                                name: `${firstName} ${lastName}`,
-                                phone: `12345678${i}${j}`,
-                                role: 'USER',
+                const { firstName, lastName } = generatePlayerName()
+                const playerName = `${firstName} ${lastName}`
+
+                let playerId = existingPlayers.get(playerName)
+                if (!playerId) {
+                    const player = await prisma.player.create({
+                        data: {
+                            user: {
+                                create: {
+                                    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
+                                    name: playerName,
+                                    phone: `12345678${i}${j}`,
+                                    role: 'USER',
+                                },
                             },
+                            size: 'LARGE',
                         },
-                        size: 'LARGE',
+                        include: { user: true },
+                    })
+                    playerId = player.id
+                    existingPlayers.set(playerName, playerId)
+                }
+
+                await prisma.playerSeasonDetails.create({
+                    data: {
+                        playerId,
+                        seasonId,
+                        teamId: team.id,
                         number: j,
-                        team: {connect: {id: team.id}},
                     },
-                    include: {user: true},
                 })
-                console.log(`Created Player: ${player.user.name} in Team: ${team.name}`)
-                playerData.push({id: player.id, teamId: team.id})
+                playerMap[team.id].push(playerId)
             }
         }
     }
 
-    // Create Matches and Participations
     for (const seasonId of seasonIds) {
         for (let i = 1; i <= 50; i++) {
             const homeTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
@@ -141,7 +148,7 @@ async function seed() {
                 awayTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
             } while (awayTeamId === homeTeamId)
 
-            const status: MatchStatus = getRandomMatchStatus()
+            const status = getRandomMatchStatus()
             const winnerId = status === 'COMPLETED' ? (Math.random() < 0.5 ? homeTeamId : awayTeamId) : null
 
             const match = await prisma.match.create({
@@ -158,38 +165,37 @@ async function seed() {
                     winnerId,
                 },
             })
-            console.log(`Created Match: ${match.id} between ${homeTeamId} and ${awayTeamId}`)
 
-            const homePlayers = playerData.filter((player) => player.teamId === homeTeamId)
-            const awayPlayers = playerData.filter((player) => player.teamId === awayTeamId)
+            const homeTeamPlayers = playerMap[homeTeamId] || []
+            const awayTeamPlayers = playerMap[awayTeamId] || []
 
-            for (const {id: playerId} of [...homePlayers, ...awayPlayers]) {
+            for (const playerId of [...homeTeamPlayers, ...awayTeamPlayers]) {
                 const participation = await prisma.playerMatchParticipation.create({
                     data: {
                         playerId,
                         matchId: match.id,
                     },
                 })
-                console.log(`Player ${playerId} participated in Match: ${match.id}`)
 
-                const stats =
-                    status === 'ONGOING' || status === 'COMPLETED'
-                        ? {
+                if (status === 'ONGOING' || status === 'COMPLETED') {
+                    await prisma.playerMatchStats.create({
+                        data: {
+                            playerMatchParticipationId: participation.id,
                             points: Math.floor(Math.random() * 30),
                             assists: Math.floor(Math.random() * 10),
                             rebounds: Math.floor(Math.random() * 15),
-                        }
-                        : {points: 0, assists: 0, rebounds: 0}
-
-                await prisma.playerMatchStats.create({
-                    data: {
-                        playerMatchParticipationId: participation.id,
-                        ...stats,
-                    },
-                })
-                console.log(
-                    `Stats created for Player ${playerId} in Match: ${match.id} with Points: ${stats.points}, Assists: ${stats.assists}, Rebounds: ${stats.rebounds}`
-                )
+                        },
+                    })
+                } else {
+                    await prisma.playerMatchStats.create({
+                        data: {
+                            playerMatchParticipationId: participation.id,
+                            points: 0,
+                            assists: 0,
+                            rebounds: 0,
+                        },
+                    })
+                }
             }
         }
     }
@@ -197,16 +203,14 @@ async function seed() {
     console.log('Seeding complete!')
 }
 
-// Cleanup function remains unchanged
-
 async function cleanup() {
     console.log('Deleting ALL data...')
     await prisma.playerMatchStats.deleteMany({})
     await prisma.playerMatchParticipation.deleteMany({})
     await prisma.playerTotalStats.deleteMany({})
     await prisma.seasonStats.deleteMany({})
-    await prisma.transfer.deleteMany({})
     await prisma.match.deleteMany({})
+    await prisma.playerSeasonDetails.deleteMany({})
     await prisma.player.deleteMany({})
     await prisma.team.deleteMany({})
     await prisma.user.deleteMany({})
@@ -214,7 +218,6 @@ async function cleanup() {
     console.log('All data deleted!')
 }
 
-// Parse command-line arguments remains unchanged
 const args = process.argv.slice(2)
 
 if (args.includes('--seed')) {

@@ -163,10 +163,11 @@ export default function Page() {
                             {/* Players */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                                 {match.participations
-                                    .filter((p) => p.player.teamId === team.id)
+                                    .filter((p) =>
+                                        p.player.seasonDetails.some((detail) => detail.team?.id === team.id)
+                                    )
                                     .map((participation) => (
-                                        // Player
-                                        <div key={participation.id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md ">
+                                        <div key={participation.id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
                                             <h3 className="flex-1 text-2xl font-bold">{participation.player.user.name}</h3>
                                             <div className="w-full mt-4 flex justify-between gap-2">
                                                 {['points', 'assists', 'rebounds'].map((stat) => (

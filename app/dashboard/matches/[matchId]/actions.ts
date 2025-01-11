@@ -5,7 +5,7 @@ import { StatType } from './types'
 import { prisma } from '@/lib/prisma'
 
 export async function getMatch(matchId: string) {
-    return prisma.match.findUnique({
+    return await prisma.match.findUnique({
         where: {id: matchId},
         include: {
             homeTeam: true,
@@ -16,10 +16,14 @@ export async function getMatch(matchId: string) {
                     player: {
                         include: {
                             user: true,
-                            team: true
+                            seasonDetails: {
+                                include: {
+                                    team: true, // Include team to ensure access to team details
+                                },
+                            },
                         },
                     },
-                    stats: true,
+                    stats: true, // Include stats for points, assists, etc.
                 },
             },
         },

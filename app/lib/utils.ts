@@ -22,4 +22,5 @@ export const EMPTY_MESSAGES = {
     TEAM_DOES_NOT_EXIST: 'This Team does not exist.',
     NO_MATCHES: 'There aren\'t any matches yet.',
     NO_TEAMS: 'There aren\'t any teams yet.',
+    NO_PLAYERS: 'There aren\'t any players yet.',
 }
