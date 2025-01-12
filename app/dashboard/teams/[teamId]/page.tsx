@@ -72,13 +72,10 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                         Players
                     </h2>
                     <ul className="mt-4 space-y-2 overflow-y-auto flex-grow">
-                        {team.players.map((player: any) => (
-                            <li
-                                key={player.id}
-                                className="flex justify-between items-center p-2 bg-lul-grey/10 rounded hover:bg-lul-grey/20 transition cursor-pointer"
-                            >
-                                <p>{player.user.name}</p>
-                                <p className="text-lul-light-grey">#{player.number}</p>
+                        {team.players.map((playerSeasonDetail: any) => (
+                            <li key={playerSeasonDetail.id} className="flex justify-between items-center p-2 bg-lul-grey/10 rounded hover:bg-lul-grey/20 transition cursor-pointer">
+                                <p>{playerSeasonDetail.player.user.name}</p>
+                                <p className="text-lul-light-grey">#{playerSeasonDetail.number}</p>
                             </li>
                         ))}
                     </ul>
