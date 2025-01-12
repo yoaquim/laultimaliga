@@ -123,40 +123,36 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
 
 /**
  * Update a player's stats (points/assists/rebounds) for a single match participation,
- * plus update their totalStats & seasonStats, WITHOUT recalculating gamesPlayed every time.
- * We wrap it in a single transaction for speed.
+ * plus update scoreboard (if points), PlayerTotalStats & SeasonStats.
  */
 export async function updatePlayerStat(playerStatId: string, statType: StatType, increment: boolean) {
     return prisma.$transaction(async (tx) => {
-        // 1) Update the player's individual stat
+        // 1) Update PlayerMatchStats (the individual's stat row for that match)
         const updatedStat = await tx.playerMatchStats.update({
             where: {id: playerStatId},
             data: {
-                [statType]: {
-                    increment: increment ? 1 : -1,
-                },
+                [statType]: {increment: increment ? 1 : -1},
             },
         })
 
-        // 2) Find participation to see which match & which team
+        // 2) Fetch the participation & match
         const participation = await tx.playerMatchParticipation.findUnique({
             where: {id: updatedStat.playerMatchParticipationId},
             include: {
-                match: true, // so we can get homeTeamId, awayTeamId, status, etc.
+                match: true, // to get homeTeamId, awayTeamId, seasonId, status
             },
         })
 
         if (!participation?.match) {
-            throw new Error('Participation or match not found')
+            throw new Error('Participation or match not found.')
         }
 
         const match = participation.match
         const {homeTeamId, awayTeamId, seasonId, status} = match
 
-        // If they changed "points", also update scoreboard if match is ongoing (or completed, if you like)
+        // 2a) If points changed and match is ongoing/completed, update scoreboard
         if (statType === 'points' && (status === 'ONGOING' || status === 'COMPLETED')) {
-            // figure out if the player is on the home team or away team
-            // We'll look up the player's `PlayerSeasonDetails` to see if teamId = homeTeamId or awayTeamId
+            // figure out if the player is home or away
             const psd = await tx.playerSeasonDetails.findFirst({
                 where: {
                     playerId: participation.playerId,
@@ -165,41 +161,82 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
                 },
             })
 
-            if (!psd) {
-                // Not found or not on home/away team—should not happen if data is correct
-                console.warn('Player not found on either home/away team for this match.')
-            } else {
-                // If the player's PSD matches the homeTeamId, increment homeScore, else increment awayScore
-                const isHomeTeam = psd.teamId === homeTeamId
-
-                if (isHomeTeam) {
+            if (psd) {
+                if (psd.teamId === homeTeamId) {
                     await tx.match.update({
                         where: {id: match.id},
                         data: {
-                            homeScore: {
-                                increment: increment ? 1 : -1,
-                            },
+                            homeScore: {increment: increment ? 1 : -1},
                         },
                     })
                 } else {
                     await tx.match.update({
                         where: {id: match.id},
                         data: {
-                            awayScore: {
-                                increment: increment ? 1 : -1,
-                            },
+                            awayScore: {increment: increment ? 1 : -1},
                         },
                     })
                 }
             }
         }
 
-        // 3) Update PlayerTotalStats & SeasonStats (your existing logic)
-        // (Example short snippet)
+        // 3) Update PlayerTotalStats
+        // We'll recalc `gamesPlayed` each time by counting all match participations
         const playerId = participation.playerId
 
-        // Update total or season stats, skipping the details for brevity...
-        // ... your existing upsert logic goes here ...
+        // Count how many total matches the player has participated in (any season)
+        const totalGames = await tx.playerMatchParticipation.count({
+            where: {playerId},
+        })
+
+        // Upsert PlayerTotalStats
+        await tx.playerTotalStats.upsert({
+            where: {playerId},
+            create: {
+                playerId,
+                points: statType === 'points' ? 1 : 0,
+                assists: statType === 'assists' ? 1 : 0,
+                rebounds: statType === 'rebounds' ? 1 : 0,
+                gamesPlayed: totalGames, // newly counted
+            },
+            update: {
+                [statType]: {
+                    increment: increment ? 1 : -1,
+                },
+                gamesPlayed: totalGames,
+            },
+        })
+
+        // 4) Update SeasonStats for the *current* season
+        // We'll also recalc how many matches the player participated in that season
+        const seasonGames = await tx.playerMatchParticipation.count({
+            where: {
+                playerId,
+                match: {
+                    seasonId,
+                },
+            },
+        })
+
+        await tx.seasonStats.upsert({
+            where: {
+                playerId_seasonId: {playerId, seasonId},
+            },
+            create: {
+                playerId,
+                seasonId,
+                points: statType === 'points' ? 1 : 0,
+                assists: statType === 'assists' ? 1 : 0,
+                rebounds: statType === 'rebounds' ? 1 : 0,
+                gamesPlayed: seasonGames,
+            },
+            update: {
+                [statType]: {
+                    increment: increment ? 1 : -1,
+                },
+                gamesPlayed: seasonGames,
+            },
+        })
 
         return updatedStat
     })

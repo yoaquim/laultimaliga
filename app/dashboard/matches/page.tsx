@@ -61,23 +61,16 @@ export default async function Page() {
                         className="relative flex flex-col h-full gap-y-8 p-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
                     >
                         {/* STATUS BADGE - pinned top-right */}
-                        <div
-                            className="
-                absolute top-3 right-3 z-10 px-3 py-1
-                rounded-md text-white text-sm font-bold uppercase
-              "
-                            style={{backgroundColor: 'rgba(0,0,0,0.25)'}}
-                        >
-              <span
-                  className={clsx({
-                      'text-lul-yellow': match.status === 'SCHEDULED',
-                      'text-lul-green': match.status === 'ONGOING',
-                      'text-lul-blue': match.status === 'COMPLETED',
-                      'text-lul-red': match.status === 'CANCELED',
-                  })}
-              >
-                {match.status}
-              </span>
+                        <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-md text-white text-sm font-bold uppercase" style={{backgroundColor: 'rgba(0,0,0,0.25)'}}>
+                            <div className={clsx({
+                                'text-lul-yellow': match.status === 'SCHEDULED',
+                                'text-lul-green': match.status === 'ONGOING',
+                                'text-lul-blue': match.status === 'COMPLETED',
+                                'text-lul-red': match.status === 'CANCELED',
+                            })}
+                            >
+                                {match.status}
+                            </div>
                         </div>
 
                         {/* MAIN CONTENT */}

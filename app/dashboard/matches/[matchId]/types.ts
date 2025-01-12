@@ -2,8 +2,16 @@ import { Prisma } from '@prisma/client'
 
 export type MatchWithDetails = Prisma.MatchGetPayload<{
     include: {
-        homeTeam: true
-        awayTeam: true
+        homeTeam: {
+            include: {
+                players: true
+            }
+        }
+        awayTeam: {
+            include: {
+                players: true
+            }
+        }
         season: true
         participations: {
             include: {
