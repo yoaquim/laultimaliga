@@ -2,9 +2,13 @@ import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
+import Shimmer from '@/ui/shimmer' // if you need a loading state
 import { EMPTY_MESSAGES } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 
+// --------------------------------------------------
+// Types
+// --------------------------------------------------
 type PlayerWithDetails = Prisma.PlayerGetPayload<{
     include: {
         user: true
@@ -17,122 +21,171 @@ type PlayerWithDetails = Prisma.PlayerGetPayload<{
                 }
             }
         }
-        totalStats: true
+        SeasonStats: true
     }
 }>
 
 export default async function Page() {
+    // For bigger data sets, consider pagination
     const players: PlayerWithDetails[] = await prisma.player.findMany({
         include: {
             user: true,
             seasonDetails: {
                 include: {
                     team: {
-                        include: {
-                            season: true,
-                        },
+                        include: {season: true},
                     },
                 },
             },
-            participations: {
-                include: {
-                    stats: true, // Include individual game stats
-                },
-            },
-            totalStats: true, // Include cumulative stats
+            // This is where we store each player's stats for different seasons
+            SeasonStats: true,
         },
     })
 
-    const calculateStatsAverage = (participations: PlayerWithDetails[]) => {
-        if (!participations || participations.length === 0) {
-            return {points: 0, assists: 0, rebounds: 0, gamesPlayed: 0}
-        }
-
-        let totalPoints = 0
-        let totalAssists = 0
-        let totalRebounds = 0
-        let totalGames = 0
-
-        participations.forEach((p) => {
-            if (p.stats) {
-                totalPoints += p.stats.points || 0
-                totalAssists += p.stats.assists || 0
-                totalRebounds += p.stats.rebounds || 0
-                totalGames += 1
-            }
-        })
-
-        return {
-            points: totalGames > 0 ? (totalPoints / totalGames).toFixed(1) : '0.0',
-            assists: totalGames > 0 ? (totalAssists / totalGames).toFixed(1) : '0.0',
-            rebounds: totalGames > 0 ? (totalRebounds / totalGames).toFixed(1) : '0.0',
-        }
+    if (players.length === 0) {
+        return (
+            <Grid title="Players">
+                <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>
+            </Grid>
+        )
     }
 
     return (
         <Grid title="Players">
-            {players.length === 0 && <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>}
-            {players.length > 0 &&
-                players.map((player) => {
-                    const statsAverage = calculateStatsAverage(player.participations)
+            {players.map((player) => {
+                // Grab the player's first seasonDetail (if any)
+                const firstDetail = player.seasonDetails[0]
+                const seasonId = firstDetail?.team?.season?.id
+                const shortName =
+                    firstDetail?.team?.season?.shortName ||
+                    firstDetail?.team?.season?.name ||
+                    'N/A'
 
-                    return (
-                        <Link
-                            key={player.id}
-                            href={`/dashboard/players/${player.id}`}
-                            className="relative flex flex-col p-4 px-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer gap-y-4"
-                        >
-                            {/* Player Name */}
-                            <div className="text-2xl font-semibold">{player.user.name}</div>
+                // Find the matching seasonStats for that season
+                const seasonStats = player.SeasonStats.find(
+                    (stat) => stat.seasonId === seasonId
+                )
+                const {points, assists, rebounds, gamesPlayed} = seasonStats || {
+                    points: 0,
+                    assists: 0,
+                    rebounds: 0,
+                    gamesPlayed: 0,
+                }
 
-                            {/* Player Team */}
-                            <div className="text-lul-blue text-lg">
-                                {player.seasonDetails[0]?.team?.name || 'Free Agent'}
+                // Compute averages
+                const avgPoints =
+                    gamesPlayed > 0 ? (points / gamesPlayed).toFixed(1) : '0.0'
+                const avgAssists =
+                    gamesPlayed > 0 ? (assists / gamesPlayed).toFixed(1) : '0.0'
+                const avgRebounds =
+                    gamesPlayed > 0 ? (rebounds / gamesPlayed).toFixed(1) : '0.0'
+
+                return (
+                    <Link
+                        key={player.id}
+                        href={`/dashboard/players/${player.id}`}
+                        className="
+              flex flex-col h-full gap-y-8
+              p-4 px-5
+              bg-lul-grey/20
+              rounded-md
+              hover:bg-lul-grey/30
+              transition
+              cursor-pointer
+            "
+                    >
+                        {/* TOP SECTION */}
+                        <div className="flex-1 flex flex-col gap-y-2">
+                            {/* Player Name & Jersey Number */}
+                            <div className="flex flex-col">
+                                <div className="flex items-baseline gap-x-4 text-white">
+                                    <div className="flex-grow text-2xl font-semibold">
+                                        {player.user.name}
+                                    </div>
+                                    <div className="text-4xl font-bold uppercase">
+                                        {firstDetail?.number ? `#${firstDetail.number}` : 'N/A'}
+                                    </div>
+                                </div>
+
+                                {/* Player Team */}
+                                <div className="text-lul-blue uppercase font-bold text-sm">
+                                    {firstDetail?.team?.name ?? 'Free Agent'}
+                                </div>
                             </div>
+                        </div>
 
-                            {/* Jersey Number */}
-                            <div className="absolute top-3 right-3 text-white text-2xl font-semibold uppercase">
-                                {`#${player.seasonDetails[0]?.number}` || 'N/A'}
+                        {/* Stats */}
+                        <div className="flex flex-col text-lul-light-grey text-sm">
+                            <div className="flex justify-around gap-x-6 uppercase font-bold text-center">
+                                {/* PTS */}
+                                <div className="flex flex-col items-center">
+                                    <div className="text-white text-base mb-1">PTS</div>
+                                    <div className="flex gap-x-4">
+                                        {/* TOTAL */}
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-xs">ALL</div>
+                                            <div className="text-lul-green text-lg">{points}</div>
+                                        </div>
+                                        {/* AVG */}
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-xs">AVG</div>
+                                            <div className="text-lul-blue text-lg">{avgPoints}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* AST */}
+                                <div className="flex flex-col items-center">
+                                    <div className="text-white text-base mb-1">AST</div>
+                                    <div className="flex gap-x-4">
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-xs">ALL</div>
+                                            <div className="text-lul-green text-lg">
+                                                {assists}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-xs">AVG</div>
+                                            <div className="text-lul-blue text-lg">
+                                                {avgAssists}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* REB */}
+                                <div className="flex flex-col items-center">
+                                    <div className="text-white text-base mb-1">REB</div>
+                                    <div className="flex gap-x-4">
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-xs">ALL</div>
+                                            <div className="text-lul-green text-lg">
+                                                {rebounds}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-center">
+                                            <div className="text-xs">AVG</div>
+                                            <div className="text-lul-blue text-lg">
+                                                {avgRebounds}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+
+
+                        {/* BOTTOM ROW (Season & Size) pinned at bottom */}
+                        <div className="flex justify-between text-lul-orange text-sm font-semibold uppercase">
+                            {/* Season shortName (or name) */}
+                            <div>{shortName}</div>
 
                             {/* Player Size */}
-                            <div className="absolute bottom-3 right-3 text-lul-blue text-sm font-semibold uppercase">
-                                {player.size}
-                            </div>
-
-                            {/* Total Stats */}
-                            {player.totalStats && (
-                                <div className="flex flex-col mt-2 gap-y-1 text-lul-light-grey text-sm">
-                                    <p>
-                                        Total Points: <span className="text-lul-green">{player.totalStats.points}</span>
-                                    </p>
-                                    <p>
-                                        Total Assists: <span className="text-lul-green">{player.totalStats.assists}</span>
-                                    </p>
-                                    <p>
-                                        Total Rebounds: <span className="text-lul-green">{player.totalStats.rebounds}</span>
-                                    </p>
-                                    <p>
-                                        Games Played: <span className="text-lul-green">{player.totalStats.gamesPlayed}</span>
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Stats Averages */}
-                            <div className="flex flex-col mt-2 gap-y-1 text-lul-light-grey text-sm">
-                                <p>
-                                    Avg. Points: <span className="text-lul-green">{statsAverage.points}</span>
-                                </p>
-                                <p>
-                                    Avg. Assists: <span className="text-lul-green">{statsAverage.assists}</span>
-                                </p>
-                                <p>
-                                    Avg. Rebounds: <span className="text-lul-green">{statsAverage.rebounds}</span>
-                                </p>
-                            </div>
-                        </Link>
-                    )
-                })}
+                            <div>{player.size}</div>
+                        </div>
+                    </Link>
+                )
+            })}
         </Grid>
     )
 }

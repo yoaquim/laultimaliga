@@ -43,7 +43,7 @@ export default function Navbar({className}: { className?: string }) {
             {/* Links */}
             <div className={clsx(
                 'w-full flex flex-row flex-1 justify-around items-center gap-x-10 overflow-x-scroll',
-                'lg:flex-col lg:justify-start lg:space-y-6 lg:py-8 lg:overflow-x-auto'
+                'lg:flex-col lg:justify-start lg:gap-y-10 lg:py-8 lg:overflow-x-auto'
             )}>
                 {/*<div className="">*/}
                 {links.map((link, i) => (

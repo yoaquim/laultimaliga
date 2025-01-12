@@ -42,8 +42,8 @@ export default function MessageModal({
 
                 {/*Buttons*/}
                 <div className="flex justify-center items-center gap-x-8">
-                    <button onClick={close} className="uppercase text-sm font-bold bg-lul-red text-white py-2 px-4 rounded-md">{closeBtnText}</button>
                     <button onClick={action} className="uppercase text-sm font-bold bg-lul-blue text-white py-2 px-4 rounded-md">{actionBtnText}</button>
+                    <button onClick={close} className="uppercase text-sm font-bold bg-lul-red text-white py-2 px-4 rounded-md">{closeBtnText}</button>
                 </div>
             </div>
 

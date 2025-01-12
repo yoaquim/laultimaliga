@@ -1,8 +1,15 @@
+/**
+ * seed.ts
+ *
+ * Usage:
+ *   npx ts-node seed.ts --seed
+ *   npx ts-node seed.ts --cleanup
+ */
 import { MatchStatus, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-// Adjectives and nouns for unique team names
+// Larger name pools
 const adjectives = [
     'Fierce', 'Brave', 'Mighty', 'Swift', 'Legendary', 'Epic', 'Noble', 'Fearless',
     'Gallant', 'Dynamic', 'Savage', 'Bold', 'Valiant', 'Invincible', 'Majestic',
@@ -31,6 +38,9 @@ const lastNames = [
     'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'King', 'Wright', 'Lopez', 'Hill',
 ]
 
+// -------------------------------------------------------------
+// Helpers
+// -------------------------------------------------------------
 function generateUniqueTeamName(existingNames: Set<string>): string {
     let name = ''
     do {
@@ -42,10 +52,22 @@ function generateUniqueTeamName(existingNames: Set<string>): string {
     return name
 }
 
-function generatePlayerName(): { firstName: string; lastName: string } {
-    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)]
-    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
-    return {firstName, lastName}
+function generateUniquePlayerName(existingNames: Set<string>): { firstName: string; lastName: string } {
+    let name = ''
+    let uniqueFirstName = ''
+    let uniqueLastName = ''
+
+    do {
+        const fName = firstNames[Math.floor(Math.random() * firstNames.length)]
+        const lName = lastNames[Math.floor(Math.random() * lastNames.length)]
+        const suffix = Math.floor(Math.random() * 10000) // up to 4-digit random
+        name = `${fName} ${lName}#${suffix}`
+        uniqueFirstName = `${fName}#${suffix}`
+        uniqueLastName = lName
+    } while (existingNames.has(name))
+
+    existingNames.add(name)
+    return {firstName: uniqueFirstName, lastName: uniqueLastName}
 }
 
 function getRandomMatchStatus(): MatchStatus {
@@ -58,8 +80,8 @@ function getRandomMatchStatus(): MatchStatus {
 
     const totalWeight = statuses.reduce((sum, s) => sum + s.weight, 0)
     const random = Math.random() * totalWeight
-
     let cumulativeWeight = 0
+
     for (const {status, weight} of statuses) {
         cumulativeWeight += weight
         if (random < cumulativeWeight) {
@@ -69,34 +91,52 @@ function getRandomMatchStatus(): MatchStatus {
     return 'SCHEDULED'
 }
 
+function getRandomDateWithinSeason(startDate: Date, endDate: Date): Date {
+    const start = startDate.getTime()
+    const end = endDate.getTime()
+    const randomTime = start + Math.random() * (end - start)
+    return new Date(randomTime)
+}
+
+// -------------------------------------------------------------
+// Main Seed Logic
+// -------------------------------------------------------------
 async function seed() {
     console.log('Seeding test data...')
-
-    const existingTeamNames = new Set<string>()
-    const existingPlayers = new Map<string, string>() // Map of name to player ID
 
     const totalSeasons = 5
     const totalTeamsPerSeason = 10
     const totalPlayersPerTeam = 12
     const totalMatchesPerSeason = 50
 
-    const seasonIds = []
+    // 1) Create Seasons
+    const seasonRecords: { id: string; startDate: Date; endDate: Date }[] = []
     for (let i = 1; i <= totalSeasons; i++) {
+        const year = 2020 + i
+        const startDate = new Date(`${year}-01-01`)
+        const endDate = new Date(`${year}-12-31`)
+
         const season = await prisma.season.create({
             data: {
-                name: `${2020 + i} Season`,
-                startDate: new Date(`${2020 + i}-01-01`),
-                endDate: new Date(`${2020 + i}-12-31`),
+                name: `${year} Season`,
+                startDate,
+                endDate,
                 isActive: i === totalSeasons,
             },
         })
         console.log(`Created Season ${i}/${totalSeasons}: ${season.name}`)
-        seasonIds.push(season.id)
+        seasonRecords.push({id: season.id, startDate, endDate})
     }
 
-    const teamIds = []
-    const playerMap: Record<string, string[]> = {} // Map of teamId to playerIds
-    for (const [seasonIndex, seasonId] of seasonIds.entries()) {
+    // 2) Create Teams & Players
+    const seasonTeamsMap: Record<string, string[]> = {}
+    const existingPlayersGlobal = new Map<string, string>()
+
+    for (const [seasonIndex, seasonData] of seasonRecords.entries()) {
+        const {id: seasonId} = seasonData
+        const existingTeamNames = new Set<string>()
+
+        const teamIds: string[] = []
         for (let i = 1; i <= totalTeamsPerSeason; i++) {
             const teamName = generateUniqueTeamName(existingTeamNames)
             const team = await prisma.team.create({
@@ -105,159 +145,266 @@ async function seed() {
                     seasonId,
                 },
             })
-            console.log(`Created Team ${i}/${totalTeamsPerSeason} for Season ${seasonIndex + 1}: ${team.name}`)
             teamIds.push(team.id)
+            console.log(`Created Team ${i}/${totalTeamsPerSeason} in Season ${seasonIndex + 1}: ${team.name}`)
 
-            playerMap[team.id] = []
-            for (let j = 1; j <= totalPlayersPerTeam; j++) {
-                const {firstName, lastName} = generatePlayerName()
-                const playerName = `${firstName} ${lastName}`
+            // Create 12 players for this team
+            const teamPlayerCreation = Array.from({length: totalPlayersPerTeam}, async (_, j) => {
+                const seasonalNames = new Set<string>()
+                let player: any = null
+                let tries = 0
 
-                let playerId = existingPlayers.get(playerName)
-                if (!playerId) {
-                    const player = await prisma.player.create({
-                        data: {
-                            user: {
-                                create: {
-                                    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`,
-                                    name: playerName,
-                                    phone: `12345678${i}${j}`,
-                                    role: 'USER',
+                while (!player) {
+                    if (tries++ > 5000) {
+                        throw new Error('Too many name collision attempts, aborting.')
+                    }
+                    const {firstName, lastName} = generateUniquePlayerName(seasonalNames)
+                    const fullNameKey = (firstName + lastName).toLowerCase()
+
+                    const existingPlayerId = existingPlayersGlobal.get(fullNameKey)
+                    if (!existingPlayerId) {
+                        // create new
+                        const created = await prisma.player.create({
+                            data: {
+                                user: {
+                                    create: {
+                                        email: `${firstName.replace('#', '')}.${lastName}@example.com`.toLowerCase(),
+                                        name: `${firstName.replace('#', '')} ${lastName}`,
+                                        phone: `1234-${Math.floor(Math.random() * 999999)}`,
+                                        role: 'USER',
+                                    },
+                                },
+                                size: 'LARGE',
+                            },
+                            include: {user: true},
+                        })
+                        player = created
+                        existingPlayersGlobal.set(fullNameKey, created.id)
+                    } else {
+                        // check if that existing player is already in this season
+                        const foundPlayer = await prisma.player.findUnique({
+                            where: {id: existingPlayerId},
+                            include: {
+                                seasonDetails: {
+                                    where: {seasonId},
                                 },
                             },
-                            size: 'LARGE',
-                        },
-                        include: {
-                            user: true,
-                        },
-                    })
-                    console.log(`Created Player ${j}/${totalPlayersPerTeam} for Team ${i}: ${player.user.name}`)
-                    playerId = player.id
-                    existingPlayers.set(playerName, playerId)
-                }
-
-                const existingPlayerSeason = await prisma.playerSeasonDetails.findFirst({
-                    where: {playerId, seasonId},
-                })
-
-                if (!existingPlayerSeason) {
-                    await prisma.playerSeasonDetails.create({
-                        data: {
-                            playerId,
-                            seasonId,
-                            teamId: team.id,
-                            number: j,
-                        },
-                    })
-                    console.log(
-                        `Added Player ${j}/${totalPlayersPerTeam} to Season ${seasonIndex + 1} for Team ${i}`
-                    )
-                    playerMap[team.id].push(playerId)
-                } else {
-                    console.log(
-                        `Skipped Player ${j}/${totalPlayersPerTeam} for Season ${seasonIndex + 1} (already exists)`
-                    )
-                }
-            }
-        }
-    }
-
-    for (const [seasonIndex, seasonId] of seasonIds.entries()) {
-        for (let i = 1; i <= totalMatchesPerSeason; i++) {
-            const homeTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
-            let awayTeamId
-            do {
-                awayTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
-            } while (awayTeamId === homeTeamId)
-
-            const status = getRandomMatchStatus()
-            const winnerId = status === 'COMPLETED' ? (Math.random() < 0.5 ? homeTeamId : awayTeamId) : null
-
-            const match = await prisma.match.create({
-                data: {
-                    homeTeamId,
-                    awayTeamId,
-                    seasonId,
-                    status,
-                    date: new Date(
-                        `${new Date().getFullYear()}-${Math.floor(Math.random() * 12) + 1}-${
-                            Math.floor(Math.random() * 28) + 1
-                        }`
-                    ),
-                    winnerId,
-                },
-            })
-            console.log(
-                `Created Match ${i}/${totalMatchesPerSeason} for Season ${seasonIndex + 1}: ${match.id}`
-            )
-
-            const homeTeamPlayers = playerMap[homeTeamId] || []
-            const awayTeamPlayers = playerMap[awayTeamId] || []
-
-            for (const [playerIndex, playerId] of [...homeTeamPlayers, ...awayTeamPlayers].entries()) {
-                const existingParticipation = await prisma.playerMatchParticipation.findFirst({
-                    where: {playerId, matchId: match.id},
-                })
-
-                if (!existingParticipation) {
-                    const stats = {
-                        points: status === 'ONGOING' || status === 'COMPLETED' ? Math.floor(Math.random() * 30) : 0,
-                        assists: status === 'ONGOING' || status === 'COMPLETED' ? Math.floor(Math.random() * 10) : 0,
-                        rebounds: status === 'ONGOING' || status === 'COMPLETED' ? Math.floor(Math.random() * 15) : 0,
+                        })
+                        if (foundPlayer?.seasonDetails.length) {
+                            // that player is already in this season => skip
+                            continue
+                        } else {
+                            // re-use this player for a new season
+                            player = foundPlayer
+                        }
                     }
-                    await prisma.playerMatchParticipation.create({
-                        data: {
-                            playerId,
-                            matchId: match.id,
-                            stats: {
-                                create: stats,
-                            },
-                        },
-                    })
-                    console.log(
-                        `Added Player ${playerIndex + 1}/${
-                            homeTeamPlayers.length + awayTeamPlayers.length
-                        } to Match ${i}/${totalMatchesPerSeason}`
-                    )
-                } else {
-                    console.log(`Skipped Player ${playerIndex + 1} for Match ${match.id} (already exists)`)
                 }
+
+                // create PlayerSeasonDetails
+                await prisma.playerSeasonDetails.create({
+                    data: {
+                        playerId: player.id,
+                        seasonId,
+                        teamId: team.id,
+                        number: j + 1,
+                    },
+                })
+
+                console.log(
+                    `  [Team ${i}/${totalTeamsPerSeason}] Created/Attached Player ${j + 1}/${totalPlayersPerTeam}: ${
+                        player?.user?.name ?? 'Unknown'
+                    }`
+                )
+
+                // upsert SeasonStats
+                await prisma.seasonStats.upsert({
+                    where: {
+                        playerId_seasonId: {
+                            playerId: player.id,
+                            seasonId,
+                        },
+                    },
+                    create: {
+                        playerId: player.id,
+                        seasonId,
+                    },
+                    update: {},
+                })
+            })
+
+            await Promise.all(teamPlayerCreation)
+        }
+        seasonTeamsMap[seasonId] = teamIds
+    }
+
+    // 3) Create Matches + Player Participations
+    for (const [seasonIndex, seasonData] of seasonRecords.entries()) {
+        const {id: seasonId, startDate, endDate} = seasonData
+        const teamIds = seasonTeamsMap[seasonId]
+
+        console.log(`Creating matches for Season ${seasonIndex + 1}...`)
+        const chunkSize = 10
+        for (let chunkStart = 0; chunkStart < totalMatchesPerSeason; chunkStart += chunkSize) {
+            const chunkEnd = Math.min(chunkStart + chunkSize, totalMatchesPerSeason)
+            const matchCreations = []
+            for (let i = chunkStart; i < chunkEnd; i++) {
+                matchCreations.push(
+                    (async () => {
+                        const homeTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
+                        let awayTeamId = homeTeamId
+                        while (awayTeamId === homeTeamId) {
+                            awayTeamId = teamIds[Math.floor(Math.random() * teamIds.length)]
+                        }
+
+                        const status = getRandomMatchStatus()
+                        const winnerId =
+                            status === 'COMPLETED'
+                                ? Math.random() < 0.5
+                                    ? homeTeamId
+                                    : awayTeamId
+                                : null
+
+                        const matchDate = getRandomDateWithinSeason(startDate, endDate)
+
+                        const match = await prisma.match.create({
+                            data: {
+                                homeTeamId,
+                                awayTeamId,
+                                seasonId,
+                                status,
+                                date: matchDate,
+                                winnerId,
+                                // homeScore, awayScore default to 0 via schema
+                            },
+                        })
+
+                        console.log(`  Created Match #${i + 1}/${totalMatchesPerSeason}: ${match.id}`)
+
+                        // create player participations
+                        const [homePlayers, awayPlayers] = await Promise.all([
+                            prisma.playerSeasonDetails.findMany({
+                                where: {teamId: homeTeamId, seasonId},
+                                include: {player: true},
+                            }),
+                            prisma.playerSeasonDetails.findMany({
+                                where: {teamId: awayTeamId, seasonId},
+                                include: {player: true},
+                            }),
+                        ])
+                        const allPlayers = [...homePlayers, ...awayPlayers]
+
+                        await Promise.all(
+                            allPlayers.map(async (psd) => {
+                                let statsData = {points: 0, assists: 0, rebounds: 0}
+                                if (status === 'ONGOING' || status === 'COMPLETED') {
+                                    statsData = {
+                                        points: Math.floor(Math.random() * 30),
+                                        assists: Math.floor(Math.random() * 10),
+                                        rebounds: Math.floor(Math.random() * 15),
+                                    }
+                                }
+                                await prisma.playerMatchParticipation.create({
+                                    data: {
+                                        playerId: psd.playerId,
+                                        matchId: match.id,
+                                        stats: {
+                                            create: statsData,
+                                        },
+                                    },
+                                })
+                            })
+                        )
+
+                        // If match is ONGOING or COMPLETED, let's update homeScore & awayScore:
+                        if (status === 'ONGOING' || status === 'COMPLETED') {
+                            const homePlayerIds = homePlayers.map((p) => p.playerId)
+                            const awayPlayerIds = awayPlayers.map((p) => p.playerId)
+
+                            const [homeStats, awayStats] = await Promise.all([
+                                prisma.playerMatchStats.findMany({
+                                    where: {
+                                        participation: {
+                                            matchId: match.id,
+                                            playerId: {in: homePlayerIds},
+                                        },
+                                    },
+                                    select: {points: true},
+                                }),
+                                prisma.playerMatchStats.findMany({
+                                    where: {
+                                        participation: {
+                                            matchId: match.id,
+                                            playerId: {in: awayPlayerIds},
+                                        },
+                                    },
+                                    select: {points: true},
+                                }),
+                            ])
+
+                            const homeTotalPoints = homeStats.reduce((sum, s) => sum + s.points, 0)
+                            const awayTotalPoints = awayStats.reduce((sum, s) => sum + s.points, 0)
+
+                            await prisma.match.update({
+                                where: {id: match.id},
+                                data: {
+                                    homeScore: homeTotalPoints,
+                                    awayScore: awayTotalPoints,
+                                },
+                            })
+                        }
+                    })()
+                )
             }
+            await Promise.all(matchCreations)
         }
     }
 
-    // PlayerTotalStats
-    for (const [playerIndex, playerId] of existingPlayers.entries()) {
-        const participations = await prisma.playerMatchParticipation.findMany({
-            where: {playerId},
-            include: {stats: true},
-        })
+    // 4) Update PlayerTotalStats for each player
+    const allPlayers = await prisma.player.findMany({
+        select: {id: true},
+    })
 
-        const totalStats = participations.reduce(
-            (totals, participation) => {
-                if (participation.stats) {
-                    totals.points += participation.stats.points
-                    totals.assists += participation.stats.assists
-                    totals.rebounds += participation.stats.rebounds
-                    totals.gamesPlayed += 1
-                }
-                return totals
-            },
-            {points: 0, assists: 0, rebounds: 0, gamesPlayed: 0}
+    const batchSize = 50
+    for (let start = 0; start < allPlayers.length; start += batchSize) {
+        const end = Math.min(start + batchSize, allPlayers.length)
+        const playerBatch = allPlayers.slice(start, end)
+
+        await Promise.all(
+            playerBatch.map(async (p) => {
+                const participations = await prisma.playerMatchParticipation.findMany({
+                    where: {playerId: p.id},
+                    include: {stats: true},
+                })
+
+                const totalStats = participations.reduce(
+                    (totals, part) => {
+                        if (part.stats) {
+                            totals.points += part.stats.points
+                            totals.assists += part.stats.assists
+                            totals.rebounds += part.stats.rebounds
+                            totals.gamesPlayed += 1
+                        }
+                        return totals
+                    },
+                    {points: 0, assists: 0, rebounds: 0, gamesPlayed: 0}
+                )
+
+                await prisma.playerTotalStats.upsert({
+                    where: {playerId: p.id},
+                    create: {playerId: p.id, ...totalStats},
+                    update: totalStats,
+                })
+            })
         )
-
-        await prisma.playerTotalStats.upsert({
-            where: {playerId},
-            update: totalStats,
-            create: {playerId, ...totalStats},
-        })
-
-        console.log(`Updated Total Stats for Player ${playerIndex + 1}/${existingPlayers.size}: ${playerId}`)
+        console.log(`Updated PlayerTotalStats for players ${start + 1} to ${end} of ${allPlayers.length}`)
     }
 
     console.log('Seeding complete!')
 }
 
+// -------------------------------------------------------------
+// Cleanup
+// -------------------------------------------------------------
 async function cleanup() {
     console.log('Deleting ALL data...')
     await prisma.playerMatchStats.deleteMany({})
