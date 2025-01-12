@@ -61,12 +61,12 @@ async function getPlayer(playerId: string): Promise<PlayerDetail | null> {
     })
 }
 
-export default async function Page({params}: { params: { playerId: string } }) {
-    const {playerId} = params
+export default async function Page({params}: { params: Promise<{ playerId: string }> }) {
+    const {playerId} = await params
     const player = await getPlayer(playerId)
 
     if (!player) {
-        return <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>
+        return <Empty message={EMPTY_MESSAGES.PLAYER_DOES_NOT_EXIST}/>
     }
 
     // Find an "active" or "current" season detail to show the player's current team

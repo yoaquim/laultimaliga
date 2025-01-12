@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/prisma'
-import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES } from '@/lib/utils'
 import Link from 'next/link'
+import { prisma } from '@/lib/prisma'
+import { EMPTY_MESSAGES } from '@/lib/utils'
+import Empty from '@/ui/empty'
 
-export default async function TeamDetailsPage({params}: { params: Promise<{ teamId: string }> }) {
+export default async function Page({params}: { params: Promise<{ teamId: string }> }) {
     const {teamId} = await params
 
     // Fetch team details, players, matches, and stats
@@ -12,7 +12,11 @@ export default async function TeamDetailsPage({params}: { params: Promise<{ team
         include: {
             players: {
                 include: {
-                    user: true,
+                    player: {
+                        include: {
+                            user: true,
+                        },
+                    },
                 },
             },
             homeMatches: {

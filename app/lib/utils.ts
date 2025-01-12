@@ -20,6 +20,7 @@ export const ERRORS = {
 export const EMPTY_MESSAGES = {
     MATCH_DOES_NOT_EXIST: 'This Match does not exist.',
     TEAM_DOES_NOT_EXIST: 'This Team does not exist.',
+    PLAYER_DOES_NOT_EXIST: 'This Player does not exist.',
     NO_MATCHES: 'There aren\'t any matches yet.',
     NO_TEAMS: 'There aren\'t any teams yet.',
     NO_PLAYERS: 'There aren\'t any players yet.',
