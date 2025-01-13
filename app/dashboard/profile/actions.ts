@@ -16,7 +16,7 @@ export async function fetchUserProfile() {
     const {data: {user}, error} = await supabase.auth.getUser()
 
     if (error || !user) {
-        console.error(ERRORS.RBA.USER_NOT_FOUND_IN_SUPABASE_SESSION, error)
+        console.error(ERRORS.AUTH.USER_NOT_FOUND_IN_SUPABASE_SESSION, error)
         return null
     }
 

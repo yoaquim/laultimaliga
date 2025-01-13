@@ -8,7 +8,7 @@ export async function GET() {
         const userIsAdmin = await isAdmin()
 
         if (!userIsAdmin) {
-            console.error(ERRORS.RBA.UNAUTHORIZED_ACCESS_ATTEMPT)
+            console.error(ERRORS.AUTH.UNAUTHORIZED_ACCESS_ATTEMPT)
             return NextResponse.json({error: 'Forbidden'}, {status: 403})
         }
 
@@ -30,6 +30,6 @@ export async function GET() {
             }
         }
 
-        return NextResponse.json({error: ERRORS.AUTH.ERROR_CHECKING_ADMIN_STATUS}, {status: 500})
+        return NextResponse.json({error: ERRORS.ISE}, {status: 500})
     }
 }

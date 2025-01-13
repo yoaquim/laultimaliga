@@ -6,8 +6,12 @@ export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/matches`
 export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/sign-in'
 
 export const ERRORS = {
+    ISE: 'Internal server error.',
+    METHOD_NOT_ALLOWED: 'Method now allowed.',
     AUTH: {
         UNAUTHORIZED_ACCESS: (pathname: string) => `Unauthorized access to admin path: ${pathname}.`,
+        USER_NOT_FOUND_IN_DATABASE: (userId: string) => `User with ID ${userId} not found in database.`,
+        NOT_AUTHENTICATED: 'Not Authenticated',
         INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password',
         USER_ALREADY_EXISTS: 'A user with this email already exists.',
         ERROR_CREATING_USER_IN_PRISMA: 'Error creating user in prisma.',
@@ -19,16 +23,21 @@ export const ERRORS = {
         INVALID_CREDENTIALS: 'Invalid credentials.',
         ERROR_CHECKING_ADMIN_STATUS: 'Error checking admin status',
         ERROR_PARSING_ADMIN_STATUS: 'Error parsing admin status error',
-    },
-    RBA: {
         SUPABASE_AUTH_ERROR: 'Supabase authentication error.',
         USER_NOT_FOUND_IN_SUPABASE_SESSION: 'No user found in Supabase session.',
-        USER_NOT_FOUND_IN_DATABASE: (userId: string) => `User with ID ${userId} not found in database.`,
         UNAUTHORIZED_ACCESS_ATTEMPT: 'Unauthorized access attempt. Admin privileges are required.',
     },
     MATCH: {
         ERROR_UPDATING_MATCH_STATUS: 'Error updating match status.',
         ERROR_UPDATING_STATS: 'Error updating stats.',
+    },
+    PLAYER: {
+        PLAYER_ID_REQUIRED: 'playerId is required.',
+        PLAYER_NOT_FOUND: 'Player not found.',
+        PLAYER_NOT_UNCLAIMED: 'This player is not unclaimed. Already has an email or a claimed user.',
+        PRISMA_USER_NOT_FOUND: 'Cannot find a corresponding Prisma user for the current session user.',
+        PLAYER_PHONE_NUMBER_DOESNT_MATCH: 'Phone numbers do not match. Cannot claim this player.',
+        ERROR_CLAIMING_PLAYER: 'Error claiming player',
     },
 }
 

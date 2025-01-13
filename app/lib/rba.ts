@@ -6,16 +6,14 @@ import { ERRORS } from '@/lib/utils'
 export async function getUserRole(): Promise<Role | null> {
     const supabase = await createClient()
     const {data: {user}, error} = await supabase.auth.getUser()
-    console.log(`---------------SUPABASE DATA---------------`, user)
-    console.log(`---------------SUPABASE ERROR---------------`, error)
 
     if (error) {
-        console.error(ERRORS.RBA.SUPABASE_AUTH_ERROR, error)
+        console.error(ERRORS.AUTH.SUPABASE_AUTH_ERROR, error)
         return null
     }
 
     if (!user) {
-        console.error(ERRORS.RBA.USER_NOT_FOUND_IN_SUPABASE_SESSION)
+        console.error(ERRORS.AUTH.USER_NOT_FOUND_IN_SUPABASE_SESSION)
         return null
     }
 
@@ -25,7 +23,7 @@ export async function getUserRole(): Promise<Role | null> {
     })
 
     if (!dbUser) {
-        console.error(ERRORS.RBA.USER_NOT_FOUND_IN_DATABASE(user.id))
+        console.error(ERRORS.AUTH.USER_NOT_FOUND_IN_DATABASE(user.id))
         return null
     }
 
@@ -39,7 +37,7 @@ export async function isAdmin() {
 export async function requireAdmin() {
     const isNotAdmin = !(await isAdmin())
     if (isNotAdmin) {
-        console.error(ERRORS.RBA.UNAUTHORIZED_ACCESS_ATTEMPT)
+        console.error(ERRORS.AUTH.UNAUTHORIZED_ACCESS_ATTEMPT)
         throw new Error(
             JSON.stringify({status: 403, message: ERRORS.AUTH.UNAUTHORIZED_ACCESS('/admin')})
         )

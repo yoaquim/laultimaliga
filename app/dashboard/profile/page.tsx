@@ -1,14 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import clsx from 'clsx'
 import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES } from '@/lib/utils'
+import { DOMAIN, EMPTY_MESSAGES } from '@/lib/utils'
 import Shimmer from '@/ui/shimmer'
 import Link from 'next/link'
 import { fetchUserProfile } from './actions'
+import toast from 'react-hot-toast'
 
 export default function Page() {
+    const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<any>(null)
 
@@ -87,8 +90,31 @@ export default function Page() {
                                 You can claim it and start tracking your stats.
                             </p>
                             <Link
-                                href={`/dashboard/players/claim?playerId=${unclaimedPlayer.id}`}
+                                href="#"
                                 className="px-4 py-2 bg-lul-green rounded-md text-white font-semibold hover:bg-lul-dark-grey transition-colors"
+                                onClick={async (e) => {
+                                    e.preventDefault()
+                                    try {
+                                        toast.loading('Claiming player profile...')
+                                        const res = await fetch(`${DOMAIN}/api/players/claim`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify({playerId: unclaimedPlayer.id}),
+                                        })
+                                        if (!res.ok) {
+                                            const errorData = await res.json()
+                                            const errorMessage = errorData?.error || 'An unknown error occurred.'
+                                            toast.error(errorMessage)
+                                        } else {
+                                            toast.success('Player Profile Claimed Successfully')
+                                            router.refresh()
+                                        }
+                                    } catch (error) {
+                                        console.error(error)
+                                    }
+                                }}
                             >
                                 Claim Player Profile
                             </Link>
