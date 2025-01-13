@@ -1,5 +1,18 @@
-type AdminTab = 'SEASONS' | 'TEAMS' | 'PLAYERS' | 'MATCHES';
-type SECSchemaType = SeasonsSchemaType | TeamsSchemaType | PlayersSchemaType | MatchesSchemaType
+type AdminTab =
+    | 'SEASONS'
+    | 'TEAMS'
+    | 'PLAYERS'
+    | 'MATCHES'
+    | 'PSDETAILS'
+    | 'PARTICIPATIONS';
+
+type SECSchemaType =
+    | SeasonsSchemaType
+    | TeamsSchemaType
+    | PlayersSchemaType
+    | MatchesSchemaType
+    | PSDetailsSchemaType
+    | ParticipationsSchemaType
 
 interface SeasonsSchemaType {
     name: string
@@ -24,4 +37,16 @@ interface MatchesSchemaType {
     awayTeamId: string
     seasonId: string
     date: string
+}
+
+interface PSDetailsSchemaType {
+    playerId: string
+    seasonId: string
+    teamId: string
+    number: number
+}
+
+interface ParticipationsSchemaType {
+    playerId: string
+    matchId: string
 }

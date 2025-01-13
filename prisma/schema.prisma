@@ -111,8 +111,8 @@ model PlayerSeasonDetails {
   playerId  String
   season    Season   @relation(fields: [seasonId], references: [id])
   seasonId  String
-  team      Team?    @relation(fields: [teamId], references: [id])
-  teamId    String?
+  team      Team     @relation(fields: [teamId], references: [id])
+  teamId    String
   number    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
