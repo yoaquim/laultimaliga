@@ -176,12 +176,9 @@ export default async function Page() {
 
 
                         {/* BOTTOM ROW (Season & Size) pinned at bottom */}
-                        <div className="flex justify-between text-lul-orange text-sm font-semibold uppercase">
+                        <div className="flex justify-end text-lul-yellow text-sm font-semibold uppercase">
                             {/* Season shortName (or name) */}
                             <div>{shortName}</div>
-
-                            {/* Player Size */}
-                            <div>{player.size}</div>
                         </div>
                     </Link>
                 )

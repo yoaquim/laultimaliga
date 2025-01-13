@@ -92,7 +92,7 @@ export default async function Page() {
                     </div>
 
                     {/* Season ShortName or Name */}
-                    <div className="text-lul-blue text-sm font-semibold uppercase">
+                    <div className="self-end text-lul-blue text-sm font-semibold uppercase">
                         {team.season.shortName || team.season.name}
                     </div>
                 </Link>

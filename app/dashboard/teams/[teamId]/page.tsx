@@ -45,7 +45,7 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
             {/* Team Header */}
             <div className="lg:bg-opacity-0 flex flex-col lg:flex-row pt-4 items-center justify-between sticky top-0 bg-lul-black z-10">
                 <h1 className="text-3xl font-bold">{team.name}</h1>
-                <p className="text-lul-blue uppercase font-bold">Season: {team.season.name}</p>
+                <p className="text-lul-blue uppercase font-bold">{team.season.shortName || team.season.name}</p>
             </div>
 
             {/* Team Stats */}
@@ -73,17 +73,19 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                     </h2>
                     <ul className="mt-4 space-y-2 overflow-y-auto flex-grow">
                         {team.players.map((playerSeasonDetail: any) => (
-                            <li key={playerSeasonDetail.id} className="flex justify-between items-center p-2 bg-lul-grey/10 rounded hover:bg-lul-grey/20 transition cursor-pointer">
+                            <Link key={playerSeasonDetail.id}
+                                  href={`/dashboard/players/${playerSeasonDetail.player.id}`}
+                                  className="flex justify-between items-center p-2 bg-lul-grey/10 rounded hover:bg-lul-grey/20 transition cursor-pointer">
                                 <p>{playerSeasonDetail.player.user.name}</p>
                                 <p className="text-lul-light-grey">#{playerSeasonDetail.number}</p>
-                            </li>
+                            </Link>
                         ))}
                     </ul>
                 </div>
 
                 {/* Matches */}
                 <div className="w-full bg-lul-grey/20 p-4 rounded-md flex flex-col overflow-hidden">
-                    <h2 className="text-2xl font-semibold border-b border-lul-blue pb-2bg-lul-dark-grey">
+                    <h2 className="pb-2 text-2xl font-semibold border-b border-lul-blue pb-2bg-lul-dark-grey">
                         Matches
                     </h2>
                     <div className="flex flex-col flex-grow overflow-hidden">

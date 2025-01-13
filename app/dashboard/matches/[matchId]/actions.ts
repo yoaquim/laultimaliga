@@ -3,13 +3,9 @@
 import { MatchStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { StatType } from './types'
+import { isAdmin, requireAdmin } from '@/lib/rba'
 
-/**
- * Fetches match details + included data so the client can render everything.
- */
 export async function getMatch(matchId: string) {
-    console.log(`Fetching match with ID: ${matchId}`)
-
     return await prisma.match.findUnique({
         where: {id: matchId},
         include: {
@@ -60,8 +56,7 @@ export async function getMatch(matchId: string) {
  *   - increment `gamesPlayed` in `SeasonStats` for each participant in that season
  */
 export async function updateMatchStatus(matchId: string, status: MatchStatus) {
-    console.log(`Updating match #${matchId} to status: ${status}`)
-
+    await requireAdmin()
     return prisma.$transaction(
         async (tx) => {
             // 1) Update the match
@@ -126,6 +121,7 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
  * plus update scoreboard (if points), PlayerTotalStats & SeasonStats.
  */
 export async function updatePlayerStat(playerStatId: string, statType: StatType, increment: boolean) {
+    await requireAdmin()
     return prisma.$transaction(async (tx) => {
         // 1) Update PlayerMatchStats (the individual's stat row for that match)
         const updatedStat = await tx.playerMatchStats.update({

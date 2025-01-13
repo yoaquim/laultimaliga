@@ -13,8 +13,8 @@ export async function GET(request: Request) {
         const {error} = await supabase.auth.verifyOtp({type, token_hash})
 
         if (error) {
-            console.error(ERRORS.ERROR_VERIFYING_EMAIL, error)
-            return new Response(ERRORS.EMAIL_VERIFICATION_FAILED, {status: 400})
+            console.error(ERRORS.AUTH.ERROR_VERIFYING_EMAIL, error)
+            return new Response(ERRORS.AUTH.EMAIL_VERIFICATION_FAILED, {status: 400})
         }
 
         return redirect(DEFAULT_URL_WHEN_AUTHENTICATED)

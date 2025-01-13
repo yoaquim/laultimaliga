@@ -7,10 +7,11 @@ import { MatchStatus } from '@prisma/client'
 import MessageModal from '@/ui/message-modal'
 import { MatchWithDetails, StatType } from './types'
 import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
+import { getIsAdmin } from '@/dashboard/actions'
 import Shimmer from '@/ui/shimmer'
 import Empty from '@/ui/empty'
 import Spinner from '@/ui/spinner'
-import { EMPTY_MESSAGES } from '@/lib/utils'
+import { EMPTY_MESSAGES, ERRORS } from '@/lib/utils'
 
 /** Merge team players and participations for display */
 function mergeTeamAndParticipations(team: any, participations: any[]) {
@@ -66,6 +67,7 @@ export default function Page() {
     const [loading, setLoading] = useState(true)
     const [match, setMatch] = useState<MatchWithDetails | null>(null)
     const [status, setStatus] = useState<MatchStatus | null>(null)
+    const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false)
 
     // For the confirmation modal
     const [modalIsOpen, setModalIsOpen] = useState(false)
@@ -78,6 +80,7 @@ export default function Page() {
 
     useEffect(() => {
         async function fetchMatchData() {
+            setUserIsAdmin(await getIsAdmin())
             setLoading(true)
             const fetchedMatch = (await getMatch(matchId)) as MatchWithDetails
             setMatch(fetchedMatch)
@@ -101,7 +104,7 @@ export default function Page() {
                 const refreshed = (await getMatch(matchId)) as MatchWithDetails
                 setMatch(refreshed)
             } catch (error) {
-                console.error('Error updating match status:', error)
+                console.error(ERRORS.MATCH.ERROR_UPDATING_MATCH_STATUS, error)
             } finally {
                 setIsChangingStatus(false)
             }
@@ -182,7 +185,7 @@ export default function Page() {
         try {
             await updatePlayerStat(playerStatId, statType, increment)
         } catch (error) {
-            console.error('Error updating stats:', error)
+            console.error(ERRORS.MATCH.ERROR_UPDATING_STATS, error)
             // 3) Revert by fetching fresh data if error
             setLoading(true)
             const fetched = (await getMatch(matchId)) as MatchWithDetails
@@ -278,7 +281,7 @@ export default function Page() {
                     </div>
 
                     {/* Status buttons */}
-                    {actionButtons.length > 0 && (
+                    {actionButtons.length > 0 && userIsAdmin && (
                         <div className="w-full flex gap-4 justify-center items-center">
                             {actionButtons.map((action) => (
                                 <button
@@ -300,10 +303,11 @@ export default function Page() {
 
                 {/* BOTTOM: Two columns, each with sticky team header */}
                 <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden">
+
                     {/* HOME COLUMN */}
                     <div className="flex-1 flex flex-col lg:overflow-hidden">
                         {/* Sticky header (TEAM NAME, etc.) */}
-                        <div className="lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b border-lul-orange text-2xl font-semibold p-4 flex items-baseline">
+                        <div className="lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b border-lul-blue text-2xl font-semibold p-4 flex items-baseline">
                             <h1 className="flex flex-1">{match.homeTeam.name}</h1>
                             <h3 className="uppercase text-sm">Player Stats</h3>
                         </div>
@@ -322,9 +326,17 @@ export default function Page() {
                                                 >
                                                     <div className="flex flex-col items-center">
                                                         <div className="uppercase text-xs antialiased">{statKey}</div>
-                                                        <div className="font-bold">{stats[statKey]}</div>
+                                                        <div className={clsx('font-bold',
+                                                            {
+                                                                'text-lul-green': statKey === 'points',
+                                                                'text-lul-blue': statKey === 'assists',
+                                                                'text-lul-yellow': statKey === 'rebounds',
+                                                            }
+                                                        )}>
+                                                            {stats[statKey]}
+                                                        </div>
                                                     </div>
-                                                    {participationExists && (
+                                                    {participationExists && userIsAdmin && (
                                                         <>
                                                             <button
                                                                 disabled={match.status !== 'ONGOING'}
@@ -361,13 +373,13 @@ export default function Page() {
                         </div>
                     </div>
 
-                    {/* Orange divider on large screens */}
-                    <div className="w-0.5 bg-lul-orange hidden lg:block"/>
+                    {/* blue divider on large screens */}
+                    <div className="w-0.5 bg-lul-blue hidden lg:block"/>
 
                     {/* AWAY COLUMN */}
                     <div className="flex-1 flex flex-col lg:overflow-hidden">
                         {/* Sticky header */}
-                        <div className="lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b border-lul-orange text-2xl font-semibold p-4 flex items-baseline">
+                        <div className="lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b border-lul-blue text-2xl font-semibold p-4 flex items-baseline">
                             <h1 className="flex flex-1">{match.awayTeam.name}</h1>
                             <h3 className="uppercase text-sm">Player Stats</h3>
                         </div>
@@ -386,9 +398,17 @@ export default function Page() {
                                                 >
                                                     <div className="flex flex-col items-center">
                                                         <div className="uppercase text-xs antialiased">{statKey}</div>
-                                                        <div className="font-bold">{stats[statKey]}</div>
+                                                        <div className={clsx('font-bold',
+                                                            {
+                                                                'text-lul-green': statKey === 'points',
+                                                                'text-lul-blue': statKey === 'assists',
+                                                                'text-lul-yellow': statKey === 'rebounds',
+                                                            }
+                                                        )}>
+                                                            {stats[statKey]}
+                                                        </div>
                                                     </div>
-                                                    {participationExists && (
+                                                    {participationExists && userIsAdmin && (
                                                         <>
                                                             <button
                                                                 disabled={match.status !== 'ONGOING'}

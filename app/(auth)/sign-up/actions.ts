@@ -25,8 +25,8 @@ async function registerUser(email: string, password: string) {
     })
 
     if (error) {
-        console.error(ERRORS.ERROR_SIGNING_UP_USER_IN_SUPABASE, error)
-        throw new Error(ERRORS.ERROR_SIGNING_UP_USER)
+        console.error(ERRORS.AUTH.ERROR_SIGNING_UP_USER_IN_SUPABASE, error)
+        throw new Error(ERRORS.AUTH.ERROR_SIGNING_UP_USER)
     }
 
     return data
@@ -39,7 +39,7 @@ export async function signUpUser(formData: FormData) {
     const phone = formData.get('phone') as string
 
     if (await userExists(email)) {
-        throw new Error(ERRORS.USER_ALREADY_EXISTS)
+        throw new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)
     }
 
     const userSignUpData = await registerUser(email, password)
@@ -47,7 +47,7 @@ export async function signUpUser(formData: FormData) {
     try {
         await createUser(userSignUpData, email, name, phone)
     } catch (error) {
-        console.error(ERRORS.ERROR_CREATING_USER_IN_PRISMA, error)
-        throw new Error(ERRORS.ERROR_SIGNING_UP_USER)
+        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, error)
+        throw new Error(ERRORS.AUTH.ERROR_SIGNING_UP_USER)
     }
 }

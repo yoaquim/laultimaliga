@@ -97,6 +97,10 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
         .map((p) => p.match)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
+    if (!player) {
+        return <Empty message={EMPTY_MESSAGES.PLAYER_DOES_NOT_EXIST}/>
+    }
+
     return (
         <div className="w-full h-full flex flex-col gap-y-8 py-8 px-4 text-white">
 
