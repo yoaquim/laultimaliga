@@ -12,6 +12,7 @@ import Shimmer from '@/ui/shimmer'
 import Empty from '@/ui/empty'
 import Spinner from '@/ui/spinner'
 import { EMPTY_MESSAGES, ERRORS } from '@/lib/utils'
+import Loader from '@/ui/loader'
 
 /** Merge team players and participations for display */
 function mergeTeamAndParticipations(team: any, participations: any[]) {
@@ -197,19 +198,9 @@ export default function Page() {
     // ----------------------------------------------------------------
     // RENDER
     // ----------------------------------------------------------------
-    if (loading) {
-        return (
-            <div className="relative w-full h-full flex flex-col justify-center items-center">
-                <div className="lg:w-1/3 w-5/6 h-2">
-                    <Shimmer/>
-                </div>
-            </div>
-        )
-    }
+    if (loading) return <Loader/>
 
-    if (!match) {
-        return <Empty message={EMPTY_MESSAGES.MATCH_DOES_NOT_EXIST}/>
-    }
+    if (!match) return <Empty message={EMPTY_MESSAGES.MATCH_DOES_NOT_EXIST}/>
 
     const dateStr = new Date(match.date).toLocaleDateString('en-US', {
         month: 'long',

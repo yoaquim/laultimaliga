@@ -9,6 +9,7 @@ import Shimmer from '@/ui/shimmer'
 import Link from 'next/link'
 import { fetchUserProfile } from './actions'
 import toast from 'react-hot-toast'
+import Loader from '@/ui/loader'
 
 export default function Page() {
     const router = useRouter()
@@ -25,15 +26,7 @@ export default function Page() {
         loadProfile()
     }, [])
 
-    if (loading) {
-        return (
-            <div className="relative w-full h-full flex flex-col justify-center items-center">
-                <div className="lg:w-1/3 w-5/6 h-2">
-                    <Shimmer/>
-                </div>
-            </div>
-        )
-    }
+    if (loading) return <Loader/>
 
     if (!profile || !profile.sessionUser) {
         return <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>

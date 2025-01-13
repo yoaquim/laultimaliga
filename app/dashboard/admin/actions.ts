@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { Size } from '@prisma/client'
+import { requireAdmin } from '@/lib/rba'
 
 /** Create a single Season */
 export async function createSeasonAction(data: {
@@ -11,6 +12,7 @@ export async function createSeasonAction(data: {
     startDate: string;
     endDate: string;
 }) {
+    await requireAdmin()
     const {name, shortName, startDate, endDate} = data
     await prisma.season.create({
         data: {
@@ -26,6 +28,8 @@ export async function createSeasonAction(data: {
 
 /** Create a single Team */
 export async function createTeamAction(data: { name: string; seasonId: string }) {
+    await requireAdmin()
+
     const {name, seasonId} = data
     await prisma.team.create({
         data: {
@@ -38,6 +42,7 @@ export async function createTeamAction(data: { name: string; seasonId: string })
 
 /** Create a single Player */
 export async function createPlayerAction(data: { name: string; phone: string; size: string }) {
+    await requireAdmin()
     // We will create a user row with email = null => "unclaimed" user
     // Then create a Player referencing that user
     const {name, phone, size} = data
@@ -66,6 +71,7 @@ export async function createMatchAction(data: {
     seasonId: string;
     date: string;
 }) {
+    await requireAdmin()
     const {homeTeamId, awayTeamId, seasonId, date} = data
     await prisma.match.create({
         data: {
@@ -80,6 +86,7 @@ export async function createMatchAction(data: {
 
 /** Bulk: parse the array of string[] from CSV */
 export async function bulkCreateSeasonsAction(rows: string[][]) {
+    await requireAdmin()
     // Each row might be: [name, shortName, startDate, endDate]
     for (const row of rows) {
         const [name, shortName, start, end] = row
@@ -96,6 +103,7 @@ export async function bulkCreateSeasonsAction(rows: string[][]) {
 }
 
 export async function bulkCreateTeamsAction(rows: string[][]) {
+    await requireAdmin()
     // Each row might be: [teamName, seasonId]
     for (const row of rows) {
         const [name, seasonId] = row
@@ -110,6 +118,7 @@ export async function bulkCreateTeamsAction(rows: string[][]) {
 }
 
 export async function bulkCreatePlayersAction(rows: string[][]) {
+    await requireAdmin()
     // Each row might be: [name, phone, size]
     // We create a user with email=null => unclaimed, then a Player
     for (const row of rows) {
@@ -133,6 +142,7 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
 }
 
 export async function bulkCreateMatchesAction(rows: string[][]) {
+    await requireAdmin()
     // Each row might be: [homeTeamId, awayTeamId, seasonId, dateString]
     for (const row of rows) {
         const [homeTeamId, awayTeamId, seasonId, dateString] = row
