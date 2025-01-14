@@ -1,7 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { DEFAULT_URL_WHEN_AUTHENTICATED, DEFAULT_URL_WHEN_NOT_AUTHENTICATED, DOMAIN, ERRORS } from '@/lib/utils'
-import { isAdmin } from '@/lib/rba'
 
 const PUBLIC_PATHS = [
     '/sign-in',
@@ -11,11 +10,12 @@ const PUBLIC_PATHS = [
 
 const PRIVATE_PATHS = [
     '/dashboard',
+    '/scoreboard',
 ]
 
 const ADMIN_PATHS = [
-    '/admin',
     '/dashboard/admin',
+    '/scoreboard',
 ]
 
 let ADMIN_CACHE: { [userId: string]: boolean } = {}

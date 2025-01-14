@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import clsx from 'clsx'
 import { useParams } from 'next/navigation'
 import { MatchStatus } from '@prisma/client'
@@ -8,10 +8,9 @@ import MessageModal from '@/ui/message-modal'
 import { MatchWithDetails, StatType } from './types'
 import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
 import { getIsAdmin } from '@/dashboard/actions'
-import Shimmer from '@/ui/shimmer'
 import Empty from '@/ui/empty'
 import Spinner from '@/ui/spinner'
-import { EMPTY_MESSAGES, ERRORS, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { DOMAIN, EMPTY_MESSAGES, ERRORS, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
 
 /** Merge team players and participations for display */
@@ -69,6 +68,13 @@ export default function Page() {
     const [match, setMatch] = useState<MatchWithDetails | null>(null)
     const [status, setStatus] = useState<MatchStatus | null>(null)
     const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false)
+
+    // Popup Scoreboard
+    const [homeTeamScore, setHomeTeamScore] = useState<number>(0)
+    const [awayTeamScore, setAwayTeamScore] = useState<number>(0)
+    const [scoreboard, setScoreboard] = useState<Window | null>(null)
+    const [showScoreboardCtls, setShowScoreboardCtls] = useState<boolean>(false)
+    const [shotClockRunning, setShotClockRunning] = useState<boolean>(false)
 
     // For the confirmation modal
     const [modalIsOpen, setModalIsOpen] = useState(false)
@@ -174,6 +180,17 @@ export default function Page() {
                 }
             }
 
+            // Update scoreboard
+            if (scoreboard && !scoreboard.closed) {
+                scoreboard.postMessage({
+                    type: 'UPDATE_SCORE',
+                    homeScore: newHomeScore,
+                    awayScore: newAwayScore,
+                })
+            }
+
+            setHomeTeamScore(newHomeScore)
+            setAwayTeamScore(newAwayScore)
             return {
                 ...prev,
                 participations: updatedParts,
@@ -192,6 +209,32 @@ export default function Page() {
             const fetched = (await getMatch(matchId)) as MatchWithDetails
             setMatch(fetched)
             setLoading(false)
+        }
+    }
+
+
+    const handleOpenScoreboard = () => {
+        setShowScoreboardCtls(true)
+        if (!scoreboard || scoreboard.closed) {
+            const newScoreboard = window.open(
+                `${DOMAIN}/scoreboard?homeTeamScore=${homeTeamScore}&awayTeamScore=${awayTeamScore}`,
+                '_blank',
+                'width=screen,height=screen,scrollbars=no,resizable=yes'
+            )
+            if (newScoreboard) {
+                // on close
+            }
+            setScoreboard(newScoreboard)
+        } else {
+            scoreboard.focus() // Bring existing popup to the front
+        }
+    }
+
+    const handleShotClock = () => {
+        if (shotClockRunning) {
+            // stop shotClock
+        } else {
+            // start shotClock
         }
     }
 
@@ -268,7 +311,7 @@ export default function Page() {
                     </div>
 
                     {/*DESKTOP*/}
-                    <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
+                    <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold cursor-pointer" onClick={handleOpenScoreboard}>
                         <div className="w-1/3 flex flex-col pt-4">
                             <div className="w-full h-full flex justify-start items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="w-56"/>
@@ -282,6 +325,13 @@ export default function Page() {
                                         <h1>{match.homeScore}</h1>
                                         <img src="/ball.svg" alt="ball" className="w-9"/>
                                         <h1>{match.awayScore}</h1>
+                                        {/*{showScoreboardCtls && (*/}
+                                        {/*    <div className="w-full flex flex-col gap-y-4">*/}
+                                        {/*        <button className="w-full py-2 uppercase text-base text-white bg-lul-red/80" onClick={() => handleShotClock}>*/}
+                                        {/*            {shotClockRunning ? 'STOP' : 'START'}*/}
+                                        {/*        </button>*/}
+                                        {/*    </div>*/}
+                                        {/*)}*/}
                                     </div>
                                 )
                                 : (
