@@ -27,12 +27,13 @@ export async function createSeasonAction(data: {
 }
 
 /** Create a single Team */
-export async function createTeamAction(data: { name: string; seasonId: string }) {
+export async function createTeamAction(data: { name: string; seasonId: string, logo: string }) {
     await requireAdmin()
     const newTeam = await prisma.team.create({
         data: {
             name: data.name,
             seasonId: data.seasonId,
+            logo: data.logo
         },
     })
     revalidatePath('/dashboard/admin')
@@ -139,8 +140,8 @@ export async function bulkCreateSeasonsAction(rows: string[][]) {
 export async function bulkCreateTeamsAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
-        const [name, seasonId] = row
-        await prisma.team.create({data: {name, seasonId}})
+        const [name, seasonId, logo] = row
+        await prisma.team.create({data: {name, seasonId, logo}})
     }
     revalidatePath('/dashboard/admin')
 }

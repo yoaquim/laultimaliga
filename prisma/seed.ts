@@ -143,6 +143,7 @@ async function seed() {
                 data: {
                     name: teamName,
                     seasonId,
+                    logo: '',
                 },
             })
             teamIds.push(team.id)
@@ -217,7 +218,7 @@ async function seed() {
                 )
 
                 // upsert SeasonStats
-                await prisma.seasonStats.upsert({
+                await prisma.playerSeasonStats.upsert({
                     where: {
                         playerId_seasonId: {
                             playerId: player.id,
@@ -410,7 +411,7 @@ async function cleanup() {
     await prisma.playerMatchStats.deleteMany({})
     await prisma.playerMatchParticipation.deleteMany({})
     await prisma.playerTotalStats.deleteMany({})
-    await prisma.seasonStats.deleteMany({})
+    await prisma.playerSeasonStats.deleteMany({})
     await prisma.match.deleteMany({})
     await prisma.playerSeasonDetails.deleteMany({})
     await prisma.player.deleteMany({})
