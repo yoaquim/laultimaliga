@@ -371,7 +371,7 @@ export default function Page() {
                         <div className="w-1/3 h-full flex flex-col justify-center items-center gap-y-2">
                             {showScoreboard
                                 ? (
-                                    <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10', scoreboardColor)}>
+                                    <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10 text-lul-yellow')}>
                                         <div className="w-full flex justify-between items-center">
                                             <h1>{match.homeScore}</h1>
                                             <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>

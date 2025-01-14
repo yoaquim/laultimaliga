@@ -17,6 +17,14 @@ export default function Page() {
     const [timerRunning, setTimerRunning] = useState(false)
 
     useEffect(() => {
+        if (timeRemaining === 0 && timerRunning) {
+            console.log('BUZZING')
+            const buzzer = new Audio('https://opkpwsseguyivdrawleq.supabase.co/storage/v1/object/public/lul/assets/buzzer.wav?t=2025-01-14T11%3A16%3A50.262Z')
+            buzzer.play().catch((err) => console.error('Error playing buzzer sound:', err))
+        }
+    }, [timeRemaining, timerRunning])
+
+    useEffect(() => {
         let interval: NodeJS.Timeout | null = null
 
         if (timerRunning) {
