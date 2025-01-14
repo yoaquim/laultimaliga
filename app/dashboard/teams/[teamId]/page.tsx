@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { EMPTY_MESSAGES, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Empty from '@/ui/empty'
@@ -58,17 +57,15 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
     const winRate = totalMatches > 0 ? ((matchesWon / totalMatches) * 100).toFixed(2) : 'N/A'
 
     return (
-        <div className="h-full w-full pt-4 flex flex-col gap-y-8 text-white">
-            {/* Team Header */}
-            <div className="lg:bg-opacity-0 flex flex-col lg:flex-row pt-4 items-center justify-between sticky top-0 bg-lul-black z-10">
-                <h1 className="text-3xl font-bold">{team.name}</h1>
-                <p className="text-lul-blue uppercase font-bold">{team.season.shortName || team.season.name}</p>
-            </div>
-
+        <div className="h-full w-full pt-4 flex flex-col gap-y-8 text-white overflow-y-scroll">
             {/*=====================================================*/}
             {/* TEAM STATS */}
             {/*=====================================================*/}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 bg-lul-grey/20 py-4 rounded-md">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-lul-grey/20 py-4 rounded-md">
+                <div className="flex flex-col items-center gap-y-1">
+                    <p className="text-sm uppercase font-bold">Season</p>
+                    <p className="text-3xl font-bold text-lul-blue">{team.season.shortName || team.season.name}</p>
+                </div>
                 <div className="flex flex-col items-center gap-y-1">
                     <p className="text-sm uppercase font-bold">Total Matches</p>
                     <p className="text-3xl font-bold">{totalMatches}</p>
@@ -87,28 +84,27 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                 </div>
             </div>
 
-
             {/*=====================================================*/}
             {/* LOGO */}
             {/*=====================================================*/}
             <div className="w-full flex justify-center items-center">
-                <img src={TEAM_LOGO_URL_BUILDER(team.logo)} alt="team-logo" className="h-64"/>
+                <img src={TEAM_LOGO_URL_BUILDER(team.logo)} alt="team-logo" className="lg:h-64 h-40"/>
             </div>
 
             {/*=====================================================*/}
             {/* PLAYERS & MATCHES */}
             {/*=====================================================*/}
-            <div className="lg:flex-row lg:gap-x-8 w-full flex flex-col gap-y-6 flex-grow overflow-hidden">
+            <div className="h-full lg:flex-row lg:gap-x-8 w-full flex flex-col gap-y-6 flex-grow lg:overflow-hidden">
 
                 {/*-----------------------------------------------------*/}
                 {/* PLAYERS */}
                 {/*-----------------------------------------------------*/}
-                <div className="w-full bg-lul-grey/20 p-4 rounded-md flex flex-col overflow-hidden">
-                    <h2 className="text-2xl font-semibold border-b border-lul-blue pb-2">
+                <div className="lg:h-full h-fit w-full bg-lul-dark-grey p-4 rounded-md flex flex-col">
+                    <h2 className="text-2xl font-semibold bg-lul-dark-grey border-b border-lul-blue pb-2 sticky -top-4 z-20">
                         Players
                     </h2>
 
-                    <ul className="grid grid-cols-2 p-4 gap-y-4 gap-x-4  overflow-y-auto flex-grow">
+                    <ul className="h-full grid xl:grid-cols-2 grid-cols-1 lg:px-4 py-4 gap-y-4 gap-x-4 lg:overflow-y-scroll">
                         {team.players.map((playerSeasonDetail: any) => (
                             <PlayerCard player={playerSeasonDetail.player} key={playerSeasonDetail.player.id}/>
                         ))}
@@ -118,17 +114,17 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                 {/*-----------------------------------------------------*/}
                 {/* MATCHES */}
                 {/*-----------------------------------------------------*/}
-                <div className="h-full w-full bg-lul-dark-grey p-4 rounded-md flex flex-col">
-                    <h2 className="pb-2 text-2xl font-semibold border-b border-lul-blue">
+                <div className="lg:h-full h-fit w-full bg-lul-dark-grey p-4 rounded-md flex flex-col">
+                    <h2 className="pb-2 text-2xl font-semibold bg-lul-dark-grey border-b border-lul-blue sticky -top-4 z-20">
                         Matches
                     </h2>
 
-                    <div className="flex flex-col flex-grow overflow-y-scroll">
+                    <div className="flex flex-col flex-grow lg:overflow-y-scroll">
                         <div className="mt-4 flex flex-col">
-                            <h3 className="py-2 font-semibold text-lul-yellow uppercase sticky top-0 bg-lul-dark-grey z-20">
+                            <h3 className="py-2 font-semibold text-lul-yellow uppercase sticky lg:top-0 top-6 bg-lul-dark-grey z-20">
                                 Home Matches
                             </h3>
-                            <ul className="grid grid-cols-2 p-4 gap-y-4 gap-x-4">
+                            <ul className="grid xl:grid-cols-2 grid-cols-1 lg:px-4 py-4 gap-y-4 gap-x-4">
                                 {team.homeMatches.map((match: any) => (
                                     <MatchCard match={match} key={match.id}/>
                                 ))}
@@ -136,10 +132,10 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                         </div>
 
                         <div className="mt-10 flex flex-col">
-                            <h3 className="py-2 font-semibold text-lul-yellow uppercase sticky top-0 bg-lul-dark-grey z-20">
+                            <h3 className="py-2 font-semibold text-lul-yellow uppercase sticky lg:top-0 top-6 bg-lul-dark-grey z-20">
                                 Away Matches
                             </h3>
-                            <ul className="grid grid-cols-2 p-4 gap-y-4 gap-x-4">
+                            <ul className="grid xl:grid-cols-2 grid-cols-1 lg:px-4 py-4 gap-y-4 gap-x-4">
                                 {team.awayMatches.map((match: any) => (
                                     <MatchCard match={match} key={match.id}/>
                                 ))}

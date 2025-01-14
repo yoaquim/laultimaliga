@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
-import { BUCKET_ENDPOINT, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import clsx from 'clsx'
 
 // --------------------------------------------------

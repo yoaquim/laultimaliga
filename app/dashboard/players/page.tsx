@@ -1,8 +1,7 @@
 import { Prisma } from '@prisma/client'
-import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
-import { BUCKET_ENDPOINT, EMPTY_MESSAGES } from '@/lib/utils'
+import { EMPTY_MESSAGES } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 import PlayerCard from '@/ui/player-card'
 
@@ -53,7 +52,7 @@ export default async function Page() {
     return (
         <Grid title="Players">
             {players.map((player) => (
-                <PlayerCard player={player}/>
+                <PlayerCard player={player} key={player.id}/>
             ))}
         </Grid>
     )

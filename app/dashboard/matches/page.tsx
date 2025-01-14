@@ -1,9 +1,7 @@
 import { Prisma } from '@prisma/client'
-import Link from 'next/link'
-import clsx from 'clsx'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { EMPTY_MESSAGES } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 import MatchCard from '@/ui/match-card'
 

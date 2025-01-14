@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
