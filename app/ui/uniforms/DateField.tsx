@@ -39,7 +39,7 @@ function Date({
             {label && <label htmlFor={id} className="text-white text-sm">{label}</label>}
 
             <input
-                className="w-full rounded text-lul-dark-grey"
+                className="w-full rounded text-lul-dark-grey h-8"
                 disabled={disabled}
                 id={id}
                 max={dateFormat(max)}

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { getIsAdmin } from '@/dashboard/actions'
 import { IoBasketballSharp } from 'react-icons/io5'
 import { MdAdminPanelSettings } from 'react-icons/md'
+import { VscSignOut } from 'react-icons/vsc'
 import { RiTeamFill, RiShieldUserFill, RiIdCardFill } from 'react-icons/ri'
 import { useState, useEffect } from 'react'
 
@@ -81,6 +82,10 @@ export default function Navbar({className}: { className?: string }) {
                             <span className="text-xs text-white">{link.name}</span>
                         </Link>
                     ))}
+                <div className="lg:hidden flex flex-col items-center gap-y-1 text-lul-blue antialiased" onClick={handleSignOut}>
+                    <VscSignOut className="text-2xl"/>
+                    <span className="text-xs text-white">Signout</span>
+                </div>
             </div>
 
             {/* Sign Out */}

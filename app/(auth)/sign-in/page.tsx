@@ -98,10 +98,11 @@ export default function SignInPage() {
 
         try {
             const {redirectTo} = await signInUser(formData) // Invoke server action
-            router.push(redirectTo) // Redirect on successful sign-in
-            setLoading(false)
+            router.push(redirectTo)
         } catch (err: any) {
             setError(err.message || 'Invalid email or password')
+        } finally {
+            setLoading(false)
         }
     }
 

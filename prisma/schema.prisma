@@ -21,6 +21,20 @@ enum Role {
   ADMIN
 }
 
+enum Position {
+  PG
+  SG
+  SF
+  PF
+  C
+  PG_SG
+  PG_SF
+  PG_PF
+  SG_SF
+  SG_PF
+  PF_C
+}
+
 enum MatchStatus {
   SCHEDULED
   ONGOING
@@ -96,6 +110,7 @@ model Player {
   user           User                       @relation(fields: [userId], references: [id])
   userId         String                     @unique
   phone          String?
+  position       Position?
   size           Size
   totalStats     PlayerTotalStats?
   seasonDetails  PlayerSeasonDetails[]

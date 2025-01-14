@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
-import { Size, MatchStatus } from '@prisma/client'
+import { Size } from '@prisma/client'
 import { requireAdmin } from '@/lib/rba'
 
 /** Create a single Season */
@@ -83,7 +83,7 @@ export async function createMatchAction(data: {
 export async function createPSDetailsAction(data: {
     playerId: string;
     seasonId: string;
-    teamId?: string;
+    teamId: string;
     number: number;
 }) {
     await requireAdmin()
@@ -91,7 +91,7 @@ export async function createPSDetailsAction(data: {
         data: {
             playerId: data.playerId,
             seasonId: data.seasonId,
-            teamId: data.teamId || undefined,
+            teamId: data.teamId,
             number: data.number,
         },
     })
@@ -103,7 +103,6 @@ export async function createPSDetailsAction(data: {
 export async function createParticipationAction(data: {
     playerId: string;
     matchId: string;
-    // If you want to create initial stats, add them here
 }) {
     await requireAdmin()
     const newParticipation = await prisma.playerMatchParticipation.create({
@@ -190,7 +189,7 @@ export async function bulkCreatePSDetailsAction(rows: string[][]) {
             data: {
                 playerId,
                 seasonId,
-                teamId: teamId || undefined,
+                teamId: teamId,
                 number: Number(numberStr) || 0,
             },
         })
@@ -211,4 +210,165 @@ export async function bulkCreateParticipationsAction(rows: string[][]) {
         })
     }
     revalidatePath('/dashboard/admin')
+}
+
+/**
+ * Generic data fetch for your DataView panel
+ * This version does NOT use QueryMode to avoid TS errors, so searches are case-sensitive.
+ */
+export async function fetchTableDataAction(params: {
+    table: string;
+    page: number;
+    pageSize: number;
+    search?: string;
+}) {
+    await requireAdmin()
+
+    const {table, page, pageSize, search} = params
+    const skip = (page - 1) * pageSize
+
+    let items: any[] = []
+    let totalCount = 0
+
+    switch (table) {
+        case 'SEASON': {
+            // case-sensitive search
+            const whereSeason = search
+                ? {
+                    OR: [
+                        {
+                            name: {
+                                contains: search,
+                            },
+                        },
+                        {
+                            shortName: {
+                                contains: search,
+                            },
+                        },
+                    ],
+                }
+                : {}
+
+            totalCount = await prisma.season.count({where: whereSeason})
+            items = await prisma.season.findMany({
+                where: whereSeason,
+                skip,
+                take: pageSize,
+                orderBy: {createdAt: 'desc'},
+            })
+            break
+        }
+
+        case 'TEAM': {
+            const whereTeam = search
+                ? {
+                    name: {contains: search},
+                }
+                : {}
+
+            totalCount = await prisma.team.count({where: whereTeam})
+            items = await prisma.team.findMany({
+                where: whereTeam,
+                skip,
+                take: pageSize,
+                orderBy: {createdAt: 'desc'},
+            })
+            break
+        }
+
+        case 'PLAYER': {
+            // phone is optional, so we treat as string | null
+            // We'll do "contains: search" case-sensitive
+            const wherePlayer = search
+                ? {
+                    OR: [
+                        {
+                            phone: {contains: search},
+                        },
+                        // could also search user.name if we want,
+                        // e.g. { user: { name: { contains: search } } }
+                    ],
+                }
+                : {}
+
+            totalCount = await prisma.player.count({where: wherePlayer})
+            items = await prisma.player.findMany({
+                where: wherePlayer,
+                skip,
+                take: pageSize,
+                orderBy: {createdAt: 'desc'},
+                include: {
+                    user: {select: {name: true}},
+                },
+            })
+            break
+        }
+
+        case 'MATCH': {
+            const whereMatch = search
+                ? {
+                    id: {contains: search},
+                }
+                : {}
+            totalCount = await prisma.match.count({where: whereMatch})
+            items = await prisma.match.findMany({
+                where: whereMatch,
+                skip,
+                take: pageSize,
+                orderBy: {createdAt: 'desc'},
+            })
+            break
+        }
+
+        case 'PSDETAILS': {
+            // PlayerSeasonDetails
+            const wherePSD = search
+                ? {
+                    OR: [
+                        {playerId: {contains: search}},
+                        {teamId: {contains: search}},
+                        {seasonId: {contains: search}},
+                    ],
+                }
+                : {}
+            totalCount = await prisma.playerSeasonDetails.count({where: wherePSD})
+            items = await prisma.playerSeasonDetails.findMany({
+                where: wherePSD,
+                skip,
+                take: pageSize,
+                orderBy: {createdAt: 'desc'},
+            })
+            break
+        }
+
+        case 'PARTICIPATION': {
+            // PlayerMatchParticipation
+            const wherePart = search
+                ? {
+                    OR: [
+                        {playerId: {contains: search}},
+                        {matchId: {contains: search}},
+                    ],
+                }
+                : {}
+
+            totalCount = await prisma.playerMatchParticipation.count({
+                where: wherePart,
+            })
+            items = await prisma.playerMatchParticipation.findMany({
+                where: wherePart,
+                skip,
+                take: pageSize,
+                orderBy: {createdAt: 'desc'},
+            })
+            break
+        }
+
+        default:
+            // no action
+            break
+    }
+
+    return {items, totalCount}
 }

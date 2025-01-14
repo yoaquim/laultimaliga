@@ -71,7 +71,7 @@ function Select({
                 ))
             ) : (
                 <select
-                    className="text-lul-dark-grey rounded"
+                    className="text-lul-dark-grey rounded py-0.5"
                     disabled={disabled}
                     id={id}
                     multiple={multiple}
