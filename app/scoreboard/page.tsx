@@ -61,26 +61,26 @@ function Scoreboard() {
     }, [])
 
     return (
-        <div className="h-screen w-screen p-10 flex flex-col items-center justify-center bg-lul-dark-grey text-white">
+        <div className="h-screen w-screen p-10 flex flex-col items-center justify-center bg-lul-dark-grey text-white ">
+            <div className="relative flex flex-col items-center justify-center w-full p-4 h-full bg-white border-8 border-white rounded-3xl">
 
-            <div className="relative flex flex-col items-center justify-center w-full p-4 h-full border-8 border-white rounded-3xl">
-                <div className="flex flex-col items-center justify-center w-full h-full border-8 border-white rounded-3xl">
+                <div className="flex flex-col items-center justify-center w-full h-full border-8 bg-lul-dark-grey border-white rounded-3xl">
 
-                    <div className="-mt-40 w-full flex 2xl:justify-between justify-center 2xl:px-52 items-center 2xl:gap-x-0 gap-x-32">
+                    <div className="-mt-40 xl:-mt-24 w-full flex xl:justify-between 3xl:px-52 xl:px-40 items-center 3xl:gap-x-0 gap-x-32">
                         <div className="flex flex-col justify-center items-center gap-y-1">
-                            {homeTeamLogo && <img src={TEAM_LOGO_URL_BUILDER(homeTeamLogo)} alt="team-logo" className="2xl:h-52 h-24"/>}
-                            <h1 className="2xl:mt-8 mt-4 leading-none font-bold bg-lul-black/70 p-8 rounded-3xl text-scoreboard 2xl:text-scoreboard-xl text-lul-yellow">{currentHomeScore}</h1>
-                            <h3 className="text-white uppercase text-5xl 2xl:text-8xl font-bold">Home</h3>
+                            {homeTeamLogo && <img src={TEAM_LOGO_URL_BUILDER(homeTeamLogo)} alt="team-logo" className="3xl:h-52 xl:h-44 h-24"/>}
+                            <h1 className="3xl:mt-8 mt-4 leading-none font-bold bg-lul-black/70 p-8 rounded-3xl text-scoreboard 3xl:text-scoreboard-3xl xl:text-scoreboard-xl text-lul-yellow">{currentHomeScore}</h1>
+                            <h3 className="text-white uppercase text-5xl xl:text-8xl font-bold">Home</h3>
                         </div>
 
                         <div className="flex flex-col justify-center items-center gap-y-1">
-                            {awayTeamLogo && <img src={TEAM_LOGO_URL_BUILDER(awayTeamLogo)} alt="team-logo" className="2xl:h-52 h-24"/>}
-                            <h1 className="2xl:mt-8 mt-4 leading-none bg-lul-black/70 rounded-3xl p-8 font-bold text-scoreboard 2xl:text-scoreboard-xl text-lul-yellow">{currentAwayScore}</h1>
-                            <h3 className="text-white uppercase text-5xl 2xl:text-8xl font-bold">Away</h3>
+                            {awayTeamLogo && <img src={TEAM_LOGO_URL_BUILDER(awayTeamLogo)} alt="team-logo" className="3xl:h-52 xl:h-44 h-24"/>}
+                            <h1 className="3xl:mt-8 mt-4 leading-none bg-lul-black/70 rounded-3xl p-8 font-bold text-scoreboard 3xl:text-scoreboard-3xl xl:text-scoreboard-xl text-lul-yellow">{currentAwayScore}</h1>
+                            <h3 className="text-white uppercase text-5xl xl:text-8xl font-bold">Away</h3>
                         </div>
                     </div>
 
-                    <div className="absolute leading-none bottom-8 2xl:bottom-14 text-time 2xl:text-time-xl font-bold text-lul-red">
+                    <div className="absolute leading-none bottom-8 3xl:bottom-14 text-time 3xl:text-timer-3xl xl:text-timer-xl font-bold text-lul-red">
                         {formatTimeElapsed(timeRemaining)}
                     </div>
                 </div>

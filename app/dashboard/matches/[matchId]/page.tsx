@@ -34,15 +34,15 @@ function mergeTeamAndParticipations(team: any, participations: any[]) {
 function getStatusBadgeColor(status: MatchStatus): string {
     switch (status) {
         case 'SCHEDULED':
-            return 'bg-lul-yellow'
+            return 'text-lul-yellow'
         case 'ONGOING':
-            return 'bg-lul-green'
+            return 'text-lul-green'
         case 'COMPLETED':
-            return 'bg-lul-blue'
+            return 'text-lul-blue'
         case 'CANCELED':
-            return 'bg-lul-red'
+            return 'text-lul-red'
         default:
-            return 'bg-lul-grey'
+            return 'text-lul-grey'
     }
 }
 
@@ -289,9 +289,9 @@ export default function Page() {
         })
     }
 
-    // ----------------------------------------------------------------
+    // ================================================================
     // RENDER
-    // ----------------------------------------------------------------
+    // ================================================================
     if (loading) return <Loader/>
 
     if (!match) return <Empty message={EMPTY_MESSAGES.MATCH_DOES_NOT_EXIST}/>
@@ -329,19 +329,21 @@ export default function Page() {
                 action={modalAction}
             />
 
-            <div className="w-full h-full flex flex-col text-white">
-
-                {/* TOP / SCOREBOARD / STATUS */}
-                <div className="flex flex-col lg:gap-y-4 p-4 lg:py-5">
-                    {/* Status badge */}
-                    <div className={clsx(
-                        'w-full py-2 rounded-md text-center text-xl font-bold text-lul-black',
+            <div className="relative w-full h-full flex flex-col text-white">
+                {/*====================================================*/}
+                {/* STATUS BADGE */}
+                {/*====================================================*/}
+                <div
+                    className={clsx('absolute right-3 top-5 py-2 px-4 z-10 rounded-md text-center text-xl font-bold bg-lul-dark-grey/90',
                         getStatusBadgeColor(match.status)
                     )}>
-                        {match.status}
-                    </div>
+                    {match.status}
+                </div>
 
+                <div className="flex flex-col lg:gap-y-4 p-4 lg:py-5">
+                    {/*====================================================*/}
                     {/* TEAMS + SCORE (mobile stacked, desktop row) */}
+                    {/*====================================================*/}
 
                     {/*MOBILE*/}
                     <div className="block lg:hidden text-center text-3xl font-bold w-full max-w-screen-lg mx-auto py-6">
@@ -364,7 +366,7 @@ export default function Page() {
                     <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
                         <div className="w-1/3 flex flex-col pt-4">
                             <div className="w-full h-full flex justify-start items-center">
-                                <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="w-56"/>
+                                <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-56"/>
                             </div>
                         </div>
 
@@ -415,13 +417,15 @@ export default function Page() {
 
                         <div className="w-1/3 flex flex-col pt-4">
                             <div className="w-full h-full flex justify-end items-center">
-                                <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="w-56"/>
+                                <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-56"/>
                             </div>
                         </div>
                     </div>
 
 
-                    {/* Status buttons */}
+                    {/*====================================================*/}
+                    {/* STATUS BUTTONS */}
+                    {/*====================================================*/}
                     {actionButtons.length > 0 && userIsAdmin && (
                         <div className="w-full flex gap-4 justify-center items-center lg:pt-0 pt-4">
                             {actionButtons.map((action) => (
@@ -442,19 +446,28 @@ export default function Page() {
                     )}
                 </div>
 
-                {/* BOTTOM: Two columns, each with sticky team header */}
+                {/*====================================================*/}
+                {/* STAT TRACKER*/}
+                {/*====================================================*/}
                 <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden">
 
-                    {/* HOME COLUMN */}
+                    {/*----------------------------------------------------*/}
+                    {/* HOME TEAM */}
+                    {/*----------------------------------------------------*/}
                     <div className="flex-1 flex flex-col lg:overflow-hidden">
                         {/* Sticky header (TEAM NAME, etc.) */}
-                        <div className="lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b border-lul-blue text-2xl font-semibold p-4 flex items-baseline">
+                        <div className={clsx('lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b text-2xl font-semibold p-4 flex items-baseline', {
+                            'border-lul-blue': match.status === 'COMPLETED',
+                            'border-lul-green': match.status === 'ONGOING',
+                            'border-lul-yellow': match.status === 'SCHEDULED',
+                            'border-lul-red': match.status === 'CANCELED'
+                        })}>
                             <h1 className="flex flex-1">{match.homeTeam.name}</h1>
                             <h3 className="uppercase text-sm">Player Stats</h3>
                         </div>
 
                         {/* Scrollable stats area */}
-                        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {mergeTeamAndParticipations(match.homeTeam, match.participations).map(
                                 ({id, player, stats, participationExists}: any) => {
                                     return (
@@ -518,19 +531,33 @@ export default function Page() {
                         </div>
                     </div>
 
-                    {/* blue divider on large screens */}
-                    <div className="w-0.5 bg-lul-blue hidden lg:block"/>
+                    {/*----------------------------------------------------*/}
+                    {/* DIVIDE  */}
+                    {/*----------------------------------------------------*/}
+                    <div className={clsx('w-0.5 hidden lg:block', {
+                        'bg-lul-blue': match.status === 'COMPLETED',
+                        'bg-lul-green': match.status === 'ONGOING',
+                        'bg-lul-yellow': match.status === 'SCHEDULED',
+                        'bg-lul-red': match.status === 'CANCELED'
+                    })}/>
 
-                    {/* AWAY COLUMN */}
+                    {/*----------------------------------------------------*/}
+                    {/* AWAY TEAM */}
+                    {/*----------------------------------------------------*/}
                     <div className="flex-1 flex flex-col lg:overflow-hidden">
                         {/* Sticky header */}
-                        <div className="lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b border-lul-blue text-2xl font-semibold p-4 flex items-baseline">
+                        <div className={clsx('lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b text-2xl font-semibold p-4 flex items-baseline', {
+                            'border-lul-blue': match.status === 'COMPLETED',
+                            'border-lul-green': match.status === 'ONGOING',
+                            'border-lul-yellow': match.status === 'SCHEDULED',
+                            'border-lul-red': match.status === 'CANCELED'
+                        })}>
                             <h1 className="flex flex-1">{match.awayTeam.name}</h1>
                             <h3 className="uppercase text-sm">Player Stats</h3>
                         </div>
 
                         {/* Scrollable stats area */}
-                        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {mergeTeamAndParticipations(match.awayTeam, match.participations).map(
                                 ({id, player, stats, participationExists}: any) => (
                                     <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
@@ -586,8 +613,7 @@ export default function Page() {
                                             ))}
                                         </div>
                                     </div>
-                                )
-                            )}
+                                ))}
                         </div>
                     </div>
                 </div>

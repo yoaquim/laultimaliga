@@ -303,29 +303,31 @@ export default function AdminDashboardPage() {
     // --------------------------------
     return (
         <div className="w-full h-full text-white flex flex-col py-8 gap-y-6 overflow-y-hidden">
-            <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold min-w-fit">Admin Dashboard</h1>
 
-            {/* ==================================== */}
-            {/* TABS */}
-            {/* ==================================== */}
-            <div className="w-full flex justify-center gap-x-6">
-                {(['SEASONS', 'TEAMS', 'PLAYERS', 'MATCHES', 'PSDETAILS', 'PARTICIPATIONS',] as AdminTab[]
-                ).map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => {
-                            setCurrentTab(tab)
-                            setCsvText('')
-                            setBulkPreview(false)
-                            setCsvParsed([])
-                        }}
-                        className={clsx(
-                            'px-4 py-2 font-semibold uppercase text-sm rounded',
-                            currentTab === tab ? 'bg-lul-blue text-black' : 'bg-lul-grey/20'
-                        )}>
-                        {tab}
-                    </button>
-                ))}
+                {/* ==================================== */}
+                {/* TABS */}
+                {/* ==================================== */}
+                <div className="w-full flex justify-end gap-x-6">
+                    {(['SEASONS', 'TEAMS', 'PLAYERS', 'MATCHES', 'PSDETAILS', 'PARTICIPATIONS',] as AdminTab[]
+                    ).map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => {
+                                setCurrentTab(tab)
+                                setCsvText('')
+                                setBulkPreview(false)
+                                setCsvParsed([])
+                            }}
+                            className={clsx(
+                                'px-4 py-2 font-semibold uppercase text-sm rounded',
+                                currentTab === tab ? 'bg-lul-blue text-black' : 'bg-lul-grey/20'
+                            )}>
+                            {tab}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="h-full flex flex-col gap-y-6">
@@ -411,6 +413,11 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* ==================================== */}
+                {/* DATA VIEW */}
+                {/* ==================================== */}
+                <DataViewPanel/>
+
+                {/* ==================================== */}
                 {/* LOG WINDOW */}
                 {/* ==================================== */}
                 <div className="w-full max-h-1/3 h-1/3 flex flex-col bg-lul-dark-grey rounded p-4">
@@ -437,11 +444,6 @@ export default function AdminDashboardPage() {
                             </ul>
                         )}
                 </div>
-
-                {/* ==================================== */}
-                {/* DATA VIEW */}
-                {/* ==================================== */}
-                <DataViewPanel/>
             </div>
         </div>
     )
@@ -500,7 +502,7 @@ function DataViewPanel() {
             <h2 className="text-lg font-bold uppercase text-lul-orange">Data View</h2>
 
             {/* Controls */}
-            <div className="w-full flex items-center gap-x-4 mb-4">
+            <div className="w-full flex items-center gap-x-4">
                 <div className="flex flex-col items-center gap-y-1">
                     <label htmlFor="data-view-table" className="text-xs self-start uppercase font-bold">Table</label>
                     <select

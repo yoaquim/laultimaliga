@@ -9,7 +9,7 @@ export function Grid({title, children}: { title: string, children: ReactNode }) 
             </div>
 
             {/* Teams Grid */}
-            <div className="2xl:grid-cols-5 lg:grid-cols-3 grid grid-cols-1 gap-6 items-stretch">
+            <div className="2xl:grid-cols-4 lg:grid-cols-3 grid grid-cols-1 gap-6 items-stretch">
                 {children}
             </div>
         </>
