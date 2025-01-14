@@ -51,3 +51,10 @@ export const EMPTY_MESSAGES = {
     NO_TEAMS: 'There aren\'t any teams yet.',
     NO_PLAYERS: 'There aren\'t any players yet.',
 }
+
+
+export function formatTimeElapsed(seconds: number) {
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}

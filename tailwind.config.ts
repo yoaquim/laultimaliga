@@ -9,6 +9,12 @@ const config: Config = {
     ],
     theme: {
         extend: {
+            fontSize: {
+                'scoreboard': '15rem',
+                'scoreboard-xl': '30rem',
+                'time': '10rem',
+                'time-xl': '17rem'
+            },
             gridTemplateColumns: {
                 '13': 'repeat(13, minmax(0, 1fr))',
             },

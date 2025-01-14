@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import clsx from 'clsx'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { MatchStatus } from '@prisma/client'
 import MessageModal from '@/ui/message-modal'
 import { MatchWithDetails, StatType } from './types'
@@ -10,7 +10,7 @@ import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
 import { getIsAdmin } from '@/dashboard/actions'
 import Empty from '@/ui/empty'
 import Spinner from '@/ui/spinner'
-import { DOMAIN, EMPTY_MESSAGES, ERRORS, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
 
 /** Merge team players and participations for display */
@@ -64,6 +64,8 @@ function getStatusActions(status: MatchStatus) {
 
 export default function Page() {
     const {matchId} = useParams<{ matchId: string }>()
+    const searchParams = useSearchParams()
+    const time: number = parseInt(searchParams.get('time') || '720')
     const [loading, setLoading] = useState(true)
     const [match, setMatch] = useState<MatchWithDetails | null>(null)
     const [status, setStatus] = useState<MatchStatus | null>(null)
@@ -73,8 +75,8 @@ export default function Page() {
     const [homeTeamScore, setHomeTeamScore] = useState<number>(0)
     const [awayTeamScore, setAwayTeamScore] = useState<number>(0)
     const [scoreboard, setScoreboard] = useState<Window | null>(null)
-    const [showScoreboardCtls, setShowScoreboardCtls] = useState<boolean>(false)
-    const [shotClockRunning, setShotClockRunning] = useState<boolean>(false)
+    const [timerRunning, setTimerRunning] = useState(false)
+    const [timeRemaining, setTimeRemaining] = useState(time)
 
     // For the confirmation modal
     const [modalIsOpen, setModalIsOpen] = useState(false)
@@ -92,11 +94,51 @@ export default function Page() {
             const fetchedMatch = (await getMatch(matchId)) as MatchWithDetails
             setMatch(fetchedMatch)
             setStatus(fetchedMatch?.status || null)
+            setHomeTeamScore(fetchedMatch.homeScore)
+            setAwayTeamScore(fetchedMatch.awayScore)
             setLoading(false)
         }
 
         fetchMatchData()
     }, [matchId])
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null
+
+        if (timerRunning) {
+            interval = setInterval(() => {
+                setTimeRemaining((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(interval!)
+                        return 0 // Stop at 0
+                    }
+                    return prev - 1
+                })
+            }, 1000)
+        } else if (!timerRunning && interval) {
+            clearInterval(interval)
+        }
+
+        return () => {
+            if (interval) clearInterval(interval)
+        }
+    }, [timerRunning])
+
+    useEffect(() => {
+        const sendTimerUpdate = () => {
+            if (scoreboard && !scoreboard.closed) {
+                scoreboard.postMessage({
+                    type: 'SYNC_TIMER',
+                    timeRemaining,
+                })
+            }
+        }
+
+        if (timerRunning) {
+            const interval = setInterval(sendTimerUpdate, 1000)
+            return () => clearInterval(interval)
+        }
+    }, [timerRunning, timeRemaining, scoreboard])
 
     /**
      * Update the match status.
@@ -110,6 +152,12 @@ export default function Page() {
                 setStatus(newStatus)
                 const refreshed = (await getMatch(matchId)) as MatchWithDetails
                 setMatch(refreshed)
+
+                if (newStatus === 'ONGOING') {
+                    setTimerRunning(true)
+                } else {
+                    setTimerRunning(false)
+                }
             } catch (error) {
                 console.error(ERRORS.MATCH.ERROR_UPDATING_MATCH_STATUS, error)
             } finally {
@@ -212,12 +260,13 @@ export default function Page() {
         }
     }
 
-
     const handleOpenScoreboard = () => {
-        setShowScoreboardCtls(true)
+        if (!userIsAdmin) return
+        if (!match) return
+
         if (!scoreboard || scoreboard.closed) {
             const newScoreboard = window.open(
-                `${DOMAIN}/scoreboard?homeTeamScore=${homeTeamScore}&awayTeamScore=${awayTeamScore}`,
+                `${DOMAIN}/scoreboard?homeTeamScore=${homeTeamScore}&homeTeamLogo=${match.homeTeam.logo}&awayTeamScore=${awayTeamScore}&awayTeamLogo=${match.awayTeam.logo}&time=${timeRemaining}`,
                 '_blank',
                 'width=screen,height=screen,scrollbars=no,resizable=yes'
             )
@@ -230,12 +279,14 @@ export default function Page() {
         }
     }
 
-    const handleShotClock = () => {
-        if (shotClockRunning) {
-            // stop shotClock
-        } else {
-            // start shotClock
-        }
+    const handleStartStopTimer = () => {
+        setTimerRunning((prev) => {
+            const running = !prev
+            if (scoreboard && !scoreboard.closed) {
+                scoreboard.postMessage({type: 'TIMER_CONTROL', running})
+            }
+            return running
+        })
     }
 
     // ----------------------------------------------------------------
@@ -251,7 +302,6 @@ export default function Page() {
         day: 'numeric',
     })
 
-    // scoreboard color
     const scoreboardColor =
         match.status === 'ONGOING'
             ? 'text-lul-green'
@@ -311,7 +361,7 @@ export default function Page() {
                     </div>
 
                     {/*DESKTOP*/}
-                    <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold cursor-pointer" onClick={handleOpenScoreboard}>
+                    <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
                         <div className="w-1/3 flex flex-col pt-4">
                             <div className="w-full h-full flex justify-start items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="w-56"/>
@@ -321,17 +371,34 @@ export default function Page() {
                         <div className="w-1/3 h-full flex flex-col justify-center items-center gap-y-2">
                             {showScoreboard
                                 ? (
-                                    <div className={clsx('flex flex-1 w-1/3 text-8xl font-extrabold justify-center items-center gap-x-10', scoreboardColor)}>
-                                        <h1>{match.homeScore}</h1>
-                                        <img src="/ball.svg" alt="ball" className="w-9"/>
-                                        <h1>{match.awayScore}</h1>
-                                        {/*{showScoreboardCtls && (*/}
-                                        {/*    <div className="w-full flex flex-col gap-y-4">*/}
-                                        {/*        <button className="w-full py-2 uppercase text-base text-white bg-lul-red/80" onClick={() => handleShotClock}>*/}
-                                        {/*            {shotClockRunning ? 'STOP' : 'START'}*/}
-                                        {/*        </button>*/}
-                                        {/*    </div>*/}
-                                        {/*)}*/}
+                                    <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10', scoreboardColor)}>
+                                        <div className="w-full flex justify-between items-center">
+                                            <h1>{match.homeScore}</h1>
+                                            <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
+                                            <h1>{match.awayScore}</h1>
+                                        </div>
+
+                                        <div className="w-full flex flex-col justify-center items-center gap-y-6">
+                                            {userIsAdmin && (
+                                                <div className="font-bold text-4xl text-lul-red/80">
+                                                    {formatTimeElapsed(timeRemaining)}
+                                                </div>
+                                            )}
+
+                                            {userIsAdmin && match.status === 'ONGOING' && (
+                                                <button
+                                                    className={clsx('w-full py-2 text-base text-white rounded uppercase font-bold',
+                                                        {
+                                                            'bg-lul-red/70': timerRunning,
+                                                            'bg-lul-green/70': !timerRunning
+                                                        }
+                                                    )}
+                                                    onClick={handleStartStopTimer}
+                                                >
+                                                    {timerRunning ? 'Stop' : 'Start'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 )
                                 : (
