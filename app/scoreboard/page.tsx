@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 
-export default function Page() {
+function Scoreboard() {
     const searchParams = useSearchParams()
     const homeTeamLogo = searchParams.get('homeTeamLogo')
     const awayTeamLogo = searchParams.get('awayTeamLogo')
@@ -87,5 +87,11 @@ export default function Page() {
             </div>
 
         </div>
+    )
+}
+
+export default function Page() {
+    return (
+        <Suspense><Scoreboard/></Suspense>
     )
 }
