@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { BUCKET_ENDPOINT, formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 
 function Scoreboard() {
     const searchParams = useSearchParams()
@@ -19,7 +19,7 @@ function Scoreboard() {
     useEffect(() => {
         if (timeRemaining === 0 && timerRunning) {
             console.log('BUZZING')
-            const buzzer = new Audio('https://opkpwsseguyivdrawleq.supabase.co/storage/v1/object/public/lul/assets/buzzer.wav?t=2025-01-14T11%3A16%3A50.262Z')
+            const buzzer = new Audio(`${BUCKET_ENDPOINT}/assets/buzzer.wav`)
             buzzer.play().catch((err) => console.error('Error playing buzzer sound:', err))
         }
     }, [timeRemaining, timerRunning])

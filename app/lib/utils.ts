@@ -2,7 +2,9 @@ export const DOMAIN: string = process.env.NODE_ENV === 'production'
     ? 'https://laultimaliga.com'
     : 'http://localhost:3000'
 
-export const TEAM_LOGO_URL_BUILDER = (path: string) => `https://opkpwsseguyivdrawleq.supabase.co/storage/v1/object/public/lul/teams/logos/${path}`
+export const BUCKET_ENDPOINT = 'https://opkpwsseguyivdrawleq.supabase.co/storage/v1/object/public/lul'
+
+export const TEAM_LOGO_URL_BUILDER = (path: string) => `${BUCKET_ENDPOINT}/teams/logos/${path}`
 
 export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/matches`
 export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/sign-in'

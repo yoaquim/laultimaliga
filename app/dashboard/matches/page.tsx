@@ -58,7 +58,7 @@ export default async function Page() {
                     <Link
                         key={match.id}
                         href={`/dashboard/matches/${match.id}`}
-                        className="relative flex flex-col h-full gap-y-8 p-6 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
+                        className="w-full relative flex flex-col h-full p-4 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer gap-y-4"
                     >
                         {/* STATUS BADGE - pinned top-right */}
                         <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-md text-white text-sm font-bold uppercase" style={{backgroundColor: 'rgba(0,0,0,0.25)'}}>
@@ -73,28 +73,37 @@ export default async function Page() {
                             </div>
                         </div>
 
-                        {/* MAIN CONTENT */}
-                        <div className="flex-1 flex flex-col items-center justify-center gap-y-4 pt-10">
+                        {/* SCORE */}
+                        {isScoreVisible &&
+                            <div className={clsx('w-full flex justify-center gap-x-1 text-3xl font-bold rounded', {
+                                'text-lul-green': match.status === 'ONGOING',
+                                'text-lul-blue': match.status === 'COMPLETED',
+                            })
+                            }>
+                                <div>{match.homeScore}</div>
+                                <div>-</div>
+                                <div>{match.awayScore}</div>
+                            </div>
+                        }
 
-                            {/* TEAMS */}
+                        {/* TEAMS */}
+                        <div className={clsx('flex-1 flex flex-col items-center justify-center gap-y-4', {
+                            'pt-8': !isScoreVisible
+                        })}>
                             <div className="w-full flex items-center justify-between">
-
                                 {/*HOME TEAM*/}
                                 <div className="flex flex-col justify-center items-start">
                                     <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
                                 </div>
 
-                                <div className="flex items-center justify-center">
-                                    {/* If not showing score, use ⚡️ or something else */}
-                                    {isScoreVisible
-                                        ? (<div className={clsx('text-3xl font-bold', scoreColor)}>
-                                            {match.homeScore} - {match.awayScore}
-                                        </div>)
-                                        : match.status === 'CANCELED'
+                                {!isScoreVisible &&
+                                    <div className="flex items-center justify-center">
+                                        {match.status === 'CANCELED'
                                             ? <div className="w-full text-center text-4xl">❌</div>
                                             : (<img src="/ball.svg" alt="ball" className="w-8"/>)
-                                    }
-                                </div>
+                                        }
+                                    </div>
+                                }
 
                                 {/*AWAY TEAM*/}
                                 <div className="flex flex-col justify-center items-end">

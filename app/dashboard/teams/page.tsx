@@ -87,7 +87,7 @@ export default async function Page() {
                         <p className="text-sm uppercase font-bold">Played</p>
                         <p className="text-sm uppercase font-bold">Won</p>
                         <p className="text-2xl font-bold">{team.players.length}</p>
-                        <p className="text-2xl font-bold">{team.totalMatches}</p>
+                        <p className="text-2xl font-bold text-lul-blue">{team.totalMatches}</p>
                         <p className="text-2xl font-bold text-lul-green">
                             {team.matchesWon}
                         </p>
