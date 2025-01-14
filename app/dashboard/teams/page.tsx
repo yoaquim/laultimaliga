@@ -57,7 +57,7 @@ export default async function Page() {
                 <Link
                     key={team.id}
                     href={`/dashboard/teams/${team.id}`}
-                    className="relative flex flex-col h-full gap-y-6 p-4 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
+                    className="relative flex flex-col h-full gap-y-6 p-4 pt-10 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
                 >
                     {/* Win Rate - pinned top-right */}
                     <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-md text-white text-sm font-bold uppercase" style={{backgroundColor: 'rgba(0,0,0,0.25)'}}>
@@ -69,6 +69,11 @@ export default async function Page() {
                         >
                             {team.winRate}%
                         </div>
+                    </div>
+
+                    {/* Season ShortName or Name */}
+                    <div className="absolute top-4 left-3 text-lul-blue text-sm font-bold uppercase">
+                        {team.season.shortName || team.season.name}
                     </div>
 
                     {/* Team Logo */}
@@ -86,10 +91,6 @@ export default async function Page() {
                         <p className="text-2xl font-bold text-lul-green">
                             {team.matchesWon}
                         </p>
-                    </div>
-                    {/* Season ShortName or Name */}
-                    <div className="self-end text-lul-blue text-sm font-semibold uppercase">
-                        {team.season.shortName || team.season.name}
                     </div>
                 </Link>
             ))}

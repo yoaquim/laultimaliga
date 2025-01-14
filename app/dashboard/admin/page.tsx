@@ -84,8 +84,9 @@ export default function AdminDashboardPage() {
             type: 'object',
             required: ['name', 'seasonId'],
             properties: {
-                name: {type: 'string', title: 'Team Name'},
                 seasonId: {type: 'string', title: 'Season ID'},
+                name: {type: 'string', title: 'Team Name'},
+                logo: {type: 'string', title: 'Logo Path'},
             },
         },
         PLAYERS: {
@@ -276,10 +277,10 @@ export default function AdminDashboardPage() {
             'Spring 2025,S25,2025-03-01,2025-06-01\n' +
             'Summer 2025,SU25,2025-06-02,2025-09-01\n' +
             'Fall 2025,F25,2025-09-02,2025-12-01\n',
-        TEAMS: 'name,logo,seasonId\n' +
-            'Lions,,season-uuid-1\n' +
-            'Tigers,,season-uuid-1\n' +
-            'Sharks,,season-uuid-2\n',
+        TEAMS: 'seasonId,name,logo\n' +
+            'season-uuid-1,Lions ,season-name/logo.png\n' +
+            'season-uuid-1,Tigers,season-name/logo.png\n' +
+            'season-uuid-2,Sharks,season-name/logo.png\n',
         PLAYERS: 'name,phone,position,size,userId\n' +
             'John Doe,1234567890,PG,MEDIUM,user-uuid-1\n' +
             'Jane Smith,0987654321,SG,LARGE,user-uuid-2\n' +

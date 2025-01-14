@@ -140,7 +140,7 @@ export async function bulkCreateSeasonsAction(rows: string[][]) {
 export async function bulkCreateTeamsAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
-        const [name, seasonId, logo] = row
+        const [seasonId, name, logo] = row
         await prisma.team.create({data: {name, seasonId, logo}})
     }
     revalidatePath('/dashboard/admin')
