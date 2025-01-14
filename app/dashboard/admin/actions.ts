@@ -21,6 +21,7 @@ export async function createSeasonAction(data: {
             endDate: new Date(data.endDate),
         },
     })
+
     revalidatePath('/dashboard/admin')
     return newSeason
 }

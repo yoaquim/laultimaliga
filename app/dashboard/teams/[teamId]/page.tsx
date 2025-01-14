@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
-import { EMPTY_MESSAGES } from '@/lib/utils'
+import { EMPTY_MESSAGES, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Empty from '@/ui/empty'
 
 export default async function Page({params}: { params: Promise<{ teamId: string }> }) {
@@ -46,6 +46,11 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
             <div className="lg:bg-opacity-0 flex flex-col lg:flex-row pt-4 items-center justify-between sticky top-0 bg-lul-black z-10">
                 <h1 className="text-3xl font-bold">{team.name}</h1>
                 <p className="text-lul-blue uppercase font-bold">{team.season.shortName || team.season.name}</p>
+            </div>
+
+
+            <div className="w-full flex justify-center items-center">
+                <img src={TEAM_LOGO_URL_BUILDER(team.logo)} alt="team-logo" className="h-64"/>
             </div>
 
             {/* Team Stats */}

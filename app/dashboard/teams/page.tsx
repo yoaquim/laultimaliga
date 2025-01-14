@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES } from '@/lib/utils'
+import { EMPTY_MESSAGES, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 import clsx from 'clsx'
 
@@ -71,26 +71,22 @@ export default async function Page() {
                         </div>
                     </div>
 
-                    {/* TOP SECTION */}
-                    <div className="flex-1 flex flex-col">
-                        {/* Team Name */}
-                        <div className="flex items-center justify-between mb-4 w-5/6">
-                            <h2 className="pr-8 text-3xl font-semibold">{team.name}</h2>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                            <p className="text-lg">Players</p>
-                            <p className="text-lg">Played</p>
-                            <p className="text-lg">Won</p>
-                            <p className="text-2xl font-bold">{team.players.length}</p>
-                            <p className="text-2xl font-bold">{team.totalMatches}</p>
-                            <p className="text-2xl font-bold text-lul-green">
-                                {team.matchesWon}
-                            </p>
-                        </div>
+                    {/* Team Logo */}
+                    <div className="w-full flex justify-center items-center">
+                        <img src={TEAM_LOGO_URL_BUILDER(team.logo)} alt="team-logo" className="h-32"/>
                     </div>
 
+                    {/* Stats */}
+                    <div className="grid grid-cols-3 gap-x-4 gap-y-2 text-center">
+                        <p className="text-sm uppercase font-bold">Players</p>
+                        <p className="text-sm uppercase font-bold">Played</p>
+                        <p className="text-sm uppercase font-bold">Won</p>
+                        <p className="text-2xl font-bold">{team.players.length}</p>
+                        <p className="text-2xl font-bold">{team.totalMatches}</p>
+                        <p className="text-2xl font-bold text-lul-green">
+                            {team.matchesWon}
+                        </p>
+                    </div>
                     {/* Season ShortName or Name */}
                     <div className="self-end text-lul-blue text-sm font-semibold uppercase">
                         {team.season.shortName || team.season.name}

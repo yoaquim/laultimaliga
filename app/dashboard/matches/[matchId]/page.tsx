@@ -11,7 +11,7 @@ import { getIsAdmin } from '@/dashboard/actions'
 import Shimmer from '@/ui/shimmer'
 import Empty from '@/ui/empty'
 import Spinner from '@/ui/spinner'
-import { EMPTY_MESSAGES, ERRORS } from '@/lib/utils'
+import { EMPTY_MESSAGES, ERRORS, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
 
 /** Merge team players and participations for display */
@@ -218,6 +218,14 @@ export default function Page() {
     const showScoreboard = match.status === 'ONGOING' || match.status === 'COMPLETED'
     const actionButtons = getStatusActions(match.status)
 
+    const statKeys = ['points', 'assists', 'rebounds', 'fouls']
+    const statAbbrv: Record<string, string> = {
+        points: 'PTS',
+        assists: 'AST',
+        rebounds: 'REB',
+        fouls: 'FLS',
+    }
+
     return (
         <>
             <MessageModal
@@ -229,21 +237,21 @@ export default function Page() {
             />
 
             <div className="w-full h-full flex flex-col text-white">
+
                 {/* TOP / SCOREBOARD / STATUS */}
-                <div className="flex flex-col gap-y-4 p-4 lg:py-5">
+                <div className="flex flex-col lg:gap-y-4 p-4 lg:py-5">
                     {/* Status badge */}
-                    <div
-                        className={clsx(
-                            'w-full py-2 rounded-md text-center text-xl font-bold text-lul-black',
-                            getStatusBadgeColor(match.status)
-                        )}
-                    >
+                    <div className={clsx(
+                        'w-full py-2 rounded-md text-center text-xl font-bold text-lul-black',
+                        getStatusBadgeColor(match.status)
+                    )}>
                         {match.status}
                     </div>
 
                     {/* TEAMS + SCORE (mobile stacked, desktop row) */}
-                    <div className="block lg:hidden text-center text-3xl font-bold w-full max-w-screen-lg mx-auto">
-                        <div>{match.homeTeam.name}</div>
+
+                    {/*MOBILE*/}
+                    <div className="block lg:hidden text-center text-3xl font-bold w-full max-w-screen-lg mx-auto py-6">
                         {showScoreboard ? (
                             <div className={clsx('text-7xl font-extrabold my-2', scoreboardColor)}>
                                 {match.homeScore} - {match.awayScore}
@@ -251,29 +259,54 @@ export default function Page() {
                         ) : (
                             <div className="text-5xl my-2">⚡️</div>
                         )}
-                        <div>{match.awayTeam.name}</div>
-                    </div>
-                    <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
-                        <div className="w-1/3">{match.homeTeam.name}</div>
-                        {showScoreboard ? (
-                            <h1 className={clsx('w-1/3 text-7xl text-center font-extrabold', scoreboardColor)}>
-                                {match.homeScore} - {match.awayScore}
-                            </h1>
-                        ) : (
-                            <h1 className="w-1/3 text-5xl text-center">⚡️</h1>
-                        )}
-                        <div className="w-1/3 text-right">{match.awayTeam.name}</div>
+
+                        <div className="mt-4 flex justify-between items-center">
+                            <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
+                            <img src="/ball.svg" alt="ball" className="h-8"/>
+                            <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
+                        </div>
                     </div>
 
-                    {/* Date + Season */}
-                    <div className="flex flex-col items-center">
-                        <p className="text-lul-blue text-lg">{match.season.name}</p>
-                        <h1 className="text-lg">{dateStr}</h1>
+                    {/*DESKTOP*/}
+                    <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
+                        <div className="w-1/3 flex flex-col pt-4">
+                            <div className="w-full h-full flex justify-start items-center">
+                                <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="w-56"/>
+                            </div>
+                        </div>
+
+                        <div className="w-1/3 h-full flex flex-col justify-center items-center gap-y-2">
+                            {showScoreboard
+                                ? (
+                                    <div className={clsx('flex flex-1 w-1/3 text-8xl font-extrabold justify-center items-center gap-x-10', scoreboardColor)}>
+                                        <h1>{match.homeScore}</h1>
+                                        <img src="/ball.svg" alt="ball" className="w-9"/>
+                                        <h1>{match.awayScore}</h1>
+                                    </div>
+                                )
+                                : (
+                                    <div className="w-32 flex h-full items-center justify-center">
+                                        <img src="/ball.svg" alt="ball"/>
+                                    </div>
+                                )}
+                            {/* Date + Season */}
+                            <div className="flex flex-col items-center">
+                                <p className="text-lul-blue text-lg">{match.season.name}</p>
+                                <h1 className="text-lg">{dateStr}</h1>
+                            </div>
+                        </div>
+
+                        <div className="w-1/3 flex flex-col pt-4">
+                            <div className="w-full h-full flex justify-end items-center">
+                                <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="w-56"/>
+                            </div>
+                        </div>
                     </div>
+
 
                     {/* Status buttons */}
                     {actionButtons.length > 0 && userIsAdmin && (
-                        <div className="w-full flex gap-4 justify-center items-center">
+                        <div className="w-full flex gap-4 justify-center items-center lg:pt-0 pt-4">
                             {actionButtons.map((action) => (
                                 <button
                                     key={action.label}
@@ -306,60 +339,64 @@ export default function Page() {
                         {/* Scrollable stats area */}
                         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {mergeTeamAndParticipations(match.homeTeam, match.participations).map(
-                                ({id, player, stats, participationExists}: any) => (
-                                    <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
-                                        <h3 className="flex-1 text-2xl font-bold">{player.user.name}</h3>
-                                        <div className="w-full mt-4 flex justify-between gap-2">
-                                            {['points', 'assists', 'rebounds'].map((statKey) => (
-                                                <div
-                                                    key={statKey}
-                                                    className="flex flex-col items-center text-2xl gap-y-4"
-                                                >
-                                                    <div className="flex flex-col items-center">
-                                                        <div className="uppercase text-xs antialiased">{statKey}</div>
-                                                        <div className={clsx('font-bold',
-                                                            {
-                                                                'text-lul-green': statKey === 'points',
-                                                                'text-lul-blue': statKey === 'assists',
-                                                                'text-lul-yellow': statKey === 'rebounds',
-                                                            }
-                                                        )}>
-                                                            {stats[statKey]}
+                                ({id, player, stats, participationExists}: any) => {
+                                    return (
+                                        <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
+                                            <h3 className="flex-1 text-2xl font-bold">{player.user.name}</h3>
+                                            <div className="w-full mt-4 flex justify-between gap-2">
+                                                {statKeys.map((statKey) => (
+                                                    <div
+                                                        key={statKey}
+                                                        className="flex flex-col items-center text-2xl gap-y-4"
+                                                    >
+                                                        <div className="flex flex-col items-center">
+                                                            <div className="uppercase text-xs antialiased">{statAbbrv[statKey]}</div>
+
+                                                            <div className={clsx('font-bold text-3xl',
+                                                                {
+                                                                    'text-lul-green': statKey === 'points',
+                                                                    'text-lul-blue': statKey === 'assists',
+                                                                    'text-lul-yellow': statKey === 'rebounds',
+                                                                    'text-lul-red': statKey === 'fouls',
+                                                                }
+                                                            )}>
+                                                                {stats[statKey]}
+                                                            </div>
                                                         </div>
+                                                        {participationExists && userIsAdmin && (
+                                                            <>
+                                                                <button
+                                                                    disabled={match.status !== 'ONGOING'}
+                                                                    className={clsx(
+                                                                        'px-2 rounded text-white mt-1 bg-lul-dark-grey border-0.5 border-lul-green',
+                                                                        {'opacity-30': match.status !== 'ONGOING'}
+                                                                    )}
+                                                                    onClick={() =>
+                                                                        handleUpdateStats(stats.id, statKey as StatType, true)
+                                                                    }
+                                                                >
+                                                                    +
+                                                                </button>
+                                                                <button
+                                                                    disabled={match.status !== 'ONGOING'}
+                                                                    className={clsx(
+                                                                        'px-3 rounded text-white mt-1 bg-lul-dark-grey border-0.5 border-lul-red',
+                                                                        {'opacity-30': match.status !== 'ONGOING'}
+                                                                    )}
+                                                                    onClick={() =>
+                                                                        handleUpdateStats(stats.id, statKey as StatType, false)
+                                                                    }
+                                                                >
+                                                                    -
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                    {participationExists && userIsAdmin && (
-                                                        <>
-                                                            <button
-                                                                disabled={match.status !== 'ONGOING'}
-                                                                className={clsx(
-                                                                    'px-4 rounded-md text-white mt-1 bg-lul-green',
-                                                                    {'opacity-30': match.status !== 'ONGOING'}
-                                                                )}
-                                                                onClick={() =>
-                                                                    handleUpdateStats(stats.id, statKey as StatType, true)
-                                                                }
-                                                            >
-                                                                +
-                                                            </button>
-                                                            <button
-                                                                disabled={match.status !== 'ONGOING'}
-                                                                className={clsx(
-                                                                    'px-5 rounded-md text-white mt-1 bg-lul-red',
-                                                                    {'opacity-30': match.status !== 'ONGOING'}
-                                                                )}
-                                                                onClick={() =>
-                                                                    handleUpdateStats(stats.id, statKey as StatType, false)
-                                                                }
-                                                            >
-                                                                -
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ))}
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )
+                                    )
+                                }
                             )}
                         </div>
                     </div>
@@ -382,18 +419,19 @@ export default function Page() {
                                     <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
                                         <h3 className="flex-1 text-2xl font-bold">{player.user.name}</h3>
                                         <div className="w-full mt-4 flex justify-between gap-2">
-                                            {['points', 'assists', 'rebounds'].map((statKey) => (
+                                            {statKeys.map((statKey) => (
                                                 <div
                                                     key={statKey}
                                                     className="flex flex-col items-center text-2xl gap-y-4"
                                                 >
                                                     <div className="flex flex-col items-center">
-                                                        <div className="uppercase text-xs antialiased">{statKey}</div>
-                                                        <div className={clsx('font-bold',
+                                                        <div className="uppercase text-xs antialiased">{statAbbrv[statKey]}</div>
+                                                        <div className={clsx('font-bold text-3xl',
                                                             {
                                                                 'text-lul-green': statKey === 'points',
                                                                 'text-lul-blue': statKey === 'assists',
                                                                 'text-lul-yellow': statKey === 'rebounds',
+                                                                'text-lul-red': statKey === 'fouls',
                                                             }
                                                         )}>
                                                             {stats[statKey]}
@@ -404,7 +442,7 @@ export default function Page() {
                                                             <button
                                                                 disabled={match.status !== 'ONGOING'}
                                                                 className={clsx(
-                                                                    'px-4 rounded-md text-white mt-1 bg-lul-green',
+                                                                    'px-2 rounded text-white mt-1 bg-lul-dark-grey border-0.5 border-lul-green',
                                                                     {'opacity-30': match.status !== 'ONGOING'}
                                                                 )}
                                                                 onClick={() =>
@@ -416,7 +454,7 @@ export default function Page() {
                                                             <button
                                                                 disabled={match.status !== 'ONGOING'}
                                                                 className={clsx(
-                                                                    'px-5 rounded-md text-white mt-1 bg-lul-red',
+                                                                    'px-3 rounded text-white mt-1 bg-lul-dark-grey border-lul-red border',
                                                                     {'opacity-30': match.status !== 'ONGOING'}
                                                                 )}
                                                                 onClick={() =>

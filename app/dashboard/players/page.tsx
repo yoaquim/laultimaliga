@@ -2,7 +2,6 @@ import { Prisma } from '@prisma/client'
 import Link from 'next/link'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
-import Shimmer from '@/ui/shimmer' // if you need a loading state
 import { EMPTY_MESSAGES } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 

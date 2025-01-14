@@ -3,7 +3,7 @@ import Link from 'next/link'
 import clsx from 'clsx'
 import { Grid } from '@/ui/grid'
 import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES } from '@/lib/utils'
+import { EMPTY_MESSAGES, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 
 type MatchWithTeams = Prisma.MatchGetPayload<{
@@ -74,24 +74,31 @@ export default async function Page() {
                         </div>
 
                         {/* MAIN CONTENT */}
-                        <div className="flex-1 flex flex-col items-center justify-center gap-y-4 pt-8">
+                        <div className="flex-1 flex flex-col items-center justify-center gap-y-4 pt-10">
+
                             {/* TEAMS */}
-                            <div className="flex flex-col items-center space-y-2">
-                                <div className="text-2xl font-semibold text-white break-words text-center">
-                                    {match.homeTeam.name}
+                            <div className="w-full flex items-center justify-between">
+
+                                {/*HOME TEAM*/}
+                                <div className="flex flex-col justify-center items-start">
+                                    <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
                                 </div>
 
-                                {/* If not showing score, use ⚡️ or something else */}
-                                {isScoreVisible ? (
-                                    <div className={clsx('text-3xl font-bold', scoreColor)}>
-                                        {match.homeScore} - {match.awayScore}
-                                    </div>
-                                ) : (
-                                    <div className="text-3xl text-white opacity-80">⚡️</div>
-                                )}
+                                <div className="flex items-center justify-center">
+                                    {/* If not showing score, use ⚡️ or something else */}
+                                    {isScoreVisible
+                                        ? (<div className={clsx('text-3xl font-bold', scoreColor)}>
+                                            {match.homeScore} - {match.awayScore}
+                                        </div>)
+                                        : match.status === 'CANCELED'
+                                            ? <div className="w-full text-center text-4xl">❌</div>
+                                            : (<img src="/ball.svg" alt="ball" className="w-8"/>)
+                                    }
+                                </div>
 
-                                <div className="text-2xl font-semibold text-white break-words text-center">
-                                    {match.awayTeam.name}
+                                {/*AWAY TEAM*/}
+                                <div className="flex flex-col justify-center items-end">
+                                    <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
                                 </div>
                             </div>
                         </div>

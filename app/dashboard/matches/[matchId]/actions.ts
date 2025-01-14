@@ -3,7 +3,7 @@
 import { MatchStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import { StatType } from './types'
-import { isAdmin, requireAdmin } from '@/lib/rba'
+import { requireAdmin } from '@/lib/rba'
 
 export async function getMatch(matchId: string) {
     return await prisma.match.findUnique({
@@ -88,7 +88,7 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
                     // update season stats
                     if (updatedMatch.season) {
                         const seasonId = updatedMatch.season.id
-                        await tx.seasonStats.upsert({
+                        await tx.playerSeasonStats.upsert({
                             where: {
                                 playerId_seasonId: {
                                     playerId,
@@ -214,7 +214,7 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
             },
         })
 
-        await tx.seasonStats.upsert({
+        await tx.playerSeasonStats.upsert({
             where: {
                 playerId_seasonId: {playerId, seasonId},
             },

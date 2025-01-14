@@ -12,6 +12,9 @@ const config: Config = {
             gridTemplateColumns: {
                 '13': 'repeat(13, minmax(0, 1fr))',
             },
+            borderWidth: {
+                '0.5': '0.25px'
+            },
             colors: {
                 'lul-red': '#ff1654',
                 'lul-blue': '#008fff',
