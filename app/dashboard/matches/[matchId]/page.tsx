@@ -157,8 +157,6 @@ export default function Page() {
 
                 if (newStatus === 'ONGOING') {
                     setTimerRunning(true)
-                } else if (newStatus === 'COMPLETED') {
-                    setTimerRunning(false)
                 } else {
                     setTimerRunning(false)
                 }
@@ -174,6 +172,7 @@ export default function Page() {
             setModalMessage('Are you sure you want to complete the match?')
             setModalAction(() => async () => {
                 setModalIsOpen(false)
+                setTimerRunning(false)
                 await applyStatus()
             })
             setModalIsOpen(true)
@@ -350,7 +349,7 @@ export default function Page() {
                     {/*====================================================*/}
                     <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
                         <div className="w-1/3 flex flex-col pt-4">
-                            <Link href={`/dashboard/teams/${match.homeTeam.id}`} className="w-full h-full flex justify-start items-center">
+                            <Link href={`/dashboard/teams/${match.homeTeam.id}`} target="_blank" className="w-full h-full flex justify-start items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-56"/>
                             </Link>
                         </div>
@@ -372,9 +371,19 @@ export default function Page() {
                             {showScoreboard &&
                                 <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10 text-lul-yellow')}>
                                     <div className="w-full flex justify-between items-center">
-                                        <h1>{match.homeScore}</h1>
+                                        <h1 className={clsx({
+                                            'text-lul-green': match.winnerId && match.winnerId === match.homeTeam.id,
+                                            'text-lul-red': match.winnerId && match.winnerId === match.awayTeam.id
+                                        })}>
+                                            {match.homeScore}
+                                        </h1>
                                         <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
-                                        <h1>{match.awayScore}</h1>
+                                        <h1 className={clsx({
+                                            'text-lul-green': match.winnerId && match.winnerId === match.awayTeam.id,
+                                            'text-lul-red': match.winnerId && match.winnerId === match.homeTeam.id
+                                        })}>
+                                            {match.awayScore}
+                                        </h1>
                                     </div>
 
                                     <div className="w-full flex flex-col justify-center items-center gap-y-6">
@@ -416,7 +425,7 @@ export default function Page() {
                         </div>
 
                         <div className="w-1/3 flex flex-col pt-4">
-                            <Link href={`/dashboard/teams/${match.awayTeam.id}`} className="w-full h-full flex justify-end items-center">
+                            <Link href={`/dashboard/teams/${match.awayTeam.id}`} target="_blank" className="w-full h-full flex justify-end items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-56"/>
                             </Link>
                         </div>

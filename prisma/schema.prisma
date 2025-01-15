@@ -110,7 +110,6 @@ model Player {
   id             String                     @id @default(cuid())
   user           User                       @relation(fields: [userId], references: [id])
   userId         String                     @unique
-  phone          String?
   position       Position?
   size           Size
   totalStats     PlayerTotalStats?

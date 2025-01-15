@@ -54,9 +54,10 @@ export default function MatchCard({match, noTopRadius}: Props) {
 
             {/* TEAMS */}
             <div className={clsx('flex-1 flex flex-col items-center justify-center gap-y-4')}>
-                <div className="w-full flex items-center justify-between">
+                <div className="w-full -mt-8 flex items-center justify-between">
                     {/*HOME TEAM*/}
                     <div className="flex flex-col justify-center items-start">
+                        <h1 className="w-full text-white text-base text-center font-bold uppercase">HOME</h1>
                         <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
                     </div>
 
@@ -72,16 +73,29 @@ export default function MatchCard({match, noTopRadius}: Props) {
 
                     {/* SCORE */}
                     {isScoreVisible &&
-                        <div className={clsx('flex justify-center gap-x-1 text-3xl font-bold rounded text-lul-blue')
+                        <div className={clsx('flex justify-center gap-x-1 text-3xl font-bold rounded text-white')
                         }>
-                            <div>{match.homeScore}</div>
+                            <div className={clsx({
+                                'text-lul-green': match.winnerId === match.homeTeam.id,
+                                'text-lul-red': match.winnerId !== match.homeTeam.id
+                            })}>
+                                {match.homeScore}
+                            </div>
+
                             <div>-</div>
-                            <div>{match.awayScore}</div>
+
+                            <div className={clsx({
+                                'text-lul-green': match.winnerId === match.awayTeam.id,
+                                'text-lul-red': match.winnerId !== match.awayTeam.id
+                            })}>
+                                {match.awayScore}
+                            </div>
                         </div>
                     }
 
                     {/*AWAY TEAM*/}
-                    <div className="flex flex-col justify-center items-end">
+                    <div className="flex flex-col justify-center items-end ">
+                        <h1 className="w-full text-white text-base text-center font-bold uppercase">AWAY</h1>
                         <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
                     </div>
                 </div>

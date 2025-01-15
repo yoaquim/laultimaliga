@@ -12,7 +12,7 @@ export default function CardGrid({title, borderTitleColor, forceLessCols = false
     return (
         <div className="flex-1 flex flex-col lg:overflow-hidden bg-lul-grey/20 rounded-md px-4">
             {/* Sticky header */}
-            <div className={clsx('lg:bg-opacity-0 sticky top-0 z-10 border-b text-2xl font-semibold py-2 flex items-end', {
+            <div className={clsx('realtive lg:bg-opacity-0 sticky top-0 z-10 border-b text-2xl font-semibold py-2 flex items-end', {
                 'border-lul-blue': borderTitleColor === 'blue',
                 'border-lul-green': borderTitleColor === 'green',
                 'border-lul-yellow': borderTitleColor === 'yellow',
@@ -20,7 +20,7 @@ export default function CardGrid({title, borderTitleColor, forceLessCols = false
                 'border-lul-red': borderTitleColor === 'red',
                 'border-white': borderTitleColor === 'white'
             })}>
-                <h1 className="flex flex-1 uppercase text-xl">{title}</h1>
+                <h1 className="flex flex-1 uppercase text-xl sticky top-0 lg:static">{title}</h1>
             </div>
 
             {/* Scrollable stats area */}

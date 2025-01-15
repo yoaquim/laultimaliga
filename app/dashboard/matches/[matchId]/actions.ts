@@ -2,7 +2,7 @@
 
 import { MatchStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { MatchWithDetails, StatType } from './types'
+import { StatType } from './types'
 import { requireAdmin } from '@/lib/rba'
 
 export async function getMatch(matchId: string) {
@@ -77,78 +77,33 @@ export async function getMatch(matchId: string) {
     })
 
     return fullMatchDetails
-
-    // return await prisma.match.findUnique({
-    //     where: {id: matchId},
-    //     include: {
-    //         homeTeam: {
-    //             include: {
-    //                 players: {
-    //                     include: {
-    //                         player: {
-    //                             include: {
-    //                                 user: true,
-    //                                 seasonDetails: {
-    //                                     where: {
-    //                                         seasonId
-    //                                     }
-    //                                 }
-    //                             },
-    //                         },
-    //                     },
-    //                 },
-    //             },
-    //         },
-    //         awayTeam: {
-    //             include: {
-    //                 players: {
-    //                     include: {
-    //                         player: {
-    //                             include: {
-    //                                 user: true,
-    //                                 seasonDetails: {
-    //                                     where: {
-    //                                         seasonId
-    //                                     }
-    //                                 }
-    //                             },
-    //                         },
-    //                     },
-    //                 },
-    //             },
-    //         },
-    //         season: true,
-    //         participations: {
-    //             include: {
-    //                 player: {
-    //                     include: {
-    //                         user: true,
-    //                     },
-    //                 },
-    //                 stats: true, // includes "points, assists, rebounds"
-    //             },
-    //         },
-    //     },
-    // })
 }
 
 /**
  * Updates match status. If new status is COMPLETED, we finalize the match:
  *   - increment `gamesPlayed` in `PlayerTotalStats` for each participant
- *   - increment `gamesPlayed` in `SeasonStats` for each participant in that season
+ *   - increment `gamesPlayed` in `PlayerSeasonStats` for each participant in that season
+ *   - And set the winnerId (randomly choosing between homeTeamId and awayTeamId)
  */
 export async function updateMatchStatus(matchId: string, status: MatchStatus) {
     await requireAdmin()
     return prisma.$transaction(
         async (tx) => {
-            // 1) Update the match
+            // 1) Update the match and select homeTeamId and awayTeamId as well
             const updatedMatch = await tx.match.update({
                 where: {id: matchId},
                 data: {status},
-                include: {season: true},
+                select: {
+                    id: true,
+                    season: true,
+                    homeTeamId: true,
+                    awayTeamId: true,
+                    homeScore: true,
+                    awayScore: true,
+                },
             })
 
-            // 2) If COMPLETED => finalize gamesPlayed
+            // 2) If COMPLETED, update gamesPlayed and also set the winnerId
             if (status === 'COMPLETED') {
                 const participants = await tx.playerMatchParticipation.findMany({
                     where: {matchId},
@@ -157,7 +112,7 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
                 for (const p of participants) {
                     const playerId = p.playerId
 
-                    // update total stats
+                    // update total stats (increment gamesPlayed by 1)
                     await tx.playerTotalStats.updateMany({
                         where: {playerId},
                         data: {
@@ -181,13 +136,38 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
                                 playerId,
                                 seasonId,
                                 gamesPlayed: 1,
+                                points: 0,
+                                assists: 0,
+                                rebounds: 0,
+                                fouls: 0,
                             },
                             update: {
-                                gamesPlayed: {increment: 1},
+                                gamesPlayed: {
+                                    increment: 1,
+                                },
                             },
                         })
                     }
                 }
+
+                // 3) Determine the winner based on the current scoreboard
+                // (Assuming the match's homeScore and awayScore have been kept up-to-date via stat updates)
+                let winnerId = null
+                if (updatedMatch.homeScore > updatedMatch.awayScore) {
+                    winnerId = updatedMatch.homeTeamId
+                } else if (updatedMatch.awayScore > updatedMatch.homeScore) {
+                    winnerId = updatedMatch.awayTeamId
+                } else {
+                    // In case of a tie, you might leave winnerId as null
+                    // or define some tie-breaker logic.
+                    winnerId = null
+                }
+               
+                // Update the match to set the winnerId
+                await tx.match.update({
+                    where: {id: matchId},
+                    data: {winnerId},
+                })
             }
 
             return updatedMatch

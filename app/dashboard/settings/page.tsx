@@ -3,23 +3,14 @@
 import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
-import Link from 'next/link'
 import Loader from '@/ui/loader'
 import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES, DOMAIN, BUCKET_ENDPOINT } from '@/lib/utils'
+import { DOMAIN, BUCKET_ENDPOINT } from '@/lib/utils'
 import { fetchUserProfile, updateUserAction } from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/ui/container'
 
-/**
- * The Settings Page
- * 1) Displays existing user data (name, phone, email, role, etc.)
- * 2) If user has a Player => show partial stats or upcoming matches (optional).
- * 3) If user has no Player => show claim logic for unclaimed player (existing code).
- * 4) Add a form to update name, phone, email.
- * 5) Add a file input to upload a new profile picture to Supabase storage => then call updateUserAction to store the filename in the DB.
- */
-export default function Page() {
+export default function SettingsPage() {
     const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<any>(null)
@@ -39,9 +30,7 @@ export default function Page() {
             const data = await fetchUserProfile()
             setProfile(data)
             setLoading(false)
-
             if (data?.sessionUser) {
-                // Initialize form fields
                 setName(data.sessionUser.name || '')
                 setPhone(data.sessionUser.phone || '')
                 setEmail(data.sessionUser.email || null)
@@ -53,25 +42,19 @@ export default function Page() {
 
     if (loading) return <Loader/>
 
-    if (!profile || !profile.sessionUser) {
-        // If no user from supabase
-        return <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>
-    }
-
     const {sessionUser, unclaimedPlayer} = profile
     const {Player} = sessionUser
 
-    // Called when user clicks "Update Profile" button
+    // Update user fields form submission handler
     async function handleUpdateProfile(e: FormEvent) {
         e.preventDefault()
         try {
             toast.loading('Updating profile...', {id: 'update-profile'})
-            // Call server action to update name, phone, email
             await updateUserAction({
                 userId: sessionUser.id,
                 name,
                 phone,
-                email
+                email,
             })
             toast.success('Profile updated!', {id: 'update-profile'})
             router.refresh()
@@ -81,14 +64,14 @@ export default function Page() {
         }
     }
 
-    // Called when user selects a file for the new profile pic
+    // Handle file selection for new profile pic
     async function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
         if (!file) return
         setNewPicFile(file)
     }
 
-    // Called when user clicks "Upload New Picture"
+    // Handle profile picture upload
     async function handleUploadPic() {
         if (!newPicFile) {
             toast.error('No file selected')
@@ -96,22 +79,18 @@ export default function Page() {
         }
         try {
             setUploadingPic(true)
-            // We expect user.id is the Supabase user ID or something unique
-            // We'll store it in e.g. supabase storage bucket "players"
-            // The filename might be the user.id + extension
+            // Determine file extension and build filename
             const fileExt = newPicFile.name.split('.').pop()
             const fileName = `profile-pics/${sessionUser.id}.${fileExt}`
 
             const supabase = createClient()
             const {data, error} = await supabase
                 .storage
-                .from('lul')
-                .upload(fileName, newPicFile, {
-                    upsert: true,
-                })
+                .from('lul') // Replace with your bucket name
+                .upload(fileName, newPicFile, {upsert: true})
             if (error) throw error
 
-            // Now we call server action to store 'image' = fileName in the DB
+            // Update the User record with the new image filename
             await updateUserAction({
                 userId: sessionUser.id,
                 image: fileName,
@@ -129,33 +108,26 @@ export default function Page() {
 
     return (
         <Container className="text-white gap-y-8 py-6 px-4">
-            {/* Header: Basic user info */}
-            <div className="flex flex-col items-center gap-y-2">
-                <h1 className="text-4xl font-bold">Settings</h1>
-                <p className="text-lul-blue uppercase font-semibold tracking-wide text-sm">
-                    Manage your Profile
-                </p>
 
-                {/* Profile Pic */}
+            {/* HEADER: BASIC USER INFO */}
+            <div className="flex flex-col gap-y-2">
+                <h1 className="text-3xl font-bold">Settings</h1>
+
+                {/* Profile Picture */}
                 <div className="mt-2 flex flex-col items-center gap-y-2">
                     {sessionUser.image ? (
                         <img
                             src={`${BUCKET_ENDPOINT}/${sessionUser.image}`}
                             alt="profile-pic"
-                            className="h-52 rounded-full object-cover"
+                            className="h-52 w-52 rounded-full object-cover"
                         />
                     ) : (
-                        <div className="h-52 w-24 rounded-full bg-lul-grey/20 flex items-center justify-center text-lul-light-grey">
+                        <div className="h-52 w-52 rounded-full bg-lul-grey/20 flex items-center justify-center text-lul-light-grey">
                             No Pic
                         </div>
                     )}
                     <div className="flex gap-x-2 items-center">
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePicChange}
-                            className="text-sm"
-                        />
+                        <input type="file" accept="image/*" onChange={handlePicChange} className="text-sm"/>
                         <button
                             onClick={handleUploadPic}
                             disabled={!newPicFile || uploadingPic}
@@ -167,7 +139,7 @@ export default function Page() {
                 </div>
             </div>
 
-            {/*  Update basic user info form */}
+            {/* Form to update basic user info */}
             <form onSubmit={handleUpdateProfile} className="flex flex-col gap-y-4 w-full max-w-md mx-auto">
                 <div className="flex flex-col gap-y-2">
                     <label className="text-sm text-lul-light-grey">Name</label>
@@ -178,7 +150,6 @@ export default function Page() {
                         onChange={(e) => setName(e.target.value)}
                     />
                 </div>
-
                 <div className="flex flex-col gap-y-2">
                     <label className="text-sm text-lul-light-grey">Phone</label>
                     <input
@@ -188,7 +159,6 @@ export default function Page() {
                         onChange={(e) => setPhone(e.target.value)}
                     />
                 </div>
-
                 <div className="flex flex-col gap-y-2">
                     <label className="text-sm text-lul-light-grey">Email</label>
                     <input
@@ -198,7 +168,6 @@ export default function Page() {
                         onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
-
                 <button
                     type="submit"
                     className="px-4 py-2 bg-lul-blue text-white font-semibold rounded-md hover:bg-lul-blue/70"
@@ -207,25 +176,20 @@ export default function Page() {
                 </button>
             </form>
 
-            {/* If user is not a Player => show claim logic */}
+            {/* Show claim UI if user is not linked to a Player */}
             {!Player ? (
                 <div className="flex flex-col gap-y-4 items-center mt-4">
                     <p className="text-sm text-lul-red">
                         You do not currently have a player profile linked.
                     </p>
-
                     {unclaimedPlayer ? (
                         <div className="bg-lul-grey/20 rounded-md p-4 text-center w-full max-w-md">
-                            <h2 className="text-lul-yellow font-bold text-xl mb-2">
-                                Claim Your Player Profile!
-                            </h2>
+                            <h2 className="text-lul-yellow font-bold text-xl mb-2">Claim Your Player Profile!</h2>
                             <p className="text-sm text-lul-light-grey mb-4">
                                 We found a matching unclaimed player record with the same phone number.
                                 You can claim it and start tracking your stats.
                             </p>
-                            <Link
-                                href="#"
-                                className="px-4 py-2 bg-lul-green rounded-md text-white font-semibold hover:bg-lul-dark-grey transition-colors"
+                            <button
                                 onClick={async (e) => {
                                     e.preventDefault()
                                     try {
@@ -245,7 +209,6 @@ export default function Page() {
                                         } else {
                                             toast.dismiss('claim')
                                             toast.success('Player Profile Claimed Successfully')
-                                            // Refresh the page or reload
                                             router.refresh()
                                         }
                                     } catch (error) {
@@ -254,9 +217,10 @@ export default function Page() {
                                         toast.error('Failed to claim player profile')
                                     }
                                 }}
+                                className="px-4 py-2 bg-lul-green rounded-md text-white font-semibold hover:bg-lul-dark-grey transition-colors"
                             >
                                 Claim Player Profile
-                            </Link>
+                            </button>
                         </div>
                     ) : (
                         <p className="text-xs text-lul-light-grey mt-2">
@@ -265,11 +229,9 @@ export default function Page() {
                     )}
                 </div>
             ) : (
-                // The user is a Player => we can show your existing "stats" or upcoming matches snippet
+                // Optionally, if the user is a player, you can show extra info (stats, upcoming matches, etc.)
                 <div className="flex flex-col gap-y-6">
-                    {/* For demonstration, reusing your snippet from the "profile" page.
-              Or you can show a small excerpt. */}
-                    {/* If you want, add stats or upcoming matches. */}
+                    {/* Additional player info could go here */}
                 </div>
             )}
         </Container>

@@ -4,8 +4,13 @@ import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
 import { ERRORS } from '@/lib/utils'
 
-// Existing fetchUserProfile logic remains
-
+/**
+ * fetchUserProfile:
+ * 1) Get current Supabase user.
+ * 2) Load that user from Prisma (including linked Player if any).
+ * 3) If the user has no linked Player, try to find an unclaimed dummy user
+ *    (with email=null) with the same phone that has an associated Player.
+ */
 export async function fetchUserProfile() {
     const supabase = await createClient()
     const {data: {user}, error} = await supabase.auth.getUser()
@@ -16,15 +21,15 @@ export async function fetchUserProfile() {
     }
 
     const userId = user.id
+
+    // Load the current user from Prisma along with any linked Player.
     const prismaUser = await prisma.user.findUnique({
         where: {id: userId},
         include: {
             Player: {
                 include: {
                     totalStats: true,
-                    SeasonStats: {
-                        include: {season: true},
-                    },
+                    SeasonStats: {include: {season: true}},
                     participations: {
                         include: {
                             match: {
@@ -42,11 +47,16 @@ export async function fetchUserProfile() {
     }
 
     let unclaimedPlayer = null
+
+    // If the logged-in user does not have a linked Player,
+    // attempt to find an unclaimed User (dummy) with the same phone and email === null,
+    // and if found, use its linked Player.
     if (!prismaUser.Player) {
         const dummyUser = await prisma.user.findFirst({
             where: {
-                email: null,
                 phone: prismaUser.phone,
+                email: null,
+                Player: {isNot: null},
             },
             include: {
                 Player: {
@@ -55,16 +65,15 @@ export async function fetchUserProfile() {
                         SeasonStats: {include: {season: true}},
                         participations: {
                             include: {
-                                match: {
-                                    include: {season: true},
-                                },
+                                match: {include: {season: true}},
                             },
                         },
                     },
                 },
             },
         })
-        if (dummyUser?.Player) {
+
+        if (dummyUser && dummyUser.Player) {
             unclaimedPlayer = dummyUser.Player
         }
     }
