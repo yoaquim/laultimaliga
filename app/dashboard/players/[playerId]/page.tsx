@@ -163,7 +163,7 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     const profilePic = player.user.image
-        ? `${BUCKET_ENDPOINT}/players/${player.user.image}`
+        ? `${BUCKET_ENDPOINT}/${player.user.image}`
         : DEFAULT_PROFILE_PIC_BUILDER(player.user.name)
 
     const positionMap: Record<Position, string> = {

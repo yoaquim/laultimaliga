@@ -27,109 +27,93 @@ function SignUpForm({onSubmit, loading, error,}: {
     // const sizes: string[] = ['SMALL', 'MEDIUM', 'LARGE', 'X_LARGE', 'XX_LARGE']
 
     return (
-        <>
+        <form
+            onSubmit={handleSubmit}
+            className="w-full mx-auto px-6 py-4 bg-lul-grey/20 rounded-md shadow-md space-y-6"
+        >
+            <h1 className="text-left text-xl font-bold text-white uppercase border-b border-lul-blue">Sign Up</h1>
 
-            <h1 className="mt-4 py-4 text-xl font-medium text-white text-left">Sign Up</h1>
+            {/* EMAIL FIELD */}
+            <div className="flex flex-col gap-y-1">
+                <label htmlFor="email" className="text-white text-sm uppercase font-semibold">Email</label>
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="email@example.com"
+                    required
+                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                />
+            </div>
 
-            {/* Form */}
-            <form
-                onSubmit={handleSubmit}
-                className="w-full mx-auto p-6 bg-lul-grey/20 rounded-md shadow-md space-y-6"
+            {/* NAME FIELD */}
+            <div className="flex flex-col gap-y-1">
+                <label htmlFor="name" className="text-white text-sm uppercase font-semibold">Name</label>
+                <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Juan Doe"
+                    required
+                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                />
+            </div>
+
+            {/* PHONE FIELD */}
+            <div className="flex flex-col gap-y-1">
+                <label htmlFor="phone" className="text-white text-sm uppercase font-semibold">Phone</label>
+                <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    placeholder="787-555-6789"
+                    required
+                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                />
+            </div>
+
+            {/* PASSWORD FIELD */}
+            <div className="flex flex-col gap-y-1">
+                <label htmlFor="password" className="text-white text-sm uppercase font-semibold">Password</label>
+                <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    required
+                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                />
+            </div>
+
+            {/* ERROR MESSAGE */}
+            {error && <p className="text-center text-sm uppercase text-lul-red">{error}</p>}
+
+            {/* SUBMIT BUTTON */}
+            <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
             >
-                {/* Email Field */}
-                <div className="flex flex-col">
-                    <label htmlFor="email" className="text-white">Email</label>
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="email@example.com"
-                        required
-                        className="p-2 rounded-md bg-white text-black"
-                    />
-                </div>
-
-                {/* Name Field */}
-                <div className="flex flex-col">
-                    <label htmlFor="name" className="text-white">Name</label>
-                    <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        placeholder="Juan Doe"
-                        required
-                        className="p-2 rounded-md bg-white text-black"
-                    />
-                </div>
-
-                {/* Phone Field */}
-                <div className="flex flex-col">
-                    <label htmlFor="phone" className="text-white">Phone</label>
-                    <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="787-555-6789"
-                        required
-                        className="p-2 rounded-md bg-white text-black"
-                    />
-                </div>
-
-                {/* Size Field */}
-                {/*<div className="flex flex-col space-y-2">*/}
-                {/*    <label htmlFor="size" className="font-medium text-white">Size</label>*/}
-                {/*    <select className="p-2 bg-white rounded-md" name="size" id="size" required>*/}
-                {/*        {sizes.map((size) => (*/}
-                {/*            <option key={size} value={size}>*/}
-                {/*                {size.replace('_', '-')}*/}
-                {/*            </option>*/}
-                {/*        ))}*/}
-                {/*    </select>*/}
-                {/*</div>*/}
-
-                {/* Password Field */}
-                <div className="flex flex-col">
-                    <label htmlFor="password" className="text-white">Password</label>
-                    <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        required
-                        className="p-2 rounded-md bg-white text-black"
-                    />
-                </div>
-
-                {/* Error Message */}
-                {error && <p className="text-center text-lul-red">{error}</p>}
-
-                {/* Submit Button */}
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
-                >
-                    {loading
-                        ?
-                        <div className="flex justify-center items-center gap-x-4">
-                            <div className="w-4 h-4">
-                                <Spinner/>
-                            </div>
-                            Signing Up...
+                {loading
+                    ?
+                    <div className="flex justify-center items-center gap-x-4">
+                        <div className="w-4 h-4">
+                            <Spinner/>
                         </div>
-                        : 'Sign Up'
-                    }
-                </button>
+                        Signing Up...
+                    </div>
+                    : 'Sign Up'
+                }
+            </button>
 
-                {/* Redirect to Sign In */}
-                <p className="text-center text-lul-light-grey">
-                    Have an account?{' '}
-                    <a href="/sign-in" className="text-lul-blue font-medium">
-                        Sign In
-                    </a>
-                </p>
-            </form>
-        </>
+            {/* REDIRECT TO SIGN IN */}
+            <p className="text-center text-lul-light-grey uppercase font-semibold text-sm">
+                Have an account?{' '}
+                <a href="/sign-in" className="text-lul-blue font-bold">
+                    Sign In
+                </a>
+            </p>
+        </form>
     )
 }
 

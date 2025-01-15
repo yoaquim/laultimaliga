@@ -70,7 +70,6 @@ export async function POST(req: Request) {
             where: {id: playerId},
             data: {
                 userId: realUser.id,
-                phone: null, // optional: remove phone from Player if you want
             },
         })
 

@@ -101,13 +101,13 @@ export default function Navbar({className}: { className?: string }) {
                         )
                     })}
 
-                <div className="lg:hidden flex flex-col items-center gap-y-1 text-lul-blue antialiased" onClick={handleSignOut}>
+                <div className="lg:hidden flex flex-col items-center gap-y-1 text-lul-blue antialiased cursor-pointer" onClick={handleSignOut}>
                     <VscSignOut className="text-2xl"/>
                     <span className="text-xs text-white">Signout</span>
                 </div>
             </div>
 
-            <div className="hidden lg:flex flex-col items-center gap-y-1 text-lul-blue antialiased" onClick={handleSignOut}>
+            <div className="hidden lg:flex flex-col items-center gap-y-1 text-lul-blue antialiased cursor-pointer" onClick={handleSignOut}>
                 <VscSignOut className="text-2xl"/>
                 <span className="text-xs text-white">Signout</span>
             </div>

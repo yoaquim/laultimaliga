@@ -27,13 +27,13 @@ export async function createSeasonAction(data: {
 }
 
 /** Create a single Team */
-export async function createTeamAction(data: { name: string; seasonId: string, logo: string }) {
+export async function createTeamAction(data: { name: string; seasonId: string; logo: string }) {
     await requireAdmin()
     const newTeam = await prisma.team.create({
         data: {
             name: data.name,
             seasonId: data.seasonId,
-            logo: data.logo
+            logo: data.logo,
         },
     })
     revalidatePath('/dashboard/admin')
@@ -41,8 +41,9 @@ export async function createTeamAction(data: { name: string; seasonId: string, l
 }
 
 /** Create a single Player */
-export async function createPlayerAction(data: { name: string; phone: string; size: string }) {
+export async function createPlayerAction(data: { name: string; phone: string; size: string; position?: string }) {
     await requireAdmin()
+    // Create a dummy user (with email=null) to represent an unclaimed user
     const user = await prisma.user.create({
         data: {
             name: data.name,
@@ -53,8 +54,10 @@ export async function createPlayerAction(data: { name: string; phone: string; si
     const newPlayer = await prisma.player.create({
         data: {
             userId: user.id,
-            phone: data.phone,
+            // Note: We dropped the phone field from Player so we no longer store it here.
             size: data.size as Size,
+            // Optionally, store position if provided
+            ...(data.position ? {position: data.position as any} : {}),
         },
     })
     revalidatePath('/dashboard/admin')
@@ -119,7 +122,7 @@ export async function createParticipationAction(data: {
 
 /** Bulk Creation */
 
-// Seasons: [name, shortName, startDate, endDate]
+// Bulk create Seasons: each row: [name, shortName, startDate, endDate]
 export async function bulkCreateSeasonsAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
@@ -136,36 +139,40 @@ export async function bulkCreateSeasonsAction(rows: string[][]) {
     revalidatePath('/dashboard/admin')
 }
 
-// Teams: [name, seasonId]
+// Bulk create Teams: each row: [seasonId, name, logo]
 export async function bulkCreateTeamsAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
         const [seasonId, name, logo] = row
-        await prisma.team.create({data: {name, seasonId, logo}})
+        await prisma.team.create({
+            data: {seasonId, name, logo},
+        })
     }
     revalidatePath('/dashboard/admin')
 }
 
-// Players: [name, phone, size]
+// Bulk create Players: each row: [name, phone, size, position?]
+// Note that since we dropped the phone column from Player, we only create the User and link it.
 export async function bulkCreatePlayersAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
-        const [name, phone, size] = row
+        // Assume each row is: [name, phone, size, position?]
+        const [name, phone, size, position] = row
         const user = await prisma.user.create({
             data: {name, phone, email: null},
         })
         await prisma.player.create({
             data: {
                 userId: user.id,
-                phone,
                 size: (size as Size) || 'MEDIUM',
+                ...(position ? {position: position as any} : {}), // Cast position accordingly
             },
         })
     }
     revalidatePath('/dashboard/admin')
 }
 
-// Matches: [homeTeamId, awayTeamId, seasonId, dateString]
+// Bulk create Matches: each row: [homeTeamId, awayTeamId, seasonId, dateString]
 export async function bulkCreateMatchesAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
@@ -182,7 +189,7 @@ export async function bulkCreateMatchesAction(rows: string[][]) {
     revalidatePath('/dashboard/admin')
 }
 
-// PlayerSeasonDetails: [playerId, seasonId, teamId, number]
+// Bulk create PlayerSeasonDetails: each row: [playerId, seasonId, teamId, number]
 export async function bulkCreatePSDetailsAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
@@ -191,7 +198,7 @@ export async function bulkCreatePSDetailsAction(rows: string[][]) {
             data: {
                 playerId,
                 seasonId,
-                teamId: teamId,
+                teamId,
                 number: Number(numberStr) || 0,
             },
         })
@@ -199,7 +206,7 @@ export async function bulkCreatePSDetailsAction(rows: string[][]) {
     revalidatePath('/dashboard/admin')
 }
 
-// PlayerMatchParticipation: [playerId, matchId]
+// Bulk create PlayerMatchParticipation: each row: [playerId, matchId]
 export async function bulkCreateParticipationsAction(rows: string[][]) {
     await requireAdmin()
     for (const row of rows) {
@@ -215,8 +222,8 @@ export async function bulkCreateParticipationsAction(rows: string[][]) {
 }
 
 /**
- * Generic data fetch for your DataView panel
- * This version does NOT use QueryMode to avoid TS errors, so searches are case-sensitive.
+ * Generic data fetch for the DataView panel.
+ * This version does case‑sensitive searches.
  */
 export async function fetchTableDataAction(params: {
     table: string;
@@ -234,24 +241,14 @@ export async function fetchTableDataAction(params: {
 
     switch (table) {
         case 'SEASON': {
-            // case-sensitive search
             const whereSeason = search
                 ? {
                     OR: [
-                        {
-                            name: {
-                                contains: search,
-                            },
-                        },
-                        {
-                            shortName: {
-                                contains: search,
-                            },
-                        },
+                        {name: {contains: search}},
+                        {shortName: {contains: search}},
                     ],
                 }
                 : {}
-
             totalCount = await prisma.season.count({where: whereSeason})
             items = await prisma.season.findMany({
                 where: whereSeason,
@@ -263,12 +260,7 @@ export async function fetchTableDataAction(params: {
         }
 
         case 'TEAM': {
-            const whereTeam = search
-                ? {
-                    name: {contains: search},
-                }
-                : {}
-
+            const whereTeam = search ? {name: {contains: search}} : {}
             totalCount = await prisma.team.count({where: whereTeam})
             items = await prisma.team.findMany({
                 where: whereTeam,
@@ -280,20 +272,15 @@ export async function fetchTableDataAction(params: {
         }
 
         case 'PLAYER': {
-            // phone is optional, so we treat as string | null
-            // We'll do "contains: search" case-sensitive
+            // Since we dropped the phone field from Player, search using the related User's fields.
             const wherePlayer = search
                 ? {
                     OR: [
-                        {
-                            phone: {contains: search},
-                        },
-                        // could also search user.name if we want,
-                        // e.g. { user: { name: { contains: search } } }
+                        {user: {name: {contains: search}}},
+                        {user: {phone: {contains: search}}},
                     ],
                 }
                 : {}
-
             totalCount = await prisma.player.count({where: wherePlayer})
             items = await prisma.player.findMany({
                 where: wherePlayer,
@@ -301,18 +288,14 @@ export async function fetchTableDataAction(params: {
                 take: pageSize,
                 orderBy: {createdAt: 'desc'},
                 include: {
-                    user: {select: {name: true}},
+                    user: {select: {name: true, phone: true, email: true}},
                 },
             })
             break
         }
 
         case 'MATCH': {
-            const whereMatch = search
-                ? {
-                    id: {contains: search},
-                }
-                : {}
+            const whereMatch = search ? {id: {contains: search}} : {}
             totalCount = await prisma.match.count({where: whereMatch})
             items = await prisma.match.findMany({
                 where: whereMatch,
@@ -354,10 +337,7 @@ export async function fetchTableDataAction(params: {
                     ],
                 }
                 : {}
-
-            totalCount = await prisma.playerMatchParticipation.count({
-                where: wherePart,
-            })
+            totalCount = await prisma.playerMatchParticipation.count({where: wherePart})
             items = await prisma.playerMatchParticipation.findMany({
                 where: wherePart,
                 skip,
@@ -368,7 +348,6 @@ export async function fetchTableDataAction(params: {
         }
 
         default:
-            // no action
             break
     }
 

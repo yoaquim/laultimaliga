@@ -1,17 +1,20 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, FormEvent, useRef, ChangeEvent, MouseEventHandler } from 'react'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
-import Empty from '@/ui/empty'
-import { DOMAIN, BUCKET_ENDPOINT } from '@/lib/utils'
+import { DOMAIN, BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER } from '@/lib/utils'
 import { fetchUserProfile, updateUserAction } from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/ui/container'
+import Spinner from '@/ui/spinner'
+import clsx from 'clsx'
+import Link from 'next/link'
 
 export default function SettingsPage() {
     const router = useRouter()
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<any>(null)
 
@@ -22,32 +25,85 @@ export default function SettingsPage() {
 
     // For uploading a new profile pic
     const [uploadingPic, setUploadingPic] = useState(false)
-    const [newPicFile, setNewPicFile] = useState<File | null>(null)
 
     useEffect(() => {
         async function loadProfile() {
             setLoading(true)
-            const data = await fetchUserProfile()
-            setProfile(data)
-            setLoading(false)
-            if (data?.sessionUser) {
-                setName(data.sessionUser.name || '')
-                setPhone(data.sessionUser.phone || '')
-                setEmail(data.sessionUser.email || null)
+            try {
+                const data = await fetchUserProfile()
+                setProfile(data)
+                if (data?.sessionUser) {
+                    setName(data.sessionUser.name || '')
+                    setPhone(data.sessionUser.phone || '')
+                    setEmail(data.sessionUser.email || null)
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error)
+                toast.error('Failed to load profile.')
+            } finally {
+                setLoading(false)
             }
         }
 
         loadProfile()
     }, [])
 
-    if (loading) return <Loader/>
+    // Derive sessionUser from profile
+    const sessionUser = profile?.sessionUser
 
-    const {sessionUser, unclaimedPlayer} = profile
-    const {Player} = sessionUser
+    // Handle profile picture upload
+    async function uploadPic(file: File) {
+        if (!file) {
+            toast.error('No file selected')
+            return
+        }
+        if (!sessionUser) {
+            toast.error('User profile not loaded.')
+            return
+        }
+        try {
+            setUploadingPic(true)
+            // Determine file extension and build filename using sessionUser.id
+            const fileExt = file.name.split('.').pop()
+            const fileName = `profile-pics/${sessionUser.id}.${fileExt}`
+
+            const supabase = createClient()
+            const {data, error} = await supabase
+                .storage
+                .from('lul') // Replace with your bucket name
+                .upload(fileName, file, {upsert: true})
+            if (error) throw error
+
+            // Update the user record with the new image filename
+            await updateUserAction({
+                userId: sessionUser.id,
+                image: fileName,
+            })
+
+            toast.success('Profile picture updated')
+            // Optionally, update local profile state to reflect the new image.
+            setProfile((prev: any) => ({
+                ...prev,
+                sessionUser: {
+                    ...prev.sessionUser,
+                    image: fileName,
+                },
+            }))
+        } catch (err: any) {
+            console.error('Error uploading file:', err)
+            toast.error(err.message || 'Failed to update profile picture')
+        } finally {
+            setUploadingPic(false)
+        }
+    }
 
     // Update user fields form submission handler
     async function handleUpdateProfile(e: FormEvent) {
         e.preventDefault()
+        if (!sessionUser) {
+            toast.error('User profile not loaded.')
+            return
+        }
         try {
             toast.loading('Updating profile...', {id: 'update-profile'})
             await updateUserAction({
@@ -56,111 +112,205 @@ export default function SettingsPage() {
                 phone,
                 email,
             })
+            // Update local profile state so the new values show immediately.
+            setProfile((prev: any) => ({
+                ...prev,
+                sessionUser: {
+                    ...prev.sessionUser,
+                    name,
+                    phone,
+                    email,
+                },
+            }))
             toast.success('Profile updated!', {id: 'update-profile'})
-            router.refresh()
-        } catch (error) {
+            router.refresh() // if you need a full refresh
+        } catch (error: any) {
             console.error('Error updating user:', error)
-            toast.error('Failed to update profile', {id: 'update-profile'})
+            toast.error(error.message || 'Failed to update profile', {id: 'update-profile'})
         }
     }
 
-    // Handle file selection for new profile pic
-    async function handlePicChange(e: React.ChangeEvent<HTMLInputElement>) {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setNewPicFile(file)
+    // Trigger file input click when image is clicked
+    const handleImageClick = () => {
+        if (fileInputRef.current) {
+            fileInputRef.current.click()
+        }
     }
 
-    // Handle profile picture upload
-    async function handleUploadPic() {
-        if (!newPicFile) {
-            toast.error('No file selected')
-            return
+    // Handle file input change event
+    const handlePicChange = async (e: ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0]
+            await uploadPic(file)
         }
+    }
+
+    const handleClaimPlayerProfile = async () => {
         try {
-            setUploadingPic(true)
-            // Determine file extension and build filename
-            const fileExt = newPicFile.name.split('.').pop()
-            const fileName = `profile-pics/${sessionUser.id}.${fileExt}`
-
-            const supabase = createClient()
-            const {data, error} = await supabase
-                .storage
-                .from('lul') // Replace with your bucket name
-                .upload(fileName, newPicFile, {upsert: true})
-            if (error) throw error
-
-            // Update the User record with the new image filename
-            await updateUserAction({
-                userId: sessionUser.id,
-                image: fileName,
+            toast.loading('Claiming player profile...', {id: 'claim'})
+            const res = await fetch(`${DOMAIN}/api/players/claim`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({playerId: unclaimedPlayer.id}),
             })
-
-            toast.success('Profile picture uploaded!')
-            router.refresh()
-        } catch (err) {
-            console.error('Error uploading file:', err)
-            toast.error('Failed to upload picture')
-        } finally {
-            setUploadingPic(false)
+            if (!res.ok) {
+                toast.dismiss('claim')
+                const errorData = await res.json()
+                const errorMessage = errorData?.error || 'An unknown error occurred.'
+                toast.error(errorMessage)
+            } else {
+                toast.dismiss('claim')
+                toast.success('Player Profile Claimed')
+                router.refresh()
+            }
+        } catch (error) {
+            console.error(error)
+            toast.dismiss('claim')
+            toast.error('Failed to claim player profile')
         }
     }
+
+    if (loading) return <Loader/>
+
+    if (!profile || !sessionUser) {
+        return (
+            <Container className="text-white gap-y-6 py-6 px-4">
+                <h1 className="text-2xl font-bold uppercase border-lul-blue border-b">Settings</h1>
+                <p className="text-center text-red-500">Failed to load user profile.</p>
+            </Container>
+        )
+    }
+
+    const {unclaimedPlayer} = profile
+    const {Player} = sessionUser
+    const unclaimedPlayerExists = unclaimedPlayer !== null
 
     return (
         <Container className="text-white gap-y-8 py-6 px-4">
+            <h1 className="text-2xl font-bold uppercase border-lul-blue border-b">Settings</h1>
 
-            {/* HEADER: BASIC USER INFO */}
-            <div className="flex flex-col gap-y-2">
-                <h1 className="text-3xl font-bold">Settings</h1>
-
-                {/* Profile Picture */}
-                <div className="mt-2 flex flex-col items-center gap-y-2">
-                    {sessionUser.image ? (
-                        <img
-                            src={`${BUCKET_ENDPOINT}/${sessionUser.image}`}
-                            alt="profile-pic"
-                            className="h-52 w-52 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="h-52 w-52 rounded-full bg-lul-grey/20 flex items-center justify-center text-lul-light-grey">
-                            No Pic
+            {/* ============================================== */}
+            {/* PROFILE PICTURE SECTION */}
+            {/* ============================================== */}
+            <div className="relative mt-2 flex flex-col items-center gap-y-2">
+                <div className="relative">
+                    <img
+                        src={
+                            sessionUser.image
+                                ? `${BUCKET_ENDPOINT}/${sessionUser.image}?v=${new Date().getTime()}`
+                                : DEFAULT_PROFILE_PIC_BUILDER(sessionUser.name)
+                        }
+                        alt="profile-pic"
+                        className={clsx(
+                            'h-52 w-52 rounded-full object-cover cursor-pointer transition-opacity duration-300',
+                            {'opacity-50': uploadingPic}
+                        )}
+                        onClick={handleImageClick}
+                    />
+                    {uploadingPic && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
+                            <Spinner/>
                         </div>
                     )}
-                    <div className="flex gap-x-2 items-center">
-                        <input type="file" accept="image/*" onChange={handlePicChange} className="text-sm"/>
-                        <button
-                            onClick={handleUploadPic}
-                            disabled={!newPicFile || uploadingPic}
-                            className="px-3 py-1 bg-lul-green text-black rounded-md disabled:opacity-50"
-                        >
-                            {uploadingPic ? 'Uploading...' : 'Upload'}
-                        </button>
-                    </div>
                 </div>
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handlePicChange}
+                    style={{display: 'none'}}
+                />
             </div>
 
-            {/* Form to update basic user info */}
-            <form onSubmit={handleUpdateProfile} className="flex flex-col gap-y-4 w-full max-w-md mx-auto">
-                <div className="flex flex-col gap-y-2">
-                    <label className="text-sm text-lul-light-grey">Name</label>
+            {/* ============================================== */}
+            {/* CLAIM UI*/}
+            {/* ============================================== */}
+            {!Player &&
+                <div className="flex flex-col gap-y-4 items-center mt-4">
+                    <div className="w-full max-w-md flex justify-center gap-x-4 bg-lul-grey/50 text-lul-red px-6 py-3 text-sm uppercase font-bold rounded-md">
+                        <div>⚠️</div>
+                        <div>You do not have a player profile linked</div>
+                        <div>⚠️</div>
+                    </div>
+
+                    <div className="bg-lul-grey/20 flex flex-col gap-y-4 rounded-md p-6 pt-4 w-full max-w-md">
+                        <h2 className={clsx('text-lul-green font-bold text-base mb-2 uppercase border-b border-lul-blue',
+                            {
+                                'text-lul-green': unclaimedPlayerExists,
+                                'text-lul-yellow': !unclaimedPlayerExists
+                            }
+                        )}>
+                            {unclaimedPlayerExists ? 'Claim Your Player Profile' : 'No Matching Player Profile'}
+
+                        </h2>
+
+                        <p className="text-sm text-white mb-4">
+                            {unclaimedPlayerExists ?
+                                'We found a matching unclaimed player record with the same phone number.\n' +
+                                'You can claim it and start tracking your stats.\n'
+                                :
+                                'We couldn\'t find an unclaimed player record with your phone number.\n' +
+                                'If you think this is a mistake, please contact the match administrator.'
+                            }
+                        </p>
+
+                        {unclaimedPlayerExists &&
+                            <button
+                                onClick={handleClaimPlayerProfile}
+                                className="px-4 py-2 bg-lul-green/90 rounded-md text-white font-semibold hover:bg-lul-green/70 transition-colors uppercase"
+                            >
+                                Claim Player Profile
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+
+            {/* ============================================== */}
+            {/* PLAYER CARD*/}
+            {/* ============================================== */}
+            {Player &&
+                <div className="mx-auto bg-lul-grey/20  flex flex-col gap-y-4 rounded-md px-6 py-4 w-full max-w-md">
+                    <h2 className="text-white font-bold text-base mb-2 uppercase border-b border-lul-orange">
+                        PLAYER PROFILE LINKED
+                    </h2>
+
+                    <p className="text-base text-white mb-4">
+                        Your user profile is linked with Player ID <span className="text-lul-orange font-bold">{Player.id}</span>.
+                        <br/>
+                        <br/>
+                        You can view your stats over at your <Link href={`/dashboard/players/${Player.id}`} className="text-lul-blue">player profile</Link>.
+                    </p>
+                </div>
+            }
+
+            {/* ============================================== */}
+            {/* FORM TO UPDATE BASIC USER INFO */}
+            {/* ============================================== */}
+            <form onSubmit={handleUpdateProfile} className="bg-lul-dark-grey p-6 pt-4 rounded-md flex flex-col gap-y-4 w-full max-w-md mx-auto">
+                <h1 className="border-b border-lul-blue uppercase font-bold">UPDATE PROFILE</h1>
+                <div className="flex flex-col gap-y-1">
+                    <label className="text-sm text-lul-light-grey uppercase font-semibold">Name</label>
                     <input
                         type="text"
                         className="px-3 py-2 rounded-md bg-lul-black/20"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        required
                     />
                 </div>
-                <div className="flex flex-col gap-y-2">
-                    <label className="text-sm text-lul-light-grey">Phone</label>
+                <div className="flex flex-col gap-y-1">
+                    <label className="text-sm text-lul-light-grey uppercase font-semibold">Phone</label>
                     <input
                         type="text"
                         className="px-3 py-2 rounded-md bg-lul-black/20"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
+                        required
                     />
                 </div>
-                <div className="flex flex-col gap-y-2">
-                    <label className="text-sm text-lul-light-grey">Email</label>
+                <div className="flex flex-col gap-y-1">
+                    <label className="text-sm text-lul-light-grey uppercase font-semibold">Email</label>
                     <input
                         type="email"
                         className="px-3 py-2 rounded-md bg-lul-black/20"
@@ -170,70 +320,11 @@ export default function SettingsPage() {
                 </div>
                 <button
                     type="submit"
-                    className="px-4 py-2 bg-lul-blue text-white font-semibold rounded-md hover:bg-lul-blue/70"
+                    className="mt-2 px-4 py-2 bg-lul-blue text-white uppercase font-semibold rounded-md hover:bg-lul-blue/70"
                 >
-                    Update Profile
+                    SAVE
                 </button>
             </form>
-
-            {/* Show claim UI if user is not linked to a Player */}
-            {!Player ? (
-                <div className="flex flex-col gap-y-4 items-center mt-4">
-                    <p className="text-sm text-lul-red">
-                        You do not currently have a player profile linked.
-                    </p>
-                    {unclaimedPlayer ? (
-                        <div className="bg-lul-grey/20 rounded-md p-4 text-center w-full max-w-md">
-                            <h2 className="text-lul-yellow font-bold text-xl mb-2">Claim Your Player Profile!</h2>
-                            <p className="text-sm text-lul-light-grey mb-4">
-                                We found a matching unclaimed player record with the same phone number.
-                                You can claim it and start tracking your stats.
-                            </p>
-                            <button
-                                onClick={async (e) => {
-                                    e.preventDefault()
-                                    try {
-                                        toast.loading('Claiming player profile...', {id: 'claim'})
-                                        const res = await fetch(`${DOMAIN}/api/players/claim`, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                            },
-                                            body: JSON.stringify({playerId: unclaimedPlayer.id}),
-                                        })
-                                        if (!res.ok) {
-                                            toast.dismiss('claim')
-                                            const errorData = await res.json()
-                                            const errorMessage = errorData?.error || 'An unknown error occurred.'
-                                            toast.error(errorMessage)
-                                        } else {
-                                            toast.dismiss('claim')
-                                            toast.success('Player Profile Claimed Successfully')
-                                            router.refresh()
-                                        }
-                                    } catch (error) {
-                                        console.error(error)
-                                        toast.dismiss('claim')
-                                        toast.error('Failed to claim player profile')
-                                    }
-                                }}
-                                className="px-4 py-2 bg-lul-green rounded-md text-white font-semibold hover:bg-lul-dark-grey transition-colors"
-                            >
-                                Claim Player Profile
-                            </button>
-                        </div>
-                    ) : (
-                        <p className="text-xs text-lul-light-grey mt-2">
-                            No matching unclaimed players found by your phone number.
-                        </p>
-                    )}
-                </div>
-            ) : (
-                // Optionally, if the user is a player, you can show extra info (stats, upcoming matches, etc.)
-                <div className="flex flex-col gap-y-6">
-                    {/* Additional player info could go here */}
-                </div>
-            )}
         </Container>
     )
 }
