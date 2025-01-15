@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
-import { BUCKET_ENDPOINT } from '@/lib/utils'
+import { BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER } from '@/lib/utils'
 
 // --------------------------------------------------
 // Types
@@ -58,7 +58,7 @@ export default function PlayerCard({player}: Props) {
         <Link
             key={player.id}
             href={`/dashboard/players/${player.id}`}
-            className="items-stretch flex flex-col h-full gap-y-4 p-4 px-5 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer">
+            className="items-stretch flex flex-col h-full gap-y-4 p-4 pb-3 px-5 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer">
 
             {/* TOP SECTION */}
             <div className="flex flex-col gap-y-2">
@@ -74,7 +74,7 @@ export default function PlayerCard({player}: Props) {
                     </div>
 
                     {/* Player Team */}
-                    <div className="text-lul-blue uppercase font-bold text-sm">
+                    <div className="text-lul-yellow uppercase font-bold text-sm">
                         {firstDetail?.team?.name ?? 'Free Agent'}
                     </div>
                 </div>
@@ -88,7 +88,7 @@ export default function PlayerCard({player}: Props) {
                         src={
                             player.user.image
                                 ? `${BUCKET_ENDPOINT}/players/${player.user.image}`
-                                : `https://ui-avatars.com/api/?name=${player.user.name}`
+                                : DEFAULT_PROFILE_PIC_BUILDER(player.user.name)
                         }
                         alt="user-image"/>
                 </div>
@@ -115,7 +115,7 @@ export default function PlayerCard({player}: Props) {
 
 
             {/* SEASON*/}
-            <div className="mt-auto flex justify-end text-lul-yellow text-sm font-semibold uppercase">
+            <div className="mt-auto flex justify-end text-lul-blue text-sm font-semibold uppercase">
                 {/* Season shortName (or name) */}
                 <div>{shortName}</div>
             </div>

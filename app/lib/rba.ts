@@ -1,9 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
-import { Role } from '@prisma/client'
+import { Role, User } from '@prisma/client'
 import { ERRORS } from '@/lib/utils'
 
-export async function getUserRole(): Promise<Role | null> {
+export async function getUser(): Promise<User | null> {
     const supabase = await createClient()
     const {data: {user}, error} = await supabase.auth.getUser()
 
@@ -18,8 +18,7 @@ export async function getUserRole(): Promise<Role | null> {
     }
 
     const dbUser = await prisma.user.findUnique({
-        where: {id: user.id},
-        select: {role: true},
+        where: {id: user.id}
     })
 
     if (!dbUser) {
@@ -27,11 +26,11 @@ export async function getUserRole(): Promise<Role | null> {
         return null
     }
 
-    return dbUser.role
+    return dbUser
 }
 
 export async function isAdmin() {
-    return await getUserRole() === Role.ADMIN
+    return (await getUser())?.role === Role.ADMIN
 }
 
 export async function requireAdmin() {
