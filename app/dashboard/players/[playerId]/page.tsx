@@ -9,6 +9,7 @@ import { MdSportsHandball } from 'react-icons/md'
 import { MdSports } from 'react-icons/md'
 import { MdSportsScore } from 'react-icons/md'
 import MatchCard from '@/ui/match-card'
+import { Container } from '@/ui/container'
 
 type PlayerDetail = Prisma.PlayerGetPayload<{
     include: {
@@ -189,7 +190,9 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
         : activeSeasonDetail?.season.name || 'No active season'
 
     return (
-        <div className="w-full h-full flex flex-col gap-y-8 py-8 text-white overflow-y-auto">
+        <Container className="gap-y-8 py-8">
+            {/*<div className={`lg:h-full lg:flex lg:flex-col flex-1 overflow-y-auto items-stretch ${className}`}>*/}
+            {/*<div className="w-full h-full flex flex-col gap-y-8 py-8 text-white overflow-y-auto">*/}
             {/* =============================*/}
             {/* PLAYER HEADER */}
             {/* =============================*/}
@@ -246,7 +249,7 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
             {/* =============================*/}
             {/* MATCHES SECTION */}
             {/* =============================*/}
-            <div className="w-full h-fit flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
+            <div className="lg:mt-0 mt-6 w-full h-fit flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
                 <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue')}>
                     Matches
                 </h2>
@@ -285,6 +288,6 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
                     </div>
                 }
             </div>
-        </div>
+        </Container>
     )
 }

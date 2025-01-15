@@ -4,6 +4,8 @@ import Empty from '@/ui/empty'
 import PlayerCard from '@/ui/player-card'
 import MatchCard from '@/ui/match-card'
 import clsx from 'clsx'
+import { Container } from '@/ui/container'
+import CardGrid from '@/ui/card-grid'
 
 export default async function Page({params}: { params: Promise<{ teamId: string }> }) {
     const {teamId} = await params
@@ -57,7 +59,7 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
     const winRate = totalMatches > 0 ? ((matchesWon / totalMatches) * 100).toFixed(2) : 'N/A'
 
     return (
-        <div className="h-full w-full pt-4 flex flex-col gap-y-8 text-white overflow-y-scroll">
+        <Container className="pt-4 gap-y-8">
             {/*=====================================================*/}
             {/* TEAM STATS */}
             {/*=====================================================*/}
@@ -95,56 +97,28 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
             {/* PLAYERS & MATCHES */}
             {/*=====================================================*/}
             <div className="h-full lg:flex-row lg:gap-x-8 w-full flex flex-col gap-y-6 flex-grow lg:overflow-hidden">
-
                 {/*-----------------------------------------------------*/}
                 {/* PLAYERS */}
                 {/*-----------------------------------------------------*/}
-                <div className="lg:h-full h-fit w-full bg-lul-grey/20 p-4 rounded-md flex flex-col">
-                    <h2 className="text-xl font-semibold bg-lul-dark-grey border-b border-lul-blue pb-2 sticky -top-4 z-20 uppercase">
-                        Players
-                    </h2>
-
-                    <ul className="h-full grid xl:grid-cols-2 grid-cols-1 lg:px-4 py-4 gap-y-4 gap-x-4 lg:overflow-y-scroll">
-                        {team.players.map((playerSeasonDetail: any) => (
-                            <PlayerCard player={playerSeasonDetail.player} key={playerSeasonDetail.player.id}/>
-                        ))}
-                    </ul>
-                </div>
+                <CardGrid title="Players" borderTitleColor="blue" forceLessCols>
+                    {team.players.map((playerSeasonDetail: any) => (
+                        <PlayerCard player={playerSeasonDetail.player} key={playerSeasonDetail.player.id}/>
+                    ))}
+                </CardGrid>
 
                 {/*-----------------------------------------------------*/}
                 {/* MATCHES */}
                 {/*-----------------------------------------------------*/}
-                <div className="lg:h-full h-fit w-full bg-lul-grey/20 p-4 rounded-md flex flex-col">
-                    <h2 className="pb-2 text-xl font-semibold bg-lul-dark-grey border-b border-lul-blue sticky -top-4 z-20 uppercase">
-                        Matches
-                    </h2>
+                <CardGrid title="Matches" borderTitleColor="blue" forceLessCols>
+                    {team.homeMatches.map((match: any) => (
+                        <MatchCard match={match} key={match.id}/>
+                    ))}
 
-                    <div className="flex flex-col flex-grow lg:overflow-y-scroll">
-                        <div className="mt-4 flex flex-col">
-                            <h3 className="py-2 font-semibold text-lul-yellow uppercase sticky lg:top-0 top-6 bg-lul-dark-grey z-20">
-                                Home Matches
-                            </h3>
-                            <ul className="grid xl:grid-cols-2 grid-cols-1 lg:px-4 py-4 gap-y-4 gap-x-4">
-                                {team.homeMatches.map((match: any) => (
-                                    <MatchCard match={match} key={match.id}/>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="mt-10 flex flex-col">
-                            <h3 className="py-2 font-semibold text-lul-yellow uppercase sticky lg:top-0 top-6 bg-lul-dark-grey z-20">
-                                Away Matches
-                            </h3>
-                            <ul className="grid xl:grid-cols-2 grid-cols-1 lg:px-4 py-4 gap-y-4 gap-x-4">
-                                {team.awayMatches.map((match: any) => (
-                                    <MatchCard match={match} key={match.id}/>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
+                    {team.awayMatches.map((match: any) => (
+                        <MatchCard match={match} key={match.id}/>
+                    ))}
+                </CardGrid>
             </div>
-        </div>
+        </Container>
     )
 }

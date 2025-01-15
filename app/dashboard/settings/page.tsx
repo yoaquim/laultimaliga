@@ -9,6 +9,7 @@ import Empty from '@/ui/empty'
 import { EMPTY_MESSAGES, DOMAIN, BUCKET_ENDPOINT } from '@/lib/utils'
 import { fetchUserProfile, updateUserAction } from './actions'
 import { createClient } from '@/lib/supabase/client'
+import { Container } from '@/ui/container'
 
 /**
  * The Settings Page
@@ -127,7 +128,7 @@ export default function Page() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col text-white gap-y-8 py-6 px-4">
+        <Container className="text-white gap-y-8 py-6 px-4">
             {/* Header: Basic user info */}
             <div className="flex flex-col items-center gap-y-2">
                 <h1 className="text-4xl font-bold">Settings</h1>
@@ -271,6 +272,6 @@ export default function Page() {
                     {/* If you want, add stats or upcoming matches. */}
                 </div>
             )}
-        </div>
+        </Container>
     )
 }

@@ -12,6 +12,8 @@ import Empty from '@/ui/empty'
 import { DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
 import Link from 'next/link'
+import { Container } from '@/ui/container'
+import CardGrid from '@/ui/card-grid'
 
 /** Merge team players and participations for display */
 function mergeTeamAndParticipations(team: any, participations: any[]) {
@@ -317,7 +319,7 @@ export default function Page() {
                 action={modalAction}
             />
 
-            <div className="w-full h-full flex flex-col text-white">
+            <Container>
                 <div className="flex flex-col lg:gap-y-4 p-4 lg:py-5">
                     {/*----------------------------------------------------*/}
                     {/*====================================================*/}
@@ -468,7 +470,7 @@ export default function Page() {
                         userIsAdmin={userIsAdmin}
                         handleUpdateStats={handleUpdateStats}/>
                 </div>
-            </div>
+            </Container>
         </>
     )
 }
@@ -492,81 +494,72 @@ function Tracker({
         fouls: 'FLS',
     }
 
-
+    const borderColor =
+        match.status === 'COMPLETED' ? 'blue' :
+            match.status === 'ONGOING' ? 'green' :
+                match.status === 'SCHEDULED' ? 'yellow' :
+                    match.status === 'CANCELED' ? 'red' : 'white'
     return (
-        <div className="flex-1 flex flex-col lg:overflow-hidden bg-lul-grey/20 rounded-md px-4">
-            {/* Sticky header */}
-            <div className={clsx('lg:bg-opacity-0 sticky top-0 z-10 border-b text-2xl font-semibold py-2 flex items-end', {
-                'border-lul-blue': match.status === 'COMPLETED',
-                'border-lul-green': match.status === 'ONGOING',
-                'border-lul-yellow': match.status === 'SCHEDULED',
-                'border-lul-red': match.status === 'CANCELED'
-            })}>
-                <h1 className="flex flex-1 uppercase text-xl">{match[team].name}</h1>
-            </div>
+        <CardGrid title={match[team].name} borderTitleColor={borderColor}>
+            {mergeTeamAndParticipations(match[team], match.participations).map(
+                ({id, player, stats, participationExists}: any) => (
 
-            {/* Scrollable stats area */}
-            <div className="flex-1 overflow-y-auto py-4 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-6">
-                {mergeTeamAndParticipations(match[team], match.participations).map(
-                    ({id, player, stats, participationExists}: any) => (
+                    <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
+                        <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex justify-between gap-x-2 text-xl font-bold rounded bg-lul-dark-grey/80 px-2">
+                            <span className="text-lul-orange">#{player.seasonDetails?.[0]?.number || 'N/A'}</span>
+                            <span className="overflow-x-hidden whitespace-nowrap overflow-ellipsis">{player.user.name}</span>
+                        </Link>
 
-                        <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
-                            <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex justify-between gap-x-2 text-xl font-bold rounded bg-lul-dark-grey/80 px-2">
-                                <span className="text-lul-orange">#{player.seasonDetails?.[0]?.number || 'N/A'}</span>
-                                <span className="overflow-x-hidden whitespace-nowrap overflow-ellipsis">{player.user.name}</span>
-                            </Link>
-
-                            <div className="w-full mt-4 flex justify-between gap-2">
-                                {statKeys.map((statKey) => (
-                                    <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
-                                        <div className="flex flex-col gap-y-2 items-center antialiased">
-                                            <div className={clsx('uppercase text-sm font-bold',
-                                                {
-                                                    'text-lul-green': statKey === 'points',
-                                                    'text-lul-blue': statKey === 'assists',
-                                                    'text-lul-yellow': statKey === 'rebounds',
-                                                    'text-lul-red': statKey === 'fouls',
-                                                }
-                                            )}>
-                                                {statAbbrv[statKey]}
-                                            </div>
-                                            <div className="text-2xl">{stats[statKey]}</div>
+                        <div className="w-full mt-4 flex justify-between gap-2">
+                            {statKeys.map((statKey) => (
+                                <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
+                                    <div className="flex flex-col gap-y-2 items-center antialiased">
+                                        <div className={clsx('uppercase text-sm font-bold',
+                                            {
+                                                'text-lul-green': statKey === 'points',
+                                                'text-lul-blue': statKey === 'assists',
+                                                'text-lul-yellow': statKey === 'rebounds',
+                                                'text-lul-red': statKey === 'fouls',
+                                            }
+                                        )}>
+                                            {statAbbrv[statKey]}
                                         </div>
-
-                                        {participationExists && userIsAdmin && (
-                                            <div className="flex flex-col gap-y-2">
-                                                <button
-                                                    disabled={match.status !== 'ONGOING'}
-                                                    className={clsx(
-                                                        'px-2 rounded text-white mt-1 bg-lul-green',
-                                                        {'opacity-30': match.status !== 'ONGOING'}
-                                                    )}
-                                                    onClick={() =>
-                                                        handleUpdateStats(stats.id, statKey as StatType, true)
-                                                    }
-                                                >
-                                                    +
-                                                </button>
-                                                <button
-                                                    disabled={match.status !== 'ONGOING'}
-                                                    className={clsx(
-                                                        'px-3 rounded text-white mt-1 bg-lul-red',
-                                                        {'opacity-30': match.status !== 'ONGOING'}
-                                                    )}
-                                                    onClick={() =>
-                                                        handleUpdateStats(stats.id, statKey as StatType, false)
-                                                    }
-                                                >
-                                                    -
-                                                </button>
-                                            </div>
-                                        )}
+                                        <div className="text-2xl">{stats[statKey]}</div>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {participationExists && userIsAdmin && (
+                                        <div className="flex flex-col gap-y-2">
+                                            <button
+                                                disabled={match.status !== 'ONGOING'}
+                                                className={clsx(
+                                                    'px-2 rounded text-white mt-1 bg-lul-green',
+                                                    {'opacity-30': match.status !== 'ONGOING'}
+                                                )}
+                                                onClick={() =>
+                                                    handleUpdateStats(stats.id, statKey as StatType, true)
+                                                }
+                                            >
+                                                +
+                                            </button>
+                                            <button
+                                                disabled={match.status !== 'ONGOING'}
+                                                className={clsx(
+                                                    'px-3 rounded text-white mt-1 bg-lul-red',
+                                                    {'opacity-30': match.status !== 'ONGOING'}
+                                                )}
+                                                onClick={() =>
+                                                    handleUpdateStats(stats.id, statKey as StatType, false)
+                                                }
+                                            >
+                                                -
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                    ))}
-            </div>
-        </div>
+                    </div>
+                ))}
+        </CardGrid>
     )
 }
