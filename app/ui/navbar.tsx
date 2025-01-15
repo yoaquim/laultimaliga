@@ -63,8 +63,8 @@ export default function Navbar({className}: { className?: string }) {
     return (
         <nav
             className={clsx(
-                'w-full flex border-t border-white py-3 px-6',
-                'lg:w-fit lg:flex-col lg:h-screen lg:px-4 lg:py-8 lg:border-r lg:border-t-0',
+                'fixed bottom-0 w-full flex border-t border-white py-3 px-6 bg-lul-black/95',
+                'lg:relative lg:w-fit lg:flex-col lg:h-screen lg:px-3 lg:py-8 lg:border-r lg:border-t-0',
                 className
             )}>
             <img src="/alt-logo-lul.svg" alt="Logo" className="h-16 lg:flex hidden"/>
@@ -107,13 +107,10 @@ export default function Navbar({className}: { className?: string }) {
                 </div>
             </div>
 
-            {/* Sign Out */}
-            <button
-                onClick={handleSignOut}
-                className="hidden lg:block text-lul-blue text-sm mt-auto lg:pt-4"
-            >
-                Sign Out
-            </button>
+            <div className="flex flex-col items-center gap-y-1 text-lul-blue antialiased" onClick={handleSignOut}>
+                <VscSignOut className="text-2xl"/>
+                <span className="text-xs text-white">Signout</span>
+            </div>
         </nav>
     )
 }

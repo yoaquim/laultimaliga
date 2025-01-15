@@ -212,7 +212,7 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
                     <img src={TEAM_LOGO_URL_BUILDER(currentTeam.logo)} alt="team-logo" className="h-40"/>
                 }
                 {!currentTeam &&
-                    <div className="text-2xl text-lul-yellow uppercase font-bold">No current team</div>
+                    <div className="text-xl text-lul-yellow uppercase font-bold">FREE AGENT</div>
                 }
             </div>
 
