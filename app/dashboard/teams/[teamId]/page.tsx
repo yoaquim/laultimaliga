@@ -99,8 +99,8 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                 {/*-----------------------------------------------------*/}
                 {/* PLAYERS */}
                 {/*-----------------------------------------------------*/}
-                <div className="lg:h-full h-fit w-full bg-lul-dark-grey p-4 rounded-md flex flex-col">
-                    <h2 className="text-2xl font-semibold bg-lul-dark-grey border-b border-lul-blue pb-2 sticky -top-4 z-20">
+                <div className="lg:h-full h-fit w-full bg-lul-grey/20 p-4 rounded-md flex flex-col">
+                    <h2 className="text-xl font-semibold bg-lul-dark-grey border-b border-lul-blue pb-2 sticky -top-4 z-20 uppercase">
                         Players
                     </h2>
 
@@ -114,8 +114,8 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                 {/*-----------------------------------------------------*/}
                 {/* MATCHES */}
                 {/*-----------------------------------------------------*/}
-                <div className="lg:h-full h-fit w-full bg-lul-dark-grey p-4 rounded-md flex flex-col">
-                    <h2 className="pb-2 text-2xl font-semibold bg-lul-dark-grey border-b border-lul-blue sticky -top-4 z-20">
+                <div className="lg:h-full h-fit w-full bg-lul-grey/20 p-4 rounded-md flex flex-col">
+                    <h2 className="pb-2 text-xl font-semibold bg-lul-dark-grey border-b border-lul-blue sticky -top-4 z-20 uppercase">
                         Matches
                     </h2>
 

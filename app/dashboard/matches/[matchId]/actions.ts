@@ -2,52 +2,134 @@
 
 import { MatchStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
-import { StatType } from './types'
+import { MatchWithDetails, StatType } from './types'
 import { requireAdmin } from '@/lib/rba'
 
 export async function getMatch(matchId: string) {
-    return await prisma.match.findUnique({
-        where: {id: matchId},
-        include: {
-            homeTeam: {
-                include: {
-                    players: {
-                        include: {
-                            player: {
-                                include: {
-                                    user: true,
+    // Use a transaction to fetch the seasonId and full match details
+    const [seasonInfo, fullMatchDetails] = await prisma.$transaction([
+        prisma.match.findUnique({
+            where: {id: matchId},
+            select: {seasonId: true},
+        }),
+        prisma.match.findUnique({
+            where: {id: matchId},
+            include: {
+                homeTeam: {
+                    include: {
+                        players: {
+                            include: {
+                                player: {
+                                    include: {
+                                        user: true,
+                                        seasonDetails: true, // Placeholders for filtering
+                                    },
                                 },
                             },
                         },
                     },
                 },
-            },
-            awayTeam: {
-                include: {
-                    players: {
-                        include: {
-                            player: {
-                                include: {
-                                    user: true,
+                awayTeam: {
+                    include: {
+                        players: {
+                            include: {
+                                player: {
+                                    include: {
+                                        user: true,
+                                        seasonDetails: true, // Placeholders for filtering
+                                    },
                                 },
                             },
                         },
                     },
                 },
-            },
-            season: true,
-            participations: {
-                include: {
-                    player: {
-                        include: {
-                            user: true,
+                season: true,
+                participations: {
+                    include: {
+                        player: {
+                            include: {user: true},
                         },
+                        stats: true,
                     },
-                    stats: true, // includes "points, assists, rebounds"
                 },
             },
-        },
+        }),
+    ])
+
+    // Check if both queries returned valid results
+    if (!seasonInfo || !fullMatchDetails) {
+        throw new Error('Match not found')
+    }
+
+    const {seasonId} = seasonInfo
+
+    // Filter seasonDetails in-memory for the relevant seasonId
+    fullMatchDetails.homeTeam.players.forEach((player) => {
+        player.player.seasonDetails = player.player.seasonDetails.filter(
+            (detail) => detail.seasonId === seasonId
+        )
     })
+
+    fullMatchDetails.awayTeam.players.forEach((player) => {
+        player.player.seasonDetails = player.player.seasonDetails.filter(
+            (detail) => detail.seasonId === seasonId
+        )
+    })
+
+    return fullMatchDetails
+
+    // return await prisma.match.findUnique({
+    //     where: {id: matchId},
+    //     include: {
+    //         homeTeam: {
+    //             include: {
+    //                 players: {
+    //                     include: {
+    //                         player: {
+    //                             include: {
+    //                                 user: true,
+    //                                 seasonDetails: {
+    //                                     where: {
+    //                                         seasonId
+    //                                     }
+    //                                 }
+    //                             },
+    //                         },
+    //                     },
+    //                 },
+    //             },
+    //         },
+    //         awayTeam: {
+    //             include: {
+    //                 players: {
+    //                     include: {
+    //                         player: {
+    //                             include: {
+    //                                 user: true,
+    //                                 seasonDetails: {
+    //                                     where: {
+    //                                         seasonId
+    //                                     }
+    //                                 }
+    //                             },
+    //                         },
+    //                     },
+    //                 },
+    //             },
+    //         },
+    //         season: true,
+    //         participations: {
+    //             include: {
+    //                 player: {
+    //                     include: {
+    //                         user: true,
+    //                     },
+    //                 },
+    //                 stats: true, // includes "points, assists, rebounds"
+    //             },
+    //         },
+    //     },
+    // })
 }
 
 /**

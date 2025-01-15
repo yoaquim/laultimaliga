@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import { useParams, useSearchParams } from 'next/navigation'
 import { MatchStatus } from '@prisma/client'
@@ -9,9 +9,9 @@ import { MatchWithDetails, StatType } from './types'
 import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
 import { getIsAdmin } from '@/dashboard/actions'
 import Empty from '@/ui/empty'
-import Spinner from '@/ui/spinner'
 import { DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
+import Link from 'next/link'
 
 /** Merge team players and participations for display */
 function mergeTeamAndParticipations(team: any, participations: any[]) {
@@ -155,6 +155,8 @@ export default function Page() {
 
                 if (newStatus === 'ONGOING') {
                     setTimerRunning(true)
+                } else if (newStatus === 'COMPLETED') {
+                    setTimerRunning(false)
                 } else {
                     setTimerRunning(false)
                 }
@@ -302,22 +304,8 @@ export default function Page() {
         day: 'numeric',
     })
 
-    const scoreboardColor =
-        match.status === 'ONGOING'
-            ? 'text-lul-green'
-            : match.status === 'COMPLETED'
-                ? 'text-lul-blue'
-                : 'text-white'
     const showScoreboard = match.status === 'ONGOING' || match.status === 'COMPLETED'
     const actionButtons = getStatusActions(match.status)
-
-    const statKeys = ['points', 'assists', 'rebounds', 'fouls']
-    const statAbbrv: Record<string, string> = {
-        points: 'PTS',
-        assists: 'AST',
-        rebounds: 'REB',
-        fouls: 'FLS',
-    }
 
     return (
         <>
@@ -329,96 +317,106 @@ export default function Page() {
                 action={modalAction}
             />
 
-            <div className="relative w-full h-full flex flex-col text-white">
-                {/*====================================================*/}
-                {/* STATUS BADGE */}
-                {/*====================================================*/}
-                <div
-                    className={clsx('absolute right-3 top-5 py-2 px-4 z-10 rounded-md text-center text-xl font-bold bg-lul-dark-grey/90',
-                        getStatusBadgeColor(match.status)
-                    )}>
-                    {match.status}
-                </div>
-
+            <div className="w-full h-full flex flex-col text-white">
                 <div className="flex flex-col lg:gap-y-4 p-4 lg:py-5">
+                    {/*----------------------------------------------------*/}
                     {/*====================================================*/}
                     {/* TEAMS + SCORE (mobile stacked, desktop row) */}
                     {/*====================================================*/}
+                    {/*----------------------------------------------------*/}
 
-                    {/*MOBILE*/}
+                    {/*====================================================*/}
+                    {/* MOBILE */}
+                    {/*====================================================*/}
                     <div className="block lg:hidden text-center text-3xl font-bold w-full max-w-screen-lg mx-auto py-6">
-                        {showScoreboard ? (
-                            <div className={clsx('text-7xl font-extrabold my-2', scoreboardColor)}>
-                                {match.homeScore} - {match.awayScore}
+                        {showScoreboard &&
+                            <div className="w-full flex justify-between items-center">
+                                <h1>{match.homeScore}</h1>
+                                <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
+                                <h1>{match.awayScore}</h1>
                             </div>
-                        ) : (
-                            <div className="text-5xl my-2">⚡️</div>
-                        )}
+                        }
 
                         <div className="mt-4 flex justify-between items-center">
                             <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
-                            <img src="/ball.svg" alt="ball" className="h-8"/>
                             <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
                         </div>
                     </div>
 
-                    {/*DESKTOP*/}
+                    {/*====================================================*/}
+                    {/* DESKTOP */}
+                    {/*====================================================*/}
                     <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
                         <div className="w-1/3 flex flex-col pt-4">
-                            <div className="w-full h-full flex justify-start items-center">
+                            <Link href={`/dashboard/teams/${match.homeTeam.id}`} className="w-full h-full flex justify-start items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-56"/>
-                            </div>
+                            </Link>
                         </div>
 
-                        <div className="w-1/3 h-full flex flex-col justify-center items-center gap-y-2">
-                            {showScoreboard
-                                ? (
-                                    <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10 text-lul-yellow')}>
-                                        <div className="w-full flex justify-between items-center">
-                                            <h1>{match.homeScore}</h1>
-                                            <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
-                                            <h1>{match.awayScore}</h1>
-                                        </div>
+                        <div className="w-1/3 h-full flex flex-col justify-between items-center gap-y-2">
+                            {/*----------------------------------------------------*/}
+                            {/* STATUS BADGE */}
+                            {/*----------------------------------------------------*/}
+                            <div
+                                className={clsx('py-2 px-4 z-10 rounded-md text-center text-xl font-bold bg-lul-dark-grey/90',
+                                    getStatusBadgeColor(match.status)
+                                )}>
+                                {match.status}
+                            </div>
 
-                                        <div className="w-full flex flex-col justify-center items-center gap-y-6">
-                                            {userIsAdmin && (
-                                                <div className="font-bold text-4xl text-lul-red/80">
-                                                    {formatTimeElapsed(timeRemaining)}
-                                                </div>
-                                            )}
+                            {/*----------------------------------------------------*/}
+                            {/* SCORE BOARD / VS BADGE */}
+                            {/*----------------------------------------------------*/}
+                            {showScoreboard &&
+                                <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10 text-lul-yellow')}>
+                                    <div className="w-full flex justify-between items-center">
+                                        <h1>{match.homeScore}</h1>
+                                        <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
+                                        <h1>{match.awayScore}</h1>
+                                    </div>
 
-                                            {userIsAdmin && match.status === 'ONGOING' && (
-                                                <button
-                                                    className={clsx('w-full py-2 text-base text-white rounded uppercase font-bold',
-                                                        {
-                                                            'bg-lul-red/70': timerRunning,
-                                                            'bg-lul-green/70': !timerRunning
-                                                        }
-                                                    )}
-                                                    onClick={handleStartStopTimer}
-                                                >
-                                                    {timerRunning ? 'Stop' : 'Start'}
-                                                </button>
-                                            )}
-                                        </div>
+                                    <div className="w-full flex flex-col justify-center items-center gap-y-6">
+                                        {userIsAdmin && match.status !== 'COMPLETED' && (
+                                            <div className="font-bold text-4xl text-lul-red/80">
+                                                {formatTimeElapsed(timeRemaining)}
+                                            </div>
+                                        )}
+
+                                        {userIsAdmin && match.status === 'ONGOING' && (
+                                            <button
+                                                className={clsx('w-full py-2 text-base text-white rounded uppercase font-bold',
+                                                    {
+                                                        'bg-lul-red/70': timerRunning,
+                                                        'bg-lul-green/70': !timerRunning
+                                                    }
+                                                )}
+                                                onClick={handleStartStopTimer}
+                                            >
+                                                {timerRunning ? 'Stop' : 'Start'}
+                                            </button>
+                                        )}
                                     </div>
-                                )
-                                : (
-                                    <div className="w-32 flex h-full items-center justify-center">
-                                        <img src="/ball.svg" alt="ball"/>
-                                    </div>
-                                )}
-                            {/* Date + Season */}
-                            <div className="flex flex-col items-center">
+                                </div>
+                            }
+                            {!showScoreboard &&
+                                <div className="2xl:w-32 w-20 flex items-center justify-center">
+                                    <img src="/ball.svg" alt="ball"/>
+                                </div>
+                            }
+
+                            {/*----------------------------------------------------*/}
+                            {/* DATE + SEASON */}
+                            {/*----------------------------------------------------*/}
+                            <div className="flex flex-col align-bottom items-center">
                                 <p className="text-lul-blue text-lg">{match.season.name}</p>
                                 <h1 className="text-lg">{dateStr}</h1>
                             </div>
                         </div>
 
                         <div className="w-1/3 flex flex-col pt-4">
-                            <div className="w-full h-full flex justify-end items-center">
+                            <Link href={`/dashboard/teams/${match.awayTeam.id}`} className="w-full h-full flex justify-end items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-56"/>
-                            </div>
+                            </Link>
                         </div>
                     </div>
 
@@ -427,21 +425,23 @@ export default function Page() {
                     {/* STATUS BUTTONS */}
                     {/*====================================================*/}
                     {actionButtons.length > 0 && userIsAdmin && (
-                        <div className="w-full flex gap-4 justify-center items-center lg:pt-0 pt-4">
-                            {actionButtons.map((action) => (
-                                <button
-                                    key={action.label}
-                                    onClick={() => handleStatusChange(action.newStatus as MatchStatus)}
-                                    className={clsx(
-                                        'lg:w-1/6 w-full px-3 py-2 rounded-md text-white text-sm font-medium uppercase transition-colors border border-transparent',
-                                        action.color
-                                    )}
-                                    disabled={isChangingStatus}
-                                >
-                                    {action.label}
-                                </button>
-                            ))}
-                            {isChangingStatus && <Spinner/>}
+                        <div className="w-full flex flex-col">
+                            <div className="w-full flex gap-4 justify-center items-center lg:pt-0 pt-4">
+                                {!isChangingStatus && actionButtons.map((action) => (
+                                    <button
+                                        key={action.label}
+                                        onClick={() => handleStatusChange(action.newStatus as MatchStatus)}
+                                        className={clsx(
+                                            'lg:w-1/6 w-full px-3 py-2 rounded-md text-white text-sm font-medium uppercase transition-colors border border-transparent',
+                                            action.color
+                                        )}
+                                        disabled={isChangingStatus}
+                                    >
+                                        {action.label}
+                                    </button>
+                                ))}
+                            </div>
+                            {isChangingStatus && <Loader full/>}
                         </div>
                     )}
                 </div>
@@ -449,175 +449,124 @@ export default function Page() {
                 {/*====================================================*/}
                 {/* STAT TRACKER*/}
                 {/*====================================================*/}
-                <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden">
-
+                <div className="flex-1 flex flex-col lg:flex-row lg:gap-x-5 lg:overflow-hidden">
                     {/*----------------------------------------------------*/}
                     {/* HOME TEAM */}
                     {/*----------------------------------------------------*/}
-                    <div className="flex-1 flex flex-col lg:overflow-hidden">
-                        {/* Sticky header (TEAM NAME, etc.) */}
-                        <div className={clsx('lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b text-2xl font-semibold p-4 flex items-baseline', {
-                            'border-lul-blue': match.status === 'COMPLETED',
-                            'border-lul-green': match.status === 'ONGOING',
-                            'border-lul-yellow': match.status === 'SCHEDULED',
-                            'border-lul-red': match.status === 'CANCELED'
-                        })}>
-                            <h1 className="flex flex-1">{match.homeTeam.name}</h1>
-                            <h3 className="uppercase text-sm">Player Stats</h3>
-                        </div>
-
-                        {/* Scrollable stats area */}
-                        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {mergeTeamAndParticipations(match.homeTeam, match.participations).map(
-                                ({id, player, stats, participationExists}: any) => {
-                                    return (
-                                        <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
-                                            <h3 className="flex-1 text-2xl font-bold">{player.user.name}</h3>
-                                            <div className="w-full mt-4 flex justify-between gap-2">
-                                                {statKeys.map((statKey) => (
-                                                    <div
-                                                        key={statKey}
-                                                        className="flex flex-col items-center text-2xl gap-y-4"
-                                                    >
-                                                        <div className="flex flex-col items-center">
-                                                            <div className="uppercase text-xs antialiased">{statAbbrv[statKey]}</div>
-
-                                                            <div className={clsx('font-bold text-3xl',
-                                                                {
-                                                                    'text-lul-green': statKey === 'points',
-                                                                    'text-lul-blue': statKey === 'assists',
-                                                                    'text-lul-yellow': statKey === 'rebounds',
-                                                                    'text-lul-red': statKey === 'fouls',
-                                                                }
-                                                            )}>
-                                                                {stats[statKey]}
-                                                            </div>
-                                                        </div>
-                                                        {participationExists && userIsAdmin && (
-                                                            <>
-                                                                <button
-                                                                    disabled={match.status !== 'ONGOING'}
-                                                                    className={clsx(
-                                                                        'px-2 rounded text-white mt-1 bg-lul-dark-grey border-0.5 border-lul-green',
-                                                                        {'opacity-30': match.status !== 'ONGOING'}
-                                                                    )}
-                                                                    onClick={() =>
-                                                                        handleUpdateStats(stats.id, statKey as StatType, true)
-                                                                    }
-                                                                >
-                                                                    +
-                                                                </button>
-                                                                <button
-                                                                    disabled={match.status !== 'ONGOING'}
-                                                                    className={clsx(
-                                                                        'px-3 rounded text-white mt-1 bg-lul-dark-grey border-0.5 border-lul-red',
-                                                                        {'opacity-30': match.status !== 'ONGOING'}
-                                                                    )}
-                                                                    onClick={() =>
-                                                                        handleUpdateStats(stats.id, statKey as StatType, false)
-                                                                    }
-                                                                >
-                                                                    -
-                                                                </button>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )
-                                }
-                            )}
-                        </div>
-                    </div>
-
-                    {/*----------------------------------------------------*/}
-                    {/* DIVIDE  */}
-                    {/*----------------------------------------------------*/}
-                    <div className={clsx('w-0.5 hidden lg:block', {
-                        'bg-lul-blue': match.status === 'COMPLETED',
-                        'bg-lul-green': match.status === 'ONGOING',
-                        'bg-lul-yellow': match.status === 'SCHEDULED',
-                        'bg-lul-red': match.status === 'CANCELED'
-                    })}/>
+                    <Tracker
+                        match={match}
+                        team="homeTeam"
+                        userIsAdmin={userIsAdmin}
+                        handleUpdateStats={handleUpdateStats}/>
 
                     {/*----------------------------------------------------*/}
                     {/* AWAY TEAM */}
                     {/*----------------------------------------------------*/}
-                    <div className="flex-1 flex flex-col lg:overflow-hidden">
-                        {/* Sticky header */}
-                        <div className={clsx('lg:bg-opacity-0 bg-lul-black sticky top-0 z-10 border-b text-2xl font-semibold p-4 flex items-baseline', {
-                            'border-lul-blue': match.status === 'COMPLETED',
-                            'border-lul-green': match.status === 'ONGOING',
-                            'border-lul-yellow': match.status === 'SCHEDULED',
-                            'border-lul-red': match.status === 'CANCELED'
-                        })}>
-                            <h1 className="flex flex-1">{match.awayTeam.name}</h1>
-                            <h3 className="uppercase text-sm">Player Stats</h3>
-                        </div>
-
-                        {/* Scrollable stats area */}
-                        <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {mergeTeamAndParticipations(match.awayTeam, match.participations).map(
-                                ({id, player, stats, participationExists}: any) => (
-                                    <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
-                                        <h3 className="flex-1 text-2xl font-bold">{player.user.name}</h3>
-                                        <div className="w-full mt-4 flex justify-between gap-2">
-                                            {statKeys.map((statKey) => (
-                                                <div
-                                                    key={statKey}
-                                                    className="flex flex-col items-center text-2xl gap-y-4"
-                                                >
-                                                    <div className="flex flex-col items-center">
-                                                        <div className="uppercase text-xs antialiased">{statAbbrv[statKey]}</div>
-                                                        <div className={clsx('font-bold text-3xl',
-                                                            {
-                                                                'text-lul-green': statKey === 'points',
-                                                                'text-lul-blue': statKey === 'assists',
-                                                                'text-lul-yellow': statKey === 'rebounds',
-                                                                'text-lul-red': statKey === 'fouls',
-                                                            }
-                                                        )}>
-                                                            {stats[statKey]}
-                                                        </div>
-                                                    </div>
-                                                    {participationExists && userIsAdmin && (
-                                                        <>
-                                                            <button
-                                                                disabled={match.status !== 'ONGOING'}
-                                                                className={clsx(
-                                                                    'px-2 rounded text-white mt-1 bg-lul-dark-grey border-0.5 border-lul-green',
-                                                                    {'opacity-30': match.status !== 'ONGOING'}
-                                                                )}
-                                                                onClick={() =>
-                                                                    handleUpdateStats(stats.id, statKey as StatType, true)
-                                                                }
-                                                            >
-                                                                +
-                                                            </button>
-                                                            <button
-                                                                disabled={match.status !== 'ONGOING'}
-                                                                className={clsx(
-                                                                    'px-3 rounded text-white mt-1 bg-lul-dark-grey border-lul-red border',
-                                                                    {'opacity-30': match.status !== 'ONGOING'}
-                                                                )}
-                                                                onClick={() =>
-                                                                    handleUpdateStats(stats.id, statKey as StatType, false)
-                                                                }
-                                                            >
-                                                                -
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
+                    <Tracker
+                        match={match}
+                        team="awayTeam"
+                        userIsAdmin={userIsAdmin}
+                        handleUpdateStats={handleUpdateStats}/>
                 </div>
             </div>
         </>
+    )
+}
+
+function Tracker({
+                     match,
+                     team,
+                     userIsAdmin,
+                     handleUpdateStats
+                 }: {
+    match: MatchWithDetails,
+    team: 'homeTeam' | 'awayTeam'
+    userIsAdmin: boolean,
+    handleUpdateStats: (id: string, statKey: StatType, increment: boolean) => void
+}) {
+    const statKeys = ['points', 'assists', 'rebounds', 'fouls']
+    const statAbbrv: Record<string, string> = {
+        points: 'PTS',
+        assists: 'AST',
+        rebounds: 'REB',
+        fouls: 'FLS',
+    }
+
+
+    return (
+        <div className="flex-1 flex flex-col lg:overflow-hidden bg-lul-grey/20 rounded-md px-4">
+            {/* Sticky header */}
+            <div className={clsx('lg:bg-opacity-0 sticky top-0 z-10 border-b text-2xl font-semibold py-2 flex items-end', {
+                'border-lul-blue': match.status === 'COMPLETED',
+                'border-lul-green': match.status === 'ONGOING',
+                'border-lul-yellow': match.status === 'SCHEDULED',
+                'border-lul-red': match.status === 'CANCELED'
+            })}>
+                <h1 className="flex flex-1 uppercase text-xl">{match[team].name}</h1>
+            </div>
+
+            {/* Scrollable stats area */}
+            <div className="flex-1 overflow-y-auto py-4 grid grid-cols-2 2xl:grid-cols-3 gap-6">
+                {mergeTeamAndParticipations(match[team], match.participations).map(
+                    ({id, player, stats, participationExists}: any) => (
+
+                        <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
+                            <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex justify-between gap-x-2 text-xl font-bold rounded bg-lul-dark-grey/80 px-2">
+                                <span className="text-lul-orange">#{player.seasonDetails?.[0]?.number || 'N/A'}</span>
+                                <span className="overflow-x-hidden whitespace-nowrap overflow-ellipsis">{player.user.name}</span>
+                            </Link>
+
+                            <div className="w-full mt-4 flex justify-between gap-2">
+                                {statKeys.map((statKey) => (
+                                    <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
+                                        <div className="flex flex-col gap-y-2 items-center antialiased">
+                                            <div className={clsx('uppercase text-sm font-bold',
+                                                {
+                                                    'text-lul-green': statKey === 'points',
+                                                    'text-lul-blue': statKey === 'assists',
+                                                    'text-lul-yellow': statKey === 'rebounds',
+                                                    'text-lul-red': statKey === 'fouls',
+                                                }
+                                            )}>
+                                                {statAbbrv[statKey]}
+                                            </div>
+                                            <div className="text-2xl">{stats[statKey]}</div>
+                                        </div>
+
+                                        {participationExists && userIsAdmin && (
+                                            <div className="flex flex-col gap-y-2">
+                                                <button
+                                                    disabled={match.status !== 'ONGOING'}
+                                                    className={clsx(
+                                                        'px-2 rounded text-white mt-1 bg-lul-green',
+                                                        {'opacity-30': match.status !== 'ONGOING'}
+                                                    )}
+                                                    onClick={() =>
+                                                        handleUpdateStats(stats.id, statKey as StatType, true)
+                                                    }
+                                                >
+                                                    +
+                                                </button>
+                                                <button
+                                                    disabled={match.status !== 'ONGOING'}
+                                                    className={clsx(
+                                                        'px-3 rounded text-white mt-1 bg-lul-red',
+                                                        {'opacity-30': match.status !== 'ONGOING'}
+                                                    )}
+                                                    onClick={() =>
+                                                        handleUpdateStats(stats.id, statKey as StatType, false)
+                                                    }
+                                                >
+                                                    -
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+            </div>
+        </div>
     )
 }
