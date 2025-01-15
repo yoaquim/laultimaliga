@@ -335,7 +335,7 @@ export default function AdminDashboardPage() {
                 {/* CREATE ENTITIES */}
                 {/* ==================================== */}
 
-                <div className="w-full max-h-1/3 h-1/3 flex flex-row gap-x-4">
+                <div className="w-full h-1/4 flex flex-row gap-x-4">
                     {/* ==================================== */}
                     {/* SINGLE CREATION */}
                     {/* ==================================== */}
@@ -420,7 +420,7 @@ export default function AdminDashboardPage() {
                 {/* ==================================== */}
                 {/* LOG WINDOW */}
                 {/* ==================================== */}
-                <div className="w-full max-h-1/3 h-1/3 flex flex-col bg-lul-dark-grey rounded p-4">
+                <div className="w-full max-h-1/4 h-1/3 flex flex-col bg-lul-dark-grey rounded p-4">
                     <h2 className="text-xl font-bold uppercase text-lul-orange ">
                         LOGS
                     </h2>
@@ -498,7 +498,7 @@ function DataViewPanel() {
     const totalPages = Math.ceil(totalCount / pageSize) || 1
 
     return (
-        <div className="relative flex  flex-col  gap-y-4 w-full bg-lul-dark-grey p-4 text-white transition-all duration-300 rounded max-h-1/3 h-1/3">
+        <div className="relative flex  flex-col flex-1 flex-grow  gap-y-4 w-full bg-lul-dark-grey p-4 text-white transition-all duration-300 rounded h-1/2">
             <h2 className="text-lg font-bold uppercase text-lul-orange">Data View</h2>
 
             {/* Controls */}
@@ -570,11 +570,11 @@ function DataViewPanel() {
 
             {!loading && <>
                 {/* Table */}
-                <div className="max-h-60 overflow-y-auto bg-lul-black/20 rounded-md p-2">
+                <div className="overflow-y-auto bg-lul-black/20 rounded-md p-2">
                     {items.length === 0 ? (
                         <p className="text-lul-light-grey uppercase text-sm font-bold text-center w-full">No rows found.</p>
                     ) : (
-                        <table className="w-full text-sm">
+                        <table className="h-full w-full text-sm">
                             <thead>
                             <tr>
                                 {/* We'll just display first few keys or all keys */}

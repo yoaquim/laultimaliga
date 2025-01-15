@@ -9,6 +9,7 @@ import { IoBasketballSharp } from 'react-icons/io5'
 import { MdAdminPanelSettings } from 'react-icons/md'
 import { VscSignOut } from 'react-icons/vsc'
 import { RiTeamFill, RiShieldUserFill, RiIdCardFill } from 'react-icons/ri'
+import { GiSettingsKnobs } from 'react-icons/gi'
 import { useState, useEffect } from 'react'
 
 export default function Navbar({className}: { className?: string }) {
@@ -55,6 +56,7 @@ export default function Navbar({className}: { className?: string }) {
         {name: 'Teams', href: '/dashboard/teams', icon: RiTeamFill},
         {name: 'Players', href: '/dashboard/players', icon: RiShieldUserFill},
         {name: 'Profile', href: `/dashboard/players/${userId}`, icon: RiIdCardFill},
+        {name: 'Settings', href: `/dashboard/settings`, icon: GiSettingsKnobs},
         {name: 'Admin', href: '/dashboard/admin', icon: MdAdminPanelSettings, adminOnly: true},
     ]
 
