@@ -449,7 +449,7 @@ export default function Page() {
                 {/*====================================================*/}
                 {/* STAT TRACKER*/}
                 {/*====================================================*/}
-                <div className="flex-1 flex flex-col lg:flex-row lg:gap-x-5 lg:overflow-hidden">
+                <div className="flex-1 flex flex-col gap-y-5 lg:flex-row lg:gap-x-5 lg:overflow-hidden">
                     {/*----------------------------------------------------*/}
                     {/* HOME TEAM */}
                     {/*----------------------------------------------------*/}
