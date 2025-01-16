@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { ERRORS, DOMAIN } from '@/lib/utils'
+import { ERRORS, DOMAIN, standardizePhoneNumber } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 
 async function userExists(email: string) {
@@ -36,7 +36,7 @@ export async function signUpUser(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const name = formData.get('name') as string
-    const phone = formData.get('phone') as string
+    const phone = standardizePhoneNumber(formData.get('phone') as string)
 
     if (await userExists(email)) {
         throw new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)

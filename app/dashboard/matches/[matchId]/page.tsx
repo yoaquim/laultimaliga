@@ -9,11 +9,26 @@ import { MatchWithDetails, StatType } from './types'
 import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
 import { getIsAdmin } from '@/dashboard/actions'
 import Empty from '@/ui/empty'
-import { DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, PROFILE_PIC_BUILDER, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
 import Link from 'next/link'
 import { Container } from '@/ui/container'
 import CardGrid from '@/ui/card-grid'
+
+import { MdScoreboard } from 'react-icons/md'
+import { FaHandsHelping } from 'react-icons/fa'
+import { MdSportsHandball } from 'react-icons/md'
+import { MdSports } from 'react-icons/md'
+import { IconType } from 'react-icons'
+import { FaPlusSquare, FaMinusSquare } from 'react-icons/fa'
+
+
+const iconMap: Record<StatType, IconType> = {
+    points: MdScoreboard,
+    assists: FaHandsHelping,
+    rebounds: MdSportsHandball,
+    fouls: MdSports
+}
 
 /** Merge team players and participations for display */
 function mergeTeamAndParticipations(team: any, participations: any[]) {
@@ -513,57 +528,84 @@ function Tracker({
             {mergeTeamAndParticipations(match[team], match.participations).map(
                 ({id, player, stats, participationExists}: any) => (
 
-                    <div key={id} className="flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
-                        <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex justify-between gap-x-2 text-xl font-bold rounded bg-lul-dark-grey/80 px-2">
-                            <span className="text-lul-orange">#{player.seasonDetails?.[0]?.number || 'N/A'}</span>
-                            <span className="overflow-x-hidden whitespace-nowrap overflow-ellipsis">{player.user.name}</span>
+                    <div key={id} className="relative flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
+
+                        <div className="absolute top-3 right-3 text-xl font-bold">#{player.seasonDetails[0]?.number}</div>
+
+                        <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex flex-col items-center gap-y-2">
+                            <img src={PROFILE_PIC_BUILDER(player.user)} alt="profile-image" className="rounded-full w-16"/>
+                            <span className="uppercase font-bold">{player.user.name}</span>
                         </Link>
 
                         <div className="w-full mt-4 flex justify-between gap-2">
                             {statKeys.map((statKey) => (
                                 <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
-                                    <div className="flex flex-col gap-y-2 items-center antialiased">
-                                        <div className={clsx('uppercase text-sm font-bold',
-                                            {
-                                                'text-lul-green': statKey === 'points',
-                                                'text-lul-blue': statKey === 'assists',
-                                                'text-lul-yellow': statKey === 'rebounds',
-                                                'text-lul-red': statKey === 'fouls',
-                                            }
-                                        )}>
-                                            {statAbbrv[statKey]}
-                                        </div>
-                                        <div className="text-2xl">{stats[statKey]}</div>
-                                    </div>
 
-                                    {participationExists && userIsAdmin && (
-                                        <div className="flex flex-col gap-y-2">
+
+                                    {!userIsAdmin &&
+                                        <div className="flex flex-col gap-y-2 items-center antialiased">
+                                            <div className={clsx('uppercase text-sm font-bold',
+                                                {
+                                                    'text-lul-green': statKey === 'points',
+                                                    'text-lul-blue': statKey === 'assists',
+                                                    'text-lul-yellow': statKey === 'rebounds',
+                                                    'text-lul-red': statKey === 'fouls',
+                                                }
+                                            )}>
+                                                {iconMap[statKey as StatType]({
+                                                    className: `text-3xl antialiased ${
+                                                        statKey === 'points' ? 'text-lul-green' :
+                                                            statKey === 'assists' ? 'text-lul-blue' :
+                                                                statKey === 'rebounds' ? 'text-lul-yellow' :
+                                                                    statKey === 'fouls' ? 'text-lul-red' : 'text-white'
+
+                                                    }`
+                                                })}
+                                            </div>
+                                            <div className="text-2xl">{stats[statKey]}</div>
+                                            <div className="text-xs text-lul-light-grey uppercase font-bold">{statAbbrv[statKey]}</div>
+                                        </div>
+                                    }
+
+                                    {participationExists && userIsAdmin &&
+                                        <div className="flex flex-col gap-y-1 items-center antialiased">
+                                            <div className={clsx('uppercase text-sm font-bold',
+                                                {
+                                                    'text-lul-green': statKey === 'points',
+                                                    'text-lul-blue': statKey === 'assists',
+                                                    'text-lul-yellow': statKey === 'rebounds',
+                                                    'text-lul-red': statKey === 'fouls',
+                                                }
+                                            )}>
+                                                {statAbbrv[statKey]}</div>
                                             <button
-                                                disabled={match.status !== 'ONGOING'}
-                                                className={clsx(
-                                                    'px-2 rounded text-white mt-1 bg-lul-green',
-                                                    {'opacity-30': match.status !== 'ONGOING'}
-                                                )}
                                                 onClick={() =>
                                                     handleUpdateStats(stats.id, statKey as StatType, true)
-                                                }
-                                            >
-                                                +
+                                                }>
+                                                <FaPlusSquare
+                                                    className={clsx('text-3xl', {
+                                                        'text-lul-green': match.status === 'ONGOING',
+                                                        'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                    })}
+                                                />
                                             </button>
+
+                                            <div className="text-2xl py-1">{stats[statKey]}</div>
+
                                             <button
-                                                disabled={match.status !== 'ONGOING'}
-                                                className={clsx(
-                                                    'px-3 rounded text-white mt-1 bg-lul-red',
-                                                    {'opacity-30': match.status !== 'ONGOING'}
-                                                )}
                                                 onClick={() =>
                                                     handleUpdateStats(stats.id, statKey as StatType, false)
                                                 }
                                             >
-                                                -
+                                                <FaMinusSquare
+                                                    className={clsx('text-3xl', {
+                                                        'text-lul-red': match.status === 'ONGOING',
+                                                        'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                    })}
+                                                />
                                             </button>
                                         </div>
-                                    )}
+                                    }
                                 </div>
                             ))}
                         </div>

@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent, useRef, ChangeEvent, MouseEventHandler } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, FormEvent, useRef, ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
 import { DOMAIN, BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER } from '@/lib/utils'
@@ -13,7 +12,6 @@ import clsx from 'clsx'
 import Link from 'next/link'
 
 export default function SettingsPage() {
-    const router = useRouter()
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<any>(null)
@@ -123,7 +121,7 @@ export default function SettingsPage() {
                 },
             }))
             toast.success('Profile updated!', {id: 'update-profile'})
-            router.refresh() // if you need a full refresh
+            window.location.reload()
         } catch (error: any) {
             console.error('Error updating user:', error)
             toast.error(error.message || 'Failed to update profile', {id: 'update-profile'})
@@ -161,7 +159,7 @@ export default function SettingsPage() {
             } else {
                 toast.dismiss('claim')
                 toast.success('Player Profile Claimed')
-                router.refresh()
+                window.location.reload()
             }
         } catch (error) {
             console.error(error)

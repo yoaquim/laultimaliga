@@ -255,7 +255,10 @@ export default async function Page({params}: { params: Promise<{ playerId: strin
                 </h2>
 
                 {matches.length === 0
-                    ? <Empty message={EMPTY_MESSAGES.NO_MATCHES}/>
+                    ?
+                    <div className="pt-8 pb-4">
+                        <Empty message={EMPTY_MESSAGES.NO_MATCHES}/>
+                    </div>
                     :
                     <div className="grid lg:grid-cols-3 grid-cols-1 lg:gap-6 gap-y-6 py-6">
                         {player.participations.map((participation: any) => {

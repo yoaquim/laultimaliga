@@ -27,4 +27,4 @@ export type MatchWithDetails = Prisma.MatchGetPayload<{
     }
 }>
 
-export type StatType = 'points' | 'assists' | 'rebounds'
+export type StatType = 'points' | 'assists' | 'rebounds' | 'fouls'

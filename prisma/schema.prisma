@@ -65,7 +65,7 @@ model Season {
   matches             Match[]
   SeasonStats         PlayerSeasonStats[]
   createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  updatedAt           DateTime              @default(now()) @updatedAt
   PlayerSeasonDetails PlayerSeasonDetails[]
 
   @@index([isActive])
@@ -82,7 +82,7 @@ model Team {
   awayMatches Match[]               @relation("AwayTeam")
   wins        Match[]               @relation("WinnerTeam")
   createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  updatedAt   DateTime              @default(now()) @updatedAt
 }
 
 model Match {
@@ -101,7 +101,7 @@ model Match {
   awayScore      Int                        @default(0)
   participations PlayerMatchParticipation[]
   createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
+  updatedAt      DateTime                   @default(now()) @updatedAt
 
   @@index([homeTeamId, awayTeamId, seasonId])
 }
@@ -116,7 +116,7 @@ model Player {
   seasonDetails  PlayerSeasonDetails[]
   participations PlayerMatchParticipation[]
   createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
+  updatedAt      DateTime                   @default(now()) @updatedAt
   SeasonStats    PlayerSeasonStats[]
 }
 
@@ -130,7 +130,7 @@ model PlayerSeasonDetails {
   teamId    String
   number    Int
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   @@unique([playerId, seasonId])
 }
@@ -143,7 +143,7 @@ model PlayerMatchParticipation {
   matchId   String
   stats     PlayerMatchStats?
   createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  updatedAt DateTime          @default(now()) @updatedAt
 
   @@unique([playerId, matchId])
 }
@@ -158,7 +158,7 @@ model PlayerTotalStats {
   fouls       Int      @default(0)
   gamesPlayed Int      @default(0)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 }
 
 model PlayerSeasonStats {
@@ -173,7 +173,7 @@ model PlayerSeasonStats {
   fouls       Int      @default(0)
   gamesPlayed Int      @default(0)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now()) @updatedAt
 
   @@unique([playerId, seasonId])
 }
@@ -187,5 +187,5 @@ model PlayerMatchStats {
   rebounds                   Int                      @default(0)
   fouls                      Int                      @default(0)
   createdAt                  DateTime                 @default(now())
-  updatedAt                  DateTime                 @updatedAt
+  updatedAt                  DateTime                 @default(now()) @updatedAt
 }
