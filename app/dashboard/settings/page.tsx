@@ -184,7 +184,7 @@ export default function SettingsPage() {
     const unclaimedPlayerExists = unclaimedPlayer !== null
 
     return (
-        <Container className="text-white gap-y-8 py-6 px-4">
+        <Container className="text-white flex flex-col gap-y-8 py-6 px-4">
             <h1 className="text-2xl font-bold uppercase border-lul-blue border-b">Settings</h1>
 
             {/* ============================================== */}

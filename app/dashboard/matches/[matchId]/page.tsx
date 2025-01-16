@@ -354,7 +354,7 @@ export default function Page() {
                     {/*====================================================*/}
                     <div className="block lg:hidden text-center text-3xl font-bold w-full max-w-screen-lg mx-auto py-6">
                         {showScoreboard &&
-                            <div className="w-full flex justify-between items-center">
+                            <div className="w-full flex justify-between items-center text-lul-yellow">
                                 <h1 className={clsx('w-1/3 flex justify-start pl-2 text-8xl', {
                                     'text-lul-green': match.winnerId && match.winnerId === match.homeTeam.id,
                                     'text-lul-red': match.winnerId && match.winnerId === match.awayTeam.id

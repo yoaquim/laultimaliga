@@ -62,9 +62,9 @@ export default function PlayerCard({player}: Props) {
             className="relative items-stretch flex flex-col h-full gap-y-4 p-4 pb-3 px-5 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer">
 
             {/* TOP SECTION */}
-            <div className="w-full flex flex-col itemscenter text-white lg:max-w-64 max-w-full 2xl:max-w-full">
+            <div className="w-full flex flex-col itemscenter text-white max-w-60 lg:max-w-full">
                 {/* PLAYER NAME */}
-                <div className="w-full flex-grow text-2xl font-semibold">
+                <div className="w-full flex-grow text-2xl font-semibold max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-full">
                     {player.user.name}
                 </div>
 
@@ -121,6 +121,5 @@ export default function PlayerCard({player}: Props) {
                 <div>{shortName}</div>
             </div>
         </Link>
-
     )
 }
