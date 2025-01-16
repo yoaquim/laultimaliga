@@ -198,7 +198,7 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 <img
                     src={PROFILE_PIC_BUILDER(player.user)}
                     alt="profile-pic"
-                    className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
+                    className="h-48 w-48 rounded-md object-cover cursor-pointer transition-opacity duration-300"
                 />
 
 
@@ -218,22 +218,12 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 {currentTeam &&
                     <img src={TEAM_LOGO_URL_BUILDER(currentTeam.logo)} alt="team-logo" className="h-40"/>
                 }
-                {!currentTeam &&
-                    <div className="relative w-32 h-32 flex justify-center items-center uppercase font-bold">
-                        {/* This div carries the masked background */}
-                        <div
-                            className="absolute inset-0 bg-lul-yellow"
-                            style={{
-                                mask: 'url(\'/lul-shield.svg\') no-repeat center / contain',
-                                WebkitMask: 'url(\'/lul-shield.svg\') no-repeat center / contain',
-                            }}
-                        />
 
-                        {/* Text layer */}
-                        <div className="relative -mt-2 text-center text-lul-yellow">
-                            FREE<br/>AGENT
-                        </div>
-                    </div>}
+                {!currentTeam &&
+                    <div className="text-center font-bold text-lg text-lul-black rounded-md bg-white p-6">
+                        FREE<br/>AGENT
+                    </div>
+                }
             </div>
 
             {/* =============================*/}

@@ -129,6 +129,7 @@ model PlayerSeasonDetails {
   team      Team     @relation(fields: [teamId], references: [id])
   teamId    String
   number    Int
+  isCaptain Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 

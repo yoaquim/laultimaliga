@@ -49,6 +49,12 @@ export const ERRORS = {
         PLAYER_PHONE_NUMBER_DOESNT_MATCH: 'Phone numbers do not match. Cannot claim this player.',
         ERROR_CLAIMING_PLAYER: 'Error claiming player',
     },
+    SETTINGS: {
+        ERROR_LOADING_PROFILE: 'Error loading profile',
+        FAILED_TO_LOAD_PROFILE: 'Failed to load profile',
+        NO_FILE_SELECTED: 'No File Selected',
+        USER_PROFILE_NOT_LOADED: 'User profile not loaded',
+    }
 }
 
 export const EMPTY_MESSAGES = {

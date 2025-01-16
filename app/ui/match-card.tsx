@@ -54,59 +54,57 @@ export default function MatchCard({match, noTopRadius}: Props) {
             </div>
 
             {/* TEAMS */}
-            <div className={clsx('relative flex-1 flex flex-col items-center justify-center gap-y-4')}>
+            <div className={clsx('relative -mt-8 flex justify-between items-center')}>
 
-                <div className="w-full -mt-8 flex items-center justify-between">
-                    {/*HOME TEAM*/}
-                    <div className="w-1/3 flex flex-col justify-center items-center">
-                        <h1 className="w-full text-white text-base text-center font-bold uppercase">HOME</h1>
-                        <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
+                {/*HOME TEAM*/}
+                <div className="w-1/3 flex flex-col justify-start items-center">
+                    <h1 className="w-full text-white text-base text-center font-bold uppercase">HOME</h1>
+                    <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
+                </div>
+
+                {/* BALL */}
+                {!isScoreVisible &&
+                    <div className="w-1/3 flex items-center justify-center">
+                        {match.status === 'CANCELED'
+                            ? <div className="w-full text-center text-4xl">❌</div>
+                            : (<img src="/ball.svg" alt="ball" className="w-8"/>)
+                        }
                     </div>
+                }
 
-                    {/* BALL */}
-                    {!isScoreVisible &&
-                        <div className="w-1/3 flex items-center justify-center">
-                            {match.status === 'CANCELED'
-                                ? <div className="w-full text-center text-4xl">❌</div>
-                                : (<img src="/ball.svg" alt="ball" className="w-8"/>)
-                            }
+                {/* SCORE */}
+                {isScoreVisible &&
+                    <div className={clsx('mt-9 absolute inset-0 flex px-10 justify-center gap-x-1 text-4xl font-bold rounded text-white')
+                    }>
+                        <div className={clsx({
+                            'text-lul-green': match.winnerId === match.homeTeam.id,
+                            'text-lul-red': match.winnerId !== match.homeTeam.id
+                        })}>
+                            <Score value={match.homeScore}/>
                         </div>
-                    }
 
-                    {/* SCORE */}
-                    {isScoreVisible &&
-                        <div className={clsx('mt-4 absolute inset-0 flex px-10 justify-center gap-x-1 text-4xl font-bold rounded text-white')
-                        }>
-                            <div className={clsx({
-                                'text-lul-green': match.winnerId === match.homeTeam.id,
-                                'text-lul-red': match.winnerId !== match.homeTeam.id
-                            })}>
-                                <Score value={match.homeScore}/>
-                            </div>
+                        <div className="mt-1 px-0.5">·</div>
 
-                            <div className="mt-1 px-0.5">·</div>
-
-                            <div className={clsx({
-                                'text-lul-green': match.winnerId === match.awayTeam.id,
-                                'text-lul-red': match.winnerId !== match.awayTeam.id
-                            })}>
-                                <Score value={match.awayScore}/>
-                            </div>
+                        <div className={clsx({
+                            'text-lul-green': match.winnerId === match.awayTeam.id,
+                            'text-lul-red': match.winnerId !== match.awayTeam.id
+                        })}>
+                            <Score value={match.awayScore}/>
                         </div>
-                    }
-
-                    {/*AWAY TEAM*/}
-                    <div className="w-1/3 flex flex-col justify-center items-center">
-                        <h1 className="w-full text-white text-base text-center font-bold uppercase">AWAY</h1>
-                        <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
                     </div>
+                }
+
+                {/*AWAY TEAM*/}
+                <div className="w-1/3 flex flex-col justify-center items-center">
+                    <h1 className="w-full text-white text-base text-center font-bold uppercase">AWAY</h1>
+                    <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
                 </div>
             </div>
 
             {/* BOTTOM ROW (DATE & SEASON) */}
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center uppercase">
                 <div className="text-lul-light-grey font-bold text-sm">{dateStr}</div>
-                <div className="text-lul-blue text-sm font-semibold uppercase">
+                <div className="text-lul-blue text-sm font-semibold">
                     {match.season.shortName || match.season.name}
                 </div>
             </div>

@@ -53,8 +53,8 @@ export default function Navbar({className}: { className?: string }) {
     return (
         <nav
             className={clsx(
-                'fixed bottom-0 w-full flex border-t border-white py-3 px-6 bg-lul-black z-50',
-                'lg:relative lg:w-fit lg:flex-col lg:h-screen lg:px-3 lg:py-8 lg:border-r lg:border-t-0',
+                'fixed bottom-0 w-full flex border-t border-white py-3 px-6 bg-lul-black z-50 uppercase',
+                'lg:relative lg:w-24 lg:flex-col lg:h-screen lg:px-4 lg:py-8 lg:border-r lg:border-t-0',
                 className
             )}>
             <img src="/alt-logo-lul.svg" alt="Logo" className="h-16 lg:flex hidden"/>
@@ -73,9 +73,9 @@ export default function Navbar({className}: { className?: string }) {
                                 key={i}
                                 href={link.href}
                                 className={clsx(
-                                    'flex flex-col items-center gap-y-1 text-lul-blue antialiased',
+                                    'flex flex-col justify-center items-center gap-y-1 px-2 lg:px-0 text-lul-blue',
                                     {
-                                        'bg-lul-blue text-white py-2 px-1.5 rounded-md': pathname.startsWith(link.href)
+                                        'bg-lul-blue text-white w-16 h-16 rounded-md': pathname.startsWith(link.href)
                                     }
                                 )}
                             >

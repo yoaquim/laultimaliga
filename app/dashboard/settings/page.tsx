@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, useRef, ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
-import { DOMAIN, BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER, PROFILE_PIC_BUILDER } from '@/lib/utils'
+import { DOMAIN, ERRORS, PROFILE_PIC_BUILDER } from '@/lib/utils'
 import { fetchUserProfile, updateUserAction } from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/ui/container'
@@ -36,8 +36,8 @@ export default function SettingsPage() {
                     setEmail(data.sessionUser.email || null)
                 }
             } catch (error) {
-                console.error('Error loading profile:', error)
-                toast.error('Failed to load profile.')
+                console.error(ERRORS.SETTINGS.ERROR_LOADING_PROFILE, error)
+                toast.error(ERRORS.SETTINGS.FAILED_TO_LOAD_PROFILE,)
             } finally {
                 setLoading(false)
             }
@@ -52,11 +52,11 @@ export default function SettingsPage() {
     // Handle profile picture upload
     async function uploadPic(file: File) {
         if (!file) {
-            toast.error('No file selected')
+            toast.error(ERRORS.SETTINGS.NO_FILE_SELECTED)
             return
         }
         if (!sessionUser) {
-            toast.error('User profile not loaded.')
+            toast.error(ERRORS.SETTINGS.USER_PROFILE_NOT_LOADED)
             return
         }
         try {
@@ -196,7 +196,7 @@ export default function SettingsPage() {
                         src={PROFILE_PIC_BUILDER(sessionUser)}
                         alt="profile-pic"
                         className={clsx(
-                            'h-52 w-52 rounded-full object-cover cursor-pointer transition-opacity duration-300',
+                            'h-52 w-52 rounded-md object-cover cursor-pointer transition-opacity duration-300',
                             {'opacity-50': uploadingPic}
                         )}
                         onClick={handleImageClick}
@@ -265,15 +265,15 @@ export default function SettingsPage() {
             {/* ============================================== */}
             {Player &&
                 <div className="mx-auto bg-lul-grey/20  flex flex-col gap-y-4 rounded-md px-6 py-4 w-full max-w-md">
-                    <h2 className="text-white font-bold text-base mb-2 uppercase border-b border-lul-orange">
+                    <h2 className="text-white font-bold text-base mb-2 uppercase border-b border-lul-green">
                         PLAYER PROFILE LINKED
                     </h2>
 
                     <p className="text-base text-white mb-4 normal-case">
-                        Your user profile is linked with Player ID <span className="text-lul-orange font-bold">{Player.id}</span>.
+                        Your user profile is linked with Player ID <span className="text-lul-green font-bold">{Player.id}</span>.
                         <br/>
                         <br/>
-                        You can view your stats over at your <Link href={`/dashboard/players/${Player.id}`} className="text-lul-blue">player profile</Link>.
+                        You can view your stats over at your <Link href={`/dashboard/profile`} className="text-lul-blue">player profile</Link>.
                     </p>
                 </div>
             }
@@ -284,32 +284,32 @@ export default function SettingsPage() {
             <form onSubmit={handleUpdateProfile} className="bg-lul-dark-grey p-6 pt-4 rounded-md flex flex-col gap-y-4 w-full max-w-md mx-auto">
                 <h1 className="border-b border-lul-blue uppercase font-bold">UPDATE PROFILE</h1>
                 <div className="flex flex-col gap-y-1">
-                    <label className="text-sm text-lul-light-grey uppercase font-semibold">Name</label>
+                    <label className="text-xs text-lul-white uppercase font-semibold">Name</label>
                     <input
                         type="text"
-                        className="px-3 py-2 rounded-md bg-lul-black/20"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
+                        className="py-1 px-2 rounded-md text-white bg-lul-black/50"
                     />
                 </div>
                 <div className="flex flex-col gap-y-1">
-                    <label className="text-sm text-lul-light-grey uppercase font-semibold">Phone</label>
+                    <label className="text-xs text-lul-white uppercase font-semibold">Phone</label>
                     <input
                         type="text"
-                        className="px-3 py-2 rounded-md bg-lul-black/20"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         required
+                        className="py-1 px-2 rounded-md text-white bg-lul-black/50"
                     />
                 </div>
                 <div className="flex flex-col gap-y-1">
-                    <label className="text-sm text-lul-light-grey uppercase font-semibold">Email</label>
+                    <label className="text-xs text-lul-white uppercase font-semibold">Email</label>
                     <input
                         type="email"
-                        className="px-3 py-2 rounded-md bg-lul-black/20"
                         value={email || ''}
                         onChange={(e) => setEmail(e.target.value)}
+                        className="py-1 px-2 rounded-md text-white bg-lul-black/50"
                     />
                 </div>
                 <button
