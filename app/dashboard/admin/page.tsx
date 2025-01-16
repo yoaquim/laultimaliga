@@ -574,7 +574,7 @@ function DataViewPanel() {
                     {items.length === 0 ? (
                         <p className="text-lul-light-grey uppercase text-sm font-bold text-center w-full">No rows found.</p>
                     ) : (
-                        <table className="h-full w-full text-sm">
+                        <table className="h-full w-full text-sm normal-case">
                             <thead>
                             <tr>
                                 {/* We'll just display first few keys or all keys */}

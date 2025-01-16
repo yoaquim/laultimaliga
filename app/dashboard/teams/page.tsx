@@ -4,6 +4,7 @@ import Empty from '@/ui/empty'
 import { EMPTY_MESSAGES, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 import clsx from 'clsx'
+import Score from '@/ui/score'
 
 export default async function Page() {
     const teams = await prisma.team.findMany({
@@ -59,14 +60,14 @@ export default async function Page() {
                     className="relative flex flex-col h-full gap-y-6 p-4 pt-10 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer"
                 >
                     {/* Win Rate - pinned top-right */}
-                    <div className="absolute top-3 right-3 z-10 px-3 py-1 rounded-md text-white text-sm font-bold uppercase" style={{backgroundColor: 'rgba(0,0,0,0.25)'}}>
+                    <div className="absolute top-3 right-3 z-10 px-2.5 rounded-md text-white text-sm font-bold uppercase" style={{backgroundColor: 'rgba(0,0,0,0.25)'}}>
                         <div className={clsx({
                             'text-lul-yellow': team.matchesWon / team.totalMatches <= 0.5,
                             'text-lul-green': team.matchesWon / team.totalMatches > 0.5,
                             'text-lul-red': team.totalMatches === 0,
                         })}
                         >
-                            {team.winRate}%
+                            <Score className="text-2xl" value={`${team.winRate}%`}/>
                         </div>
                     </div>
 
@@ -85,11 +86,9 @@ export default async function Page() {
                         <p className="text-sm uppercase font-bold">Players</p>
                         <p className="text-sm uppercase font-bold">Played</p>
                         <p className="text-sm uppercase font-bold">Won</p>
-                        <p className="text-2xl font-bold">{team.players.length}</p>
-                        <p className="text-2xl font-bold text-lul-blue">{team.totalMatches}</p>
-                        <p className="text-2xl font-bold text-lul-green">
-                            {team.matchesWon}
-                        </p>
+                        <Score className="text-4xl font-bold" value={team.players.length}/>
+                        <Score className="text-4xl font-bold text-lul-blue" value={team.totalMatches}/>
+                        <Score className="text-4xl font-bold text-lul-green" value={team.matchesWon}/>
                     </div>
                 </Link>
             ))}

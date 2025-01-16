@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import { BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER } from '@/lib/utils'
+import Score from '@/ui/score'
 
 // --------------------------------------------------
 // Types
@@ -58,30 +59,30 @@ export default function PlayerCard({player}: Props) {
         <Link
             key={player.id}
             href={`/dashboard/players/${player.id}`}
-            className="items-stretch flex flex-col h-full gap-y-4 p-4 pb-3 px-5 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer">
+            className="relative items-stretch flex flex-col h-full gap-y-4 p-4 pb-3 px-5 bg-lul-grey/20 rounded-md hover:bg-lul-grey/30 transition cursor-pointer">
 
             {/* TOP SECTION */}
-            <div className="flex flex-col gap-y-2">
-                {/* Player Name & Jersey Number */}
-                <div className="flex flex-col">
-                    <div className="flex items-baseline gap-x-4 text-white">
-                        <div className="flex-grow text-2xl font-semibold">
-                            {player.user.name}
-                        </div>
-                        <div className="text-4xl font-bold uppercase">
-                            {firstDetail?.number ? `#${firstDetail.number}` : 'N/A'}
-                        </div>
-                    </div>
+            <div className="w-full flex flex-col itemscenter text-white lg:max-w-64 max-w-full 2xl:max-w-full">
+                {/* PLAYER NAME */}
+                <div className="w-full flex-grow text-2xl font-semibold">
+                    {player.user.name}
+                </div>
 
-                    {/* Player Team */}
-                    <div className="text-lul-yellow uppercase font-bold text-sm">
-                        {firstDetail?.team?.name ?? 'Free Agent'}
-                    </div>
+                {/* PLAYER TEAM */}
+                <div className="text-lul-yellow uppercase font-bold text-sm">
+                    {firstDetail?.team?.name ?? 'Free Agent'}
                 </div>
             </div>
 
-            {/* IMAGE */}
-            <div className="mt-auto flex items-center">
+            {/* PLAYER NUMBER */}
+            <div className="absolute top-1 right-4 flex self-end items-end">
+                <Score className="text-3xl font-bold uppercase" value={firstDetail?.number ? `#` : ''}/>
+                <Score className="text-5xl font-bold uppercase" value={firstDetail?.number ? `${firstDetail.number}` : 'N/A'}/>
+            </div>
+
+            {/* BOTTOM SECTION */}
+            <div className="mt-auto pt-2 flex items-center">
+                {/* IMAGE */}
                 <div className="w-1/2 text-center">
                     <img
                         className="h-24 mx-auto rounded-full"
@@ -100,16 +101,16 @@ export default function PlayerCard({player}: Props) {
                     <div className="flex items-end justify-end text-sm">AVG</div>
 
                     <div className="flex items-end justify-end text-white text-base">PTS</div>
-                    <div className="flex items-end justify-end text-lul-green">{points}</div>
-                    <div className="flex items-end justify-end text-lul-blue ">{avgPoints}</div>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={points}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={avgPoints}/>
 
                     <div className="flex items-end justify-end text-white text-base">AST</div>
-                    <div className="flex items-end justify-end text-lul-green">{assists}</div>
-                    <div className="flex items-end justify-end text-lul-blue ">{avgAssists}</div>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={assists}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={avgAssists}/>
 
                     <div className="flex items-end justify-end text-white text-base">REB</div>
-                    <div className="flex items-end justify-end text-lul-green">{rebounds}</div>
-                    <div className="flex items-end justify-end text-lul-blue ">{avgRebounds}</div>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={rebounds}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={avgRebounds}/>
                 </div>
             </div>
 

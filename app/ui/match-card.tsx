@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import { TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import clsx from 'clsx'
+import Score from '@/ui/score'
 
 // --------------------------------------------------
 // Types
@@ -53,17 +54,18 @@ export default function MatchCard({match, noTopRadius}: Props) {
             </div>
 
             {/* TEAMS */}
-            <div className={clsx('flex-1 flex flex-col items-center justify-center gap-y-4')}>
+            <div className={clsx('relative flex-1 flex flex-col items-center justify-center gap-y-4')}>
+
                 <div className="w-full -mt-8 flex items-center justify-between">
                     {/*HOME TEAM*/}
-                    <div className="flex flex-col justify-center items-start">
+                    <div className="w-1/3 flex flex-col justify-center items-center">
                         <h1 className="w-full text-white text-base text-center font-bold uppercase">HOME</h1>
                         <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
                     </div>
 
                     {/* BALL */}
                     {!isScoreVisible &&
-                        <div className="flex items-center justify-center">
+                        <div className="w-1/3 flex items-center justify-center">
                             {match.status === 'CANCELED'
                                 ? <div className="w-full text-center text-4xl">❌</div>
                                 : (<img src="/ball.svg" alt="ball" className="w-8"/>)
@@ -73,28 +75,28 @@ export default function MatchCard({match, noTopRadius}: Props) {
 
                     {/* SCORE */}
                     {isScoreVisible &&
-                        <div className={clsx('flex justify-center gap-x-1 text-3xl font-bold rounded text-white')
+                        <div className={clsx('mt-4 absolute inset-0 flex px-10 justify-center gap-x-1 text-4xl font-bold rounded text-white')
                         }>
                             <div className={clsx({
                                 'text-lul-green': match.winnerId === match.homeTeam.id,
                                 'text-lul-red': match.winnerId !== match.homeTeam.id
                             })}>
-                                {match.homeScore}
+                                <Score value={match.homeScore}/>
                             </div>
 
-                            <div>-</div>
+                            <div className="mt-1 px-0.5">·</div>
 
                             <div className={clsx({
                                 'text-lul-green': match.winnerId === match.awayTeam.id,
                                 'text-lul-red': match.winnerId !== match.awayTeam.id
                             })}>
-                                {match.awayScore}
+                                <Score value={match.awayScore}/>
                             </div>
                         </div>
                     }
 
                     {/*AWAY TEAM*/}
-                    <div className="flex flex-col justify-center items-end ">
+                    <div className="w-1/3 flex flex-col justify-center items-center">
                         <h1 className="w-full text-white text-base text-center font-bold uppercase">AWAY</h1>
                         <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
                     </div>
@@ -103,7 +105,7 @@ export default function MatchCard({match, noTopRadius}: Props) {
 
             {/* BOTTOM ROW (DATE & SEASON) */}
             <div className="flex justify-between items-center">
-                <div className="text-white font-bold text-sm">{dateStr}</div>
+                <div className="text-lul-light-grey font-bold text-sm">{dateStr}</div>
                 <div className="text-lul-blue text-sm font-semibold uppercase">
                     {match.season.shortName || match.season.name}
                 </div>

@@ -6,6 +6,7 @@ import MatchCard from '@/ui/match-card'
 import clsx from 'clsx'
 import { Container } from '@/ui/container'
 import CardGrid from '@/ui/card-grid'
+import Score from '@/ui/score'
 
 export default async function Page({params}: { params: Promise<{ teamId: string }> }) {
     const {teamId} = await params
@@ -67,25 +68,26 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                 <h1 className="text-center font-bold text-2xl text-white uppercase">{team.name}</h1>
 
                 <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 bg-lul-grey/20 py-4 rounded-md">
-                    <div className="flex flex-col items-center gap-y-1">
+                    <div className="flex flex-col items-center gap-y-0.5">
                         <p className="text-sm uppercase font-bold">Season</p>
-                        <p className="text-3xl font-bold text-lul-blue">{team.season.shortName || team.season.name}</p>
+                        <p className="text-3xl mt-2 font-bold text-lul-blue">{team.season.shortName || team.season.name}</p>
                     </div>
-                    <div className="flex flex-col items-center gap-y-1">
+                    <div className="flex flex-col items-center gap-y-0.5">
                         <p className="text-sm uppercase font-bold">Total Matches</p>
-                        <p className="text-3xl font-bold">{totalMatches}</p>
+                        <Score className="leading-none text-4.5xl font-bold" value={totalMatches}/>
                     </div>
-                    <div className="flex flex-col items-center gap-y-1">
+                    <div className="flex flex-col items-center gap-y-0.5">
                         <p className="text-sm uppercase font-bold">Matches Won</p>
-                        <p className="text-3xl font-bold text-lul-green">{matchesWon}</p>
+                        <Score className="leading-none text-4.5xl font-bold text-lul-green" value={matchesWon}/>
                     </div>
-                    <div className="flex flex-col items-center gap-y-1">
+                    <div className="flex flex-col items-center gap-y-0.5">
                         <p className="text-sm uppercase font-bold">Win Rate</p>
-                        <p className={clsx('text-3xl font-bold', {
-                            'text-lul-yellow': matchesWon / totalMatches <= 0.5,
-                            'text-lul-green': matchesWon / totalMatches > 0.5,
-                            'text-lul-red': totalMatches === 0,
-                        })}>{winRate}%</p>
+                        <Score value={`${winRate}%`}
+                               className={clsx('leading-none text-4.5xl font-bold', {
+                                   'text-lul-yellow': matchesWon / totalMatches <= 0.5,
+                                   'text-lul-green': matchesWon / totalMatches > 0.5,
+                                   'text-lul-red': totalMatches === 0,
+                               })}/>
                     </div>
                 </div>
             </div>

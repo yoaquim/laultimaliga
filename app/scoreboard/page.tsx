@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { BUCKET_ENDPOINT, formatTimeElapsed, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import Score from '@/ui/score'
 
 function Scoreboard() {
     const searchParams = useSearchParams()
@@ -63,29 +64,37 @@ function Scoreboard() {
     return (
         <div className="h-screen w-screen p-10 flex flex-col items-center justify-center bg-lul-dark-grey text-white ">
             <div className="relative flex flex-col items-center justify-center w-full p-4 h-full bg-white border-8 border-white rounded-3xl">
-
                 <div className="flex flex-col items-center justify-center w-full h-full border-8 bg-lul-dark-grey border-white rounded-3xl">
 
-                    <div className="-mt-40 xl:-mt-24 w-full flex xl:justify-between 3xl:px-52 xl:px-40 items-center 3xl:gap-x-0 gap-x-32">
-                        <div className="flex flex-col justify-center items-center gap-y-1">
+                    <div className="h-full w-full flex xl:justify-between 3xl:px-52 xl:p-8 items-center 3xl:gap-x-0 gap-x-32">
+
+                        {/* HOME SCORE */}
+                        <div className="h-full flex flex-col justify-center items-center gap-y-1">
                             {homeTeamLogo && <img src={TEAM_LOGO_URL_BUILDER(homeTeamLogo)} alt="team-logo" className="3xl:h-52 xl:h-44 h-24"/>}
-                            <h1 className="3xl:mt-8 mt-4 leading-none font-bold bg-lul-black/70 p-8 rounded-3xl text-scoreboard 3xl:text-scoreboard-3xl xl:text-scoreboard-xl text-lul-yellow">{currentHomeScore}</h1>
+                            <h1 className="3xl:mt-8 3xl:px-40 mt-4 leading-none font-bold bg-lul-black/70 p-8 rounded-3xl text-scoreboard 3xl:text-scoreboard-3xl xl:text-scoreboard-xl text-lul-yellow">
+                                <Score value={currentHomeScore}/>
+                            </h1>
                             <h3 className="text-white uppercase text-5xl xl:text-8xl font-bold">Home</h3>
                         </div>
 
+                        {/* TIMER */}
+                        <div className="leading-none bottom-8 3xl:bottom-14 text-time 3xl:text-timer-3xl xl:text-timer-xl font-bold text-lul-red">
+                            <Score value={formatTimeElapsed(timeRemaining)}/>
+                        </div>
+
+                        {/* AWAY SCORE */}
                         <div className="flex flex-col justify-center items-center gap-y-1">
                             {awayTeamLogo && <img src={TEAM_LOGO_URL_BUILDER(awayTeamLogo)} alt="team-logo" className="3xl:h-52 xl:h-44 h-24"/>}
-                            <h1 className="3xl:mt-8 mt-4 leading-none bg-lul-black/70 rounded-3xl p-8 font-bold text-scoreboard 3xl:text-scoreboard-3xl xl:text-scoreboard-xl text-lul-yellow">{currentAwayScore}</h1>
+                            <h1 className="3xl:mt-8 3xl:px-40  mt-4 leading-none bg-lul-black/70 rounded-3xl p-8 font-bold text-scoreboard 3xl:text-scoreboard-3xl xl:text-scoreboard-xl text-lul-yellow">
+                                <Score className="leading-none h-fit" value={currentAwayScore}/>
+                            </h1>
                             <h3 className="text-white uppercase text-5xl xl:text-8xl font-bold">Away</h3>
                         </div>
+
                     </div>
 
-                    <div className="absolute leading-none bottom-8 3xl:bottom-14 text-time 3xl:text-timer-3xl xl:text-timer-xl font-bold text-lul-red">
-                        {formatTimeElapsed(timeRemaining)}
-                    </div>
                 </div>
             </div>
-
         </div>
     )
 }

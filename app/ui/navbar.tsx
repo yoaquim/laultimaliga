@@ -18,16 +18,6 @@ export default function Navbar({className}: { className?: string }) {
     const supabase = createClient()
 
     const [userIsAdmin, setUserIsAdmin] = useState<boolean | null>(null)
-    const [userId, setUserId] = useState<string | null>(null)
-
-    useEffect(() => {
-        async function fetchUser() {
-            const {data: {user}} = await supabase.auth.getUser()
-            if (user) setUserId(user.id)
-        }
-
-        fetchUser()
-    }, [])
 
     useEffect(() => {
         async function fetchAdminStatus() {
@@ -55,7 +45,7 @@ export default function Navbar({className}: { className?: string }) {
         {name: 'Matches', href: '/dashboard/matches', icon: IoBasketballSharp},
         {name: 'Teams', href: '/dashboard/teams', icon: RiTeamFill},
         {name: 'Players', href: '/dashboard/players', icon: RiShieldUserFill},
-        {name: 'Profile', href: `/dashboard/players/${userId}`, icon: RiIdCardFill},
+        {name: 'Profile', href: `/dashboard/profile`, icon: RiIdCardFill},
         {name: 'Settings', href: `/dashboard/settings`, icon: GiSettingsKnobs},
         {name: 'Admin', href: '/dashboard/admin', icon: MdAdminPanelSettings, adminOnly: true},
     ]
@@ -78,11 +68,6 @@ export default function Navbar({className}: { className?: string }) {
                 {links
                     .filter((link) => !link.adminOnly || userIsAdmin)
                     .map((link, i) => {
-                        let isActive
-                        if (link.name === 'Players') {
-                            isActive = pathname.startsWith(link.href) && pathname !== `${link.href}/${userId}`
-                        } else isActive = pathname.startsWith(link.href)
-
                         return (
                             <Link
                                 key={i}
@@ -90,12 +75,12 @@ export default function Navbar({className}: { className?: string }) {
                                 className={clsx(
                                     'flex flex-col items-center gap-y-1 text-lul-blue antialiased',
                                     {
-                                        'bg-lul-blue text-white p-2 rounded-md': isActive
+                                        'bg-lul-blue text-white py-2 px-1.5 rounded-md': pathname.startsWith(link.href)
                                     }
                                 )}
                             >
                                 <link.icon className="text-2xl"/>
-                                <span className="text-xs text-white">{link.name}</span>
+                                <span className="text-xs font-semibold text-white">{link.name}</span>
 
                             </Link>
                         )
@@ -103,13 +88,13 @@ export default function Navbar({className}: { className?: string }) {
 
                 <div className="lg:hidden flex flex-col items-center gap-y-1 text-lul-blue antialiased cursor-pointer" onClick={handleSignOut}>
                     <VscSignOut className="text-2xl"/>
-                    <span className="text-xs text-white">Signout</span>
+                    <span className="text-xs font-semibold text-white">Signout</span>
                 </div>
             </div>
 
             <div className="hidden lg:flex flex-col items-center gap-y-1 text-lul-blue antialiased cursor-pointer" onClick={handleSignOut}>
                 <VscSignOut className="text-2xl"/>
-                <span className="text-xs text-white">Signout</span>
+                <span className="text-xs font-semibold text-white">Signout</span>
             </div>
         </nav>
     )

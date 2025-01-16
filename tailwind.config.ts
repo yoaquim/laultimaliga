@@ -13,12 +13,16 @@ const config: Config = {
                 '3xl': '2000px',
             },
             fontSize: {
+                '3.5xl': '2rem',
+                '4.5xl': '2.75rem',
+                '10xl': '9rem',
+                '11xl': '10rem',
                 'scoreboard': '15rem',
                 'scoreboard-xl': '20rem',
-                'scoreboard-3xl': '30rem',
+                'scoreboard-3xl': '45rem',
                 'timer': '10rem',
                 'timer-xl': '11.5rem',
-                'timer-3xl': '17rem'
+                'timer-3xl': '22rem'
             },
             gridTemplateColumns: {
                 '13': 'repeat(13, minmax(0, 1fr))',

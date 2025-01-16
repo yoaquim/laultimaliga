@@ -3,7 +3,7 @@
 import { useState, useEffect, FormEvent, useRef, ChangeEvent } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
-import { DOMAIN, BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER } from '@/lib/utils'
+import { DOMAIN, BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER, PROFILE_PIC_BUILDER } from '@/lib/utils'
 import { fetchUserProfile, updateUserAction } from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/ui/container'
@@ -193,11 +193,7 @@ export default function SettingsPage() {
             <div className="relative mt-2 flex flex-col items-center gap-y-2">
                 <div className="relative">
                     <img
-                        src={
-                            sessionUser.image
-                                ? `${BUCKET_ENDPOINT}/${sessionUser.image}?v=${new Date().getTime()}`
-                                : DEFAULT_PROFILE_PIC_BUILDER(sessionUser.name)
-                        }
+                        src={PROFILE_PIC_BUILDER(sessionUser)}
                         alt="profile-pic"
                         className={clsx(
                             'h-52 w-52 rounded-full object-cover cursor-pointer transition-opacity duration-300',
@@ -242,7 +238,7 @@ export default function SettingsPage() {
 
                         </h2>
 
-                        <p className="text-sm text-white mb-4">
+                        <p className="text-sm text-white mb-4 normal-case">
                             {unclaimedPlayerExists ?
                                 'We found a matching unclaimed player record with the same phone number.\n' +
                                 'You can claim it and start tracking your stats.\n'
@@ -273,7 +269,7 @@ export default function SettingsPage() {
                         PLAYER PROFILE LINKED
                     </h2>
 
-                    <p className="text-base text-white mb-4">
+                    <p className="text-base text-white mb-4 normal-case">
                         Your user profile is linked with Player ID <span className="text-lul-orange font-bold">{Player.id}</span>.
                         <br/>
                         <br/>

@@ -9,7 +9,7 @@ import { MatchWithDetails, StatType } from './types'
 import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
 import { getIsAdmin } from '@/dashboard/actions'
 import Empty from '@/ui/empty'
-import { DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, PROFILE_PIC_BUILDER, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { BUCKET_ENDPOINT, DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, PROFILE_PIC_BUILDER, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Loader from '@/ui/loader'
 import Link from 'next/link'
 import { Container } from '@/ui/container'
@@ -21,6 +21,7 @@ import { MdSportsHandball } from 'react-icons/md'
 import { MdSports } from 'react-icons/md'
 import { IconType } from 'react-icons'
 import { FaPlusSquare, FaMinusSquare } from 'react-icons/fa'
+import Score from '@/ui/score'
 
 
 const iconMap: Record<StatType, IconType> = {
@@ -307,6 +308,13 @@ export default function Page() {
         })
     }
 
+    const handleBuzzer = () => {
+        if (status === 'ONGOING') {
+            const buzzer = new Audio(`${BUCKET_ENDPOINT}/assets/buzzer.wav`)
+            buzzer.play().catch((err) => console.error('Error playing buzzer sound:', err))
+        }
+    }
+
     // ================================================================
     // RENDER
     // ================================================================
@@ -334,7 +342,7 @@ export default function Page() {
             />
 
             <Container>
-                <div className="flex flex-col lg:gap-y-4 p-4 lg:py-5">
+                <div className="flex flex-col lg:gap-y-4 p-4 px-0 lg:px-4 lg:py-5">
                     {/*----------------------------------------------------*/}
                     {/*====================================================*/}
                     {/* TEAMS + SCORE (mobile stacked, desktop row) */}
@@ -347,15 +355,36 @@ export default function Page() {
                     <div className="block lg:hidden text-center text-3xl font-bold w-full max-w-screen-lg mx-auto py-6">
                         {showScoreboard &&
                             <div className="w-full flex justify-between items-center">
-                                <h1>{match.homeScore}</h1>
-                                <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
-                                <h1>{match.awayScore}</h1>
+                                <h1 className={clsx('w-1/3 flex justify-start pl-2 text-8xl', {
+                                    'text-lul-green': match.winnerId && match.winnerId === match.homeTeam.id,
+                                    'text-lul-red': match.winnerId && match.winnerId === match.awayTeam.id
+                                })}>
+                                    <Score value={match.homeScore}/>
+                                </h1>
+
+                                {/* STATUS BADGE */}
+                                <div className="w-1/2 flex justify-center">
+                                    <div
+                                        className={clsx('py-2 px-4 z-10 rounded-md text-center text-xl font-bold bg-lul-dark-grey/90',
+                                            getStatusBadgeColor(match.status)
+                                        )}>
+                                        {match.status}
+                                    </div>
+                                </div>
+                                <h1 className={clsx('w-1/3 flex justify-end pr-2 text-8xl', {
+                                    'text-lul-green': match.winnerId && match.winnerId === match.awayTeam.id,
+                                    'text-lul-red': match.winnerId && match.winnerId === match.homeTeam.id
+                                })}>
+                                    <Score value={match.awayScore}/>
+                                </h1>
+
                             </div>
                         }
 
                         <div className="mt-4 flex justify-between items-center">
-                            <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
-                            <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
+                            <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24 self-start"/>
+                            <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
+                            <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24 self-end"/>
                         </div>
                     </div>
 
@@ -373,39 +402,42 @@ export default function Page() {
                             {/*----------------------------------------------------*/}
                             {/* STATUS BADGE */}
                             {/*----------------------------------------------------*/}
-                            <div
+                            <button
+                                onClick={handleBuzzer}
                                 className={clsx('py-2 px-4 z-10 rounded-md text-center text-xl font-bold bg-lul-dark-grey/90',
                                     getStatusBadgeColor(match.status)
                                 )}>
                                 {match.status}
-                            </div>
+                            </button>
 
                             {/*----------------------------------------------------*/}
                             {/* SCORE BOARD / VS BADGE */}
                             {/*----------------------------------------------------*/}
                             {showScoreboard &&
-                                <div className={clsx('flex flex-col flex-1 w-full text-8xl font-extrabold justify-center items-center gap-x-10 text-lul-yellow')}>
-                                    <div className="w-full flex justify-between items-center">
-                                        <h1 className={clsx({
+                                <div className={clsx('mt-8 flex flex-col flex-1 w-full text-10xl font-extrabold justify-center items-center gap-x-10 text-lul-yellow')}>
+                                    <div className="w-full flex items-center">
+                                        <h1 className={clsx('w-1/3 flex justify-center', {
                                             'text-lul-green': match.winnerId && match.winnerId === match.homeTeam.id,
                                             'text-lul-red': match.winnerId && match.winnerId === match.awayTeam.id
                                         })}>
-                                            {match.homeScore}
+                                            <Score value={match.homeScore}/>
                                         </h1>
-                                        <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
-                                        <h1 className={clsx({
+
+                                        <div className="w-1/3 flex justify-center">
+                                            <img src="/ball.svg" alt="ball" className="w-9 cursor-pointer" onClick={handleOpenScoreboard}/>
+                                        </div>
+
+                                        <h1 className={clsx('w-1/3 flex justify-center', {
                                             'text-lul-green': match.winnerId && match.winnerId === match.awayTeam.id,
                                             'text-lul-red': match.winnerId && match.winnerId === match.homeTeam.id
                                         })}>
-                                            {match.awayScore}
+                                            <Score value={match.awayScore}/>
                                         </h1>
                                     </div>
 
-                                    <div className="w-full flex flex-col justify-center items-center gap-y-6">
+                                    <div className="w-full flex flex-col justify-center items-center">
                                         {userIsAdmin && match.status !== 'COMPLETED' && (
-                                            <div className="font-bold text-4xl text-lul-red/80">
-                                                {formatTimeElapsed(timeRemaining)}
-                                            </div>
+                                            <Score className="py-2 font-bold text-5xl text-lul-red/80" value={formatTimeElapsed(timeRemaining)}/>
                                         )}
 
                                         {userIsAdmin && match.status === 'ONGOING' && (
@@ -528,21 +560,38 @@ function Tracker({
             {mergeTeamAndParticipations(match[team], match.participations).map(
                 ({id, player, stats, participationExists}: any) => (
 
+                    // ===================================================
+                    // PLAYER CARD
+                    // ===================================================
                     <div key={id} className="relative flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
 
-                        <div className="absolute top-3 right-3 text-xl font-bold">#{player.seasonDetails[0]?.number}</div>
+                        {/*====================================================*/}
+                        {/* PLAYER NUMBER */}
+                        {/*====================================================*/}
+                        <div className="absolute top-0.5 right-4 font-bold text-lul-orange">
+                            <Score className="text-3xl" value="#"/>
+                            <Score className="text-4xl" value={`${player.seasonDetails[0]?.number}`}/>
+                        </div>
 
+                        {/*====================================================*/}
+                        {/* PROFILE PIC + NAME */}
+                        {/*====================================================*/}
                         <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex flex-col items-center gap-y-2">
                             <img src={PROFILE_PIC_BUILDER(player.user)} alt="profile-image" className="rounded-full w-16"/>
                             <span className="uppercase font-bold">{player.user.name}</span>
                         </Link>
 
+                        {/*====================================================*/}
+                        {/* STAT TRACKER*/}
+                        {/*====================================================*/}
                         <div className="w-full mt-4 flex justify-between gap-2">
                             {statKeys.map((statKey) => (
                                 <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
 
-
-                                    {!userIsAdmin &&
+                                    {/*----------------------------------------------------*/}
+                                    {/* USER ONLY: SHOW ICONS, STAT VALUE, & STAT ABBRV */}
+                                    {/*----------------------------------------------------*/}
+                                    {participationExists && !userIsAdmin &&
                                         <div className="flex flex-col gap-y-2 items-center antialiased">
                                             <div className={clsx('uppercase text-sm font-bold',
                                                 {
@@ -562,13 +611,17 @@ function Tracker({
                                                     }`
                                                 })}
                                             </div>
-                                            <div className="text-2xl">{stats[statKey]}</div>
+                                            <div className="text-4xl"><Score value={stats[statKey]}/></div>
                                             <div className="text-xs text-lul-light-grey uppercase font-bold">{statAbbrv[statKey]}</div>
                                         </div>
                                     }
 
+                                    {/*----------------------------------------------------*/}
+                                    {/* ADMIN ONLY: SHOW STAT ABBRV, STAT VALUE, & CONTROLS  */}
+                                    {/*----------------------------------------------------*/}
                                     {participationExists && userIsAdmin &&
                                         <div className="flex flex-col gap-y-1 items-center antialiased">
+
                                             <div className={clsx('uppercase text-sm font-bold',
                                                 {
                                                     'text-lul-green': statKey === 'points',
@@ -577,11 +630,10 @@ function Tracker({
                                                     'text-lul-red': statKey === 'fouls',
                                                 }
                                             )}>
-                                                {statAbbrv[statKey]}</div>
-                                            <button
-                                                onClick={() =>
-                                                    handleUpdateStats(stats.id, statKey as StatType, true)
-                                                }>
+                                                {statAbbrv[statKey]}
+                                            </div>
+
+                                            <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, true)}>
                                                 <FaPlusSquare
                                                     className={clsx('text-3xl', {
                                                         'text-lul-green': match.status === 'ONGOING',
@@ -590,13 +642,9 @@ function Tracker({
                                                 />
                                             </button>
 
-                                            <div className="text-2xl py-1">{stats[statKey]}</div>
+                                            <div className="text-4xl py-0.5"><Score value={stats[statKey]}/></div>
 
-                                            <button
-                                                onClick={() =>
-                                                    handleUpdateStats(stats.id, statKey as StatType, false)
-                                                }
-                                            >
+                                            <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, false)}>
                                                 <FaMinusSquare
                                                     className={clsx('text-3xl', {
                                                         'text-lul-red': match.status === 'ONGOING',
