@@ -1,47 +1,31 @@
-import { Prisma } from '@prisma/client'
+'use client'
+
 import { Grid } from '@/ui/grid'
-import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES } from '@/lib/utils'
-import { prisma } from '@/lib/prisma'
 import MatchCard from '@/ui/match-card'
+import { MatchWithTeams } from '@/dashboard/matches/types'
+import { getPaginatedMatches } from '@/dashboard/matches/actions'
 
-type MatchWithTeams = Prisma.MatchGetPayload<{
-    include: {
-        season: true
-        homeTeam: true
-        awayTeam: true
-    }
-}>
+export default function Page() {
 
-export default async function Page() {
-    const matches: MatchWithTeams[] = await prisma.match.findMany({
-        where: {
-            season: {isActive: true},
-        },
-        include: {
-            season: true,
-            homeTeam: true,
-            awayTeam: true,
-        },
-    })
-
-    if (matches.length === 0) {
-        return (
-            <Grid title="Matches">
-                <Empty message={EMPTY_MESSAGES.NO_MATCHES}/>
-            </Grid>
-        )
+    const fetchMatches = async (page: number) => {
+        const {matches, total} = await getPaginatedMatches({
+            page,
+            perPage: 5,
+        })
+        const sortedMatches = matches
+            .sort((a, b) =>
+                new Date(a.date).getTime() - new Date(b.date).getTime()
+            )
+        return {data: sortedMatches, totalPages: Math.ceil(total / 5)}
     }
 
-    const sortedMatches = matches.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    )
 
     return (
-        <Grid title="Matches">
-            {sortedMatches.map((match) => (
+        <Grid<MatchWithTeams>
+            title="Matches"
+            fetchData={fetchMatches}
+            renderItem={(match: MatchWithTeams) => (
                 <MatchCard match={match} key={match.id}/>
-            ))}
-        </Grid>
+            )}/>
     )
 }

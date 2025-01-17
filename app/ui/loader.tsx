@@ -9,7 +9,7 @@ export default function Loader({full = false}: { full?: boolean }) {
                 </div>
             }
             {!full &&
-                <div className="lg:w-1/3 w-5/6 h-2">
+                <div className="lg:w-2/3 w-5/6 h-2">
                     <Shimmer/>
                 </div>
             }
