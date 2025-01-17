@@ -12,16 +12,20 @@ async function userExists(email: string) {
     return prisma.user.findUnique({where: {email}})
 }
 
-async function createUser(userSignUpData: any, email: string, name: string, phone: string): Promise<FunctionResponse<User>> {
+async function createUser(
+    userSignUpData: any,
+    email: string,
+    name: string,
+    phone: string
+): Promise<FunctionResponse<User>> {
     try {
         const user: User = await prisma.user.create({
             data: {id: userSignUpData.user?.id, email, name, phone},
         })
         return {data: user, error: null}
     } catch (err) {
-        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, err)
-        const error = {message: ERRORS.AUTH.ERROR_SIGNING_UP_USER}
-        return {data: null, error}
+        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA)
+        return {data: null, error: {message: ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA}}
     }
 }
 
@@ -37,8 +41,7 @@ async function registerUser(email: string, password: string): Promise<FunctionRe
 
     if (error) {
         console.error(ERRORS.AUTH.ERROR_SIGNING_UP_USER_IN_SUPABASE, error)
-        const err = {message: error.message}
-        return {data: null, error: err}
+        return {data: null, error: {message: error.message}}
     }
 
     return {data, error: null}
@@ -60,17 +63,18 @@ export async function signUpUser(formData: FormData): Promise<NextResponse<Backe
         const payload: BackendResponse<User> = {
             data: null,
             errors: [userSignUpError],
-            status: StatusCodes.CONFLICT
+            status: StatusCodes.CONFLICT,
         }
         return jsonResponse(payload, {status: StatusCodes.CONFLICT})
     }
 
-    const {data: createUserResponse, error: createUserError}: FunctionResponse<User> = await createUser(userSignUpData, email, name, phone)
+    const {data: createUserResponse, error: createUserError}: FunctionResponse<User> =
+        await createUser(userSignUpData, email, name, phone)
     if (createUserError) {
         const payload: BackendResponse<User> = {
             data: null,
             errors: [createUserError],
-            status: StatusCodes.CONFLICT
+            status: StatusCodes.CONFLICT,
         }
         return jsonResponse(payload, {status: StatusCodes.CONFLICT})
     }
@@ -80,7 +84,7 @@ export async function signUpUser(formData: FormData): Promise<NextResponse<Backe
             data: createUserResponse,
             errors: null,
             message: 'User created successfully',
-            status: StatusCodes.CREATED
+            status: StatusCodes.CREATED,
         },
         {status: StatusCodes.CREATED}
     )

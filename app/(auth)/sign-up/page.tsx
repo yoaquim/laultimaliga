@@ -3,7 +3,6 @@
 import { FormEvent, useState } from 'react'
 import { signUpUser } from '@/(auth)/sign-up/actions'
 import Spinner from '@/ui/spinner'
-import { NextResponse } from 'next/server'
 import { User } from '@prisma/client'
 import { BackendResponse } from '@/lib/types'
 
