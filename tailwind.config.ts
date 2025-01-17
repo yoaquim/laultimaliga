@@ -13,6 +13,7 @@ const config: Config = {
                 '3xl': '2000px',
             },
             fontSize: {
+                '2.5xl': '1.65rem',
                 '3.5xl': '2rem',
                 '4.5xl': '2.75rem',
                 '10xl': '9rem',

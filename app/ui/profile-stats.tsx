@@ -10,6 +10,8 @@ import { MdSports } from 'react-icons/md'
 import { MdSportsScore } from 'react-icons/md'
 import MatchCard from '@/ui/match-card'
 import { Container } from '@/ui/container'
+import { jersey10 } from '@/ui/fonts'
+import Score from '@/ui/score'
 
 type PlayerDetail = Prisma.PlayerGetPayload<{
     include: {
@@ -93,30 +95,30 @@ function StatsCard({
                 {title}
             </h2>
 
-            <div className="w-full pt-8 pb-4 grid lg:grid-cols-5 grid-cols-2 gap-6">
+            <div className={`w-full pt-8 pb-4 grid lg:grid-cols-5 grid-cols-2 gap-6`}>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdScoreboard className="text-lul-green text-3xl"/>
-                    <p className="text-3xl font-bold text-white">{points}</p>
+                    <Score className="text-5xl font-bold text-white" value={points}/>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Points</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <FaHandsHelping className="text-lul-blue text-3xl"/>
-                    <p className="text-3xl font-bold text-white">{assists}</p>
+                    <Score className="text-5xl font-bold text-white" value={assists}/>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Assists</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdSportsHandball className="text-lul-yellow text-3xl"/>
-                    <p className="text-3xl font-bold text-white">{rebounds}</p>
+                    <Score className="text-5xl font-bold text-white" value={rebounds}/>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Rebounds</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdSports className="text-lul-red text-3xl"/>
-                    <p className="text-3xl font-bold text-white">{fouls}</p>
+                    <Score className="text-5xl font-bold text-white" value={fouls}/>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Fouls</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2 lg:col-span-1 col-span-full">
                     <MdSportsScore className="text-white text-3xl"/>
-                    <p className="text-3xl font-bold text-white">{games}</p>
+                    <Score className="text-5xl font-bold text-white" value={games}/>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Games</p>
                 </div>
             </div>
@@ -272,23 +274,23 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                             const {match, stats} = participation
 
                             return (
-                                <div key={match.id} className="flex flex-col">
+                                <div key={match.id} className={`flex flex-col ${jersey10.className}`}>
                                     <div className="w-full bg-lul-grey/20 py-2 px-5 flex justify-between rounded-t-md border-b border-b-lul-light-grey">
                                         <div className="flex gap-x-1 items-center">
-                                            <MdScoreboard className="text-lul-green text-2xl"/>
-                                            <p className="text-2xl font-bold text-white">{stats.points}</p>
+                                            <MdScoreboard className="text-lul-green text-2.5xl"/>
+                                            <p className="text-4xl leading-none font-bold text-white">{stats.points}</p>
                                         </div>
                                         <div className="flex gap-x-1 items-center">
-                                            <FaHandsHelping className="text-lul-blue text-2xl"/>
-                                            <p className="text-2xl font-bold text-white">{stats.assists}</p>
+                                            <FaHandsHelping className="text-lul-blue text-2.5xl"/>
+                                            <p className="text-4xl leading-none font-bold text-white">{stats.assists}</p>
                                         </div>
                                         <div className="flex gap-x-1 items-center">
-                                            <MdSportsHandball className="text-lul-yellow text-2xl"/>
-                                            <p className="text-2xl font-bold text-white">{stats.rebounds}</p>
+                                            <MdSportsHandball className="text-lul-yellow text-2.5xl"/>
+                                            <p className="text-4xl leading-none font-bold text-white">{stats.rebounds}</p>
                                         </div>
                                         <div className="flex gap-x-1 items-center">
-                                            <MdSports className="text-lul-red text-2xl"/>
-                                            <p className="text-2xl font-bold text-white">{stats.fouls}</p>
+                                            <MdSports className="text-lul-red text-2.5xl"/>
+                                            <p className="text-4xl leading-none font-bold text-white">{stats.fouls}</p>
                                         </div>
                                     </div>
                                     <MatchCard match={match} noTopRadius/>
