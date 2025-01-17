@@ -96,6 +96,7 @@ export default function SignInPage() {
             router.push(redirectTo)
         } catch (err: any) {
             setError(err.message || 'Invalid email or password')
+            setLoading(false)
         }
     }
 

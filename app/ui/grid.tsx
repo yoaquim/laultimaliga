@@ -1,4 +1,4 @@
-import { JSX, ReactNode, useEffect, useState } from 'react'
+import { JSX, ReactNode, useEffect, useRef, useState } from 'react'
 import Empty from '@/ui/empty'
 import Loader from '@/ui/loader'
 
@@ -6,7 +6,6 @@ interface CommonProps<T> {
     title: string
     fetchData: (page: number) => Promise<{ data: T[]; totalPages: number }>
     renderItem: (item: T) => ReactNode
-    maxVisiblePages?: number
     children?: ReactNode
 }
 
@@ -26,29 +25,77 @@ export function Grid<T>(props: CommonProps<T> | EmptyProps) {
     const [totalPages, setTotalPages] = useState(1)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [isFetching, setIsFetching] = useState(false)
 
-    // Fetch data if fetchData is provided
+    // Ref for the scrollable content container and the sentinel element
+    const containerRef = useRef<HTMLDivElement>(null)
+    const sentinelRef = useRef<HTMLDivElement>(null)
+    const observerRef = useRef<IntersectionObserver | null>(null)
+
+    // Fetch data only if fetchData is provided (for non-empty version)
     useEffect(() => {
         if (isEmpty) return
 
         async function fetchPageData() {
-            setLoading(true)
+            if (page === 1) setLoading(true)
             setError(null)
             try {
-                const { data, totalPages } = await (props as CommonProps<T>).fetchData(page)
-                setData(data)
-                setTotalPages(totalPages)
+                const {data: newData, totalPages: newTotalPages} = await (props as CommonProps<T>).fetchData(page)
+                setData((prev) => (page === 1 ? newData : [...prev, ...newData]))
+                setTotalPages(newTotalPages)
             } catch (err) {
                 setError('Failed to fetch data.')
             } finally {
                 setLoading(false)
+                setIsFetching(false)
             }
         }
 
         fetchPageData()
     }, [page, props, isEmpty])
 
-    if (loading) return <Loader />
+    // Set up and manage the IntersectionObserver on the sentinel element.
+    useEffect(() => {
+        // Disconnect the old observer if any
+        if (observerRef.current) {
+            observerRef.current.disconnect()
+        }
+
+        // Do nothing if empty, loading, already fetching, or reached end
+        if (isEmpty || loading || isFetching || page >= totalPages) return
+
+        // If containerRef exists and its content is NOT scrollable, do not attach the observer.
+        if (containerRef.current && containerRef.current.scrollHeight <= containerRef.current.clientHeight) {
+            return
+        }
+
+        // Create the observer
+        observerRef.current = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsFetching(true)
+                    setPage((prev) => prev + 1)
+                }
+            },
+            {
+                root: null, // Use viewport as root
+                rootMargin: '200px',
+                threshold: 0.1,
+            }
+        )
+
+        // Attach the observer to the sentinel element, if it exists
+        if (sentinelRef.current) {
+            observerRef.current.observe(sentinelRef.current)
+        }
+
+        // Cleanup on unmount or when dependencies change
+        return () => {
+            if (observerRef.current) observerRef.current.disconnect()
+        }
+    }, [isEmpty, loading, isFetching, page, totalPages, data])
+
+    if (loading && page === 1) return <Loader/>
 
     if (isEmpty) {
         return (
@@ -56,108 +103,47 @@ export function Grid<T>(props: CommonProps<T> | EmptyProps) {
                 <div className="text-2xl font-bold uppercase border-lul-blue border-b">
                     {props.title || 'Default Title'}
                 </div>
-                <Empty message={props.empty} />
+                <Empty message={(props as EmptyProps).empty}/>
             </div>
         )
     }
 
-    // Helper function to generate visible page numbers
-    const generatePageNumbers = () => {
-        const maxVisiblePages = (props as CommonProps<T>).maxVisiblePages || 5
-
-        if (totalPages <= maxVisiblePages) {
-            return Array.from({ length: totalPages }, (_, i) => i + 1)
-        }
-
-        const pages: number[] = []
-        const start = Math.max(1, page - Math.floor(maxVisiblePages / 2))
-        const end = Math.min(totalPages, start + maxVisiblePages - 1)
-
-        for (let i = start; i <= end; i++) {
-            pages.push(i)
-        }
-
-        if (start > 1) pages.unshift(-1) // Indicates "..."
-        if (end < totalPages) pages.push(-2) // Indicates "..."
-
-        return pages
+    if (data.length === 0) {
+        return (
+            <div className="h-full flex flex-col pt-6">
+                <div className="text-2xl font-bold uppercase border-lul-blue border-b">
+                    {props.title || 'Default Title'}
+                </div>
+                <Empty message="No items yet"/>
+            </div>
+        )
     }
-
-    const visiblePages = generatePageNumbers()
 
     return (
         <div className="h-full flex flex-col pt-6">
-            <div className="text-2xl font-bold uppercase border-lul-blue border-b">{props.title}</div>
+            <div className="text-2xl font-bold uppercase border-lul-blue border-b">
+                {(props as CommonProps<T>).title}
+            </div>
 
-            <div className="pt-6 flex-1 flex-col items-center justify-center overflow-y-auto">
+            <div
+                ref={containerRef}
+                className="pt-6 flex-1 flex-col items-center justify-center overflow-y-auto"
+            >
                 <div className="w-full 2xl:grid-cols-4 lg:grid-cols-3 grid grid-cols-1 gap-6 items-stretch">
                     {(props as CommonProps<T>).renderItem
                         ? data.map((item) => (props as CommonProps<T>).renderItem(item))
                         : props.children}
                 </div>
+                {/* Sentinel for infinite scrolling */}
+                <div ref={sentinelRef} className="h-2"/>
             </div>
 
-            {/* Pagination Controls */}
-            <div className="mt-4 flex flex-col items-center gap-2">
-                <div className="flex align-bottom justify-center gap-2">
-                    {/* First Page Button */}
-                    <button
-                        className="px-4 py-2 bg-gray-700 text-white rounded"
-                        onClick={() => setPage(1)}
-                        disabled={page === 1}
-                    >
-                        First
-                    </button>
-
-                    {/* Previous Page Button */}
-                    <button
-                        className="px-4 py-2 bg-gray-700 text-white rounded"
-                        onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                        disabled={page === 1}
-                    >
-                        Previous
-                    </button>
-
-                    {/* Page Numbers */}
-                    <div className="flex gap-2 overflow-x-auto px-2">
-                        {visiblePages.map((pageNum, idx) => {
-                            if (pageNum === -1) return <span key={`prev-${idx}`} className="px-2">...</span>
-                            if (pageNum === -2) return <span key={`next-${idx}`} className="px-2">...</span>
-                            return (
-                                <button
-                                    key={pageNum}
-                                    className={`px-3 py-1 rounded ${
-                                        pageNum === page
-                                            ? 'bg-blue-500 text-white'
-                                            : 'bg-gray-700 text-white'
-                                    }`}
-                                    onClick={() => setPage(pageNum)}
-                                >
-                                    {pageNum}
-                                </button>
-                            )
-                        })}
-                    </div>
-
-                    {/* Next Page Button */}
-                    <button
-                        className="px-4 py-2 bg-gray-700 text-white rounded"
-                        onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-                        disabled={page === totalPages}
-                    >
-                        Next
-                    </button>
-
-                    {/* Last Page Button */}
-                    <button
-                        className="px-4 py-2 bg-gray-700 text-white rounded"
-                        onClick={() => setPage(totalPages)}
-                        disabled={page === totalPages}
-                    >
-                        Last
-                    </button>
+            {/* Show a Loader below the grid when fetching more data */}
+            {isFetching && (
+                <div className="flex justify-center my-4">
+                    <Loader/>
                 </div>
-            </div>
+            )}
         </div>
     )
 }

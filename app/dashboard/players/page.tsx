@@ -1,59 +1,21 @@
-import { Prisma } from '@prisma/client'
+'use client'
+
 import { Grid } from '@/ui/grid'
-import Empty from '@/ui/empty'
-import { EMPTY_MESSAGES } from '@/lib/utils'
-import { prisma } from '@/lib/prisma'
+import { getPaginatedPlayers } from '@/dashboard/players/actions'
+import { PlayerWithDetails } from '@/dashboard/players/types'
 import PlayerCard from '@/ui/player-card'
 
-// --------------------------------------------------
-// Types
-// --------------------------------------------------
-type PlayerWithDetails = Prisma.PlayerGetPayload<{
-    include: {
-        user: true
-        seasonDetails: {
-            include: {
-                team: {
-                    include: {
-                        season: true
-                    }
-                }
-            }
-        }
-        SeasonStats: true
-    }
-}>
-
-export default async function Page() {
-    // For bigger data sets, consider pagination
-    const players: PlayerWithDetails[] = await prisma.player.findMany({
-        include: {
-            user: true,
-            seasonDetails: {
-                include: {
-                    team: {
-                        include: {season: true},
-                    },
-                },
-            },
-            // This is where we store each player's stats for different seasons
-            SeasonStats: true,
-        },
-    })
-
-    if (players.length === 0) {
-        return (
-            <Grid title="Players">
-                <Empty message={EMPTY_MESSAGES.NO_PLAYERS}/>
-            </Grid>
-        )
+export default function Page() {
+    const fetchPlayers = async (page: number) => {
+        const perPage = 20
+        const {players, total} = await getPaginatedPlayers({page, perPage})
+        return {data: players, totalPages: Math.ceil(total / perPage)}
     }
 
     return (
-        <Grid title="Players">
-            {players.map((player) => (
-                <PlayerCard player={player} key={player.id}/>
-            ))}
-        </Grid>
+        <Grid<PlayerWithDetails>
+            title="Players"
+            fetchData={fetchPlayers}
+            renderItem={(player) => <PlayerCard player={player} key={player.id}/>}/>
     )
 }
