@@ -47,7 +47,7 @@ function Page() {
 
     useEffect(() => {
         if (emailChanged) {
-            setTimeout(() => toast.success('You\'ve updated your email', {duration: 4000}), 500)
+            toast.success('You\'ve updated your email', {duration: 4000})
         }
     }, [emailChanged, newEmail])
 
@@ -144,7 +144,6 @@ function Page() {
             toast.success('We\'ve sent you an email with further instructions', {duration: 4000})
         } catch (err) {
             const error = err as Error
-            console.error(error.message)
             toast.error(error.message || 'Failed to update email')
         } finally {
             setSavingEmail(false)
@@ -158,7 +157,6 @@ function Page() {
             toast.success('Password updated')
         } catch (err) {
             const error = err as Error
-            console.error(error.message)
             setPasswordError(error.message || 'Failed to update password')
         } finally {
             setSavingPassword(false)
@@ -311,53 +309,24 @@ function Page() {
             {/* ============================================== */}
             {/* NAME FORM*/}
             {/* ============================================== */}
-            <Card title="Name">
-                <div className="w-full flex items-center pt-2">
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
-                    />
-                    <div className="w-1/3 flex items-center justify-end">
-                        <button
-                            onClick={handleNameChange}
-                            className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
-                            {savingName
-                                ? (<><Spinner className="w-4"/> Saving...</>)
-                                : 'Save'
-                            }
-                        </button>
-                    </div>
-                </div>
-            </Card>
+            <InputGroup
+                title="Name"
+                type="text"
+                value={name}
+                setValue={setName}
+                saving={savingName}
+                handler={handleNameChange}/>
 
             {/* ============================================== */}
             {/* PHONE FORM*/}
             {/* ============================================== */}
-            <Card title="Phone">
-                <div className="w-full flex items-center pt-2">
-                    <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        required
-                        className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
-                    />
-
-                    <div className="w-1/3 flex items-center justify-end">
-                        <button
-                            onClick={handlePhoneChange}
-                            className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
-                            {savingPhone
-                                ? (<><Spinner className="w-4"/> Saving...</>)
-                                : 'Save'
-                            }
-                        </button>
-                    </div>
-                </div>
-            </Card>
+            <InputGroup
+                title="Phone"
+                type="tel"
+                value={phone}
+                setValue={setPhone}
+                saving={savingPhone}
+                handler={handlePhoneChange}/>
 
             <Card
                 className={secSectionOpen ? 'pb-0' : 'pb-6'}
@@ -378,59 +347,29 @@ function Page() {
                 {/* EMAIL FORM*/}
                 {/* ============================================== */}
                 <div className={clsx('py-4', {'hidden': !secSectionOpen, 'block': secSectionOpen})}>
-                    <Card title="Email" fullWidth className="py-3 bg-lul-black/55">
+                    <InputGroup
+                        title="Email"
+                        type="text"
+                        value={email}
+                        setValue={setEmail}
+                        isOpen={secSectionOpen}
+                        saving={savingEmail}
+                        handler={handleEmailChange}>
                         {newEmail && <p className="text-sm text-lul-yellow">You requested an email change; check your inbox</p>}
-                        <div className="w-full flex items-center pt-2">
-                            <input
-                                type="text"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
-                            />
-                            <div className="w-1/3 flex items-center justify-end">
-                                <button
-                                    onClick={handleEmailChange}
-                                    className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
-                                    {savingEmail
-                                        ? (<><Spinner className="w-4"/> Saving...</>)
-                                        : 'Save'
-                                    }
-                                </button>
-                            </div>
-                        </div>
-                    </Card>
+                    </InputGroup>
 
                     {/* ============================================== */}
                     {/* PASSWORD FORM*/}
                     {/* ============================================== */}
-                    <div className={clsx('py-4', {'hidden': !secSectionOpen, 'block': secSectionOpen})}>
-                        <Card title="Password" fullWidth className="py-3 bg-lul-black/55">
-                            <div className="w-full flex items-center pt-2">
-                                <input
-                                    type="password"
-                                    value={password}
-                                    required
-                                    onChange={(e) => {
-                                        setPasswordError('')
-                                        setPassword(e.target.value)
-
-                                    }}
-                                    className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
-                                />
-                                <div className="w-1/3 flex items-center justify-end">
-                                    <button
-                                        onClick={handlePasswordChange}
-                                        className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
-                                        {savingPassword
-                                            ? (<><Spinner className="w-4"/> Saving...</>)
-                                            : 'Save'
-                                        }
-                                    </button>
-                                </div>
-                            </div>
-                        </Card>
-                    </div>
+                    <InputGroup
+                        title="Password"
+                        type="password"
+                        value={password}
+                        setValue={setPassword}
+                        setMessage={setPasswordError}
+                        isOpen={secSectionOpen}
+                        saving={savingPassword}
+                        handler={handlePasswordChange}/>
 
                     {/* ============================================== */}
                     {/* PASSWORD ERROR */}
@@ -443,6 +382,64 @@ function Page() {
             </Card>
 
         </Container>
+    )
+}
+
+function InputGroup({
+                        title,
+                        isOpen = null,
+                        saving,
+                        type,
+                        value,
+                        setValue,
+                        setMessage,
+                        handler,
+                        children,
+                    }: {
+    title: string,
+    isOpen?: boolean | null,
+    saving: boolean,
+    type: 'text' | 'password' | 'tel',
+    value: string,
+    setValue: (value: string) => void
+    setMessage?: (value: string) => void
+    handler: () => void
+    children?: ReactNode
+}) {
+
+    return (
+        <div className={clsx({
+            'lg:w-1/2 w-full': isOpen === null,
+            'py-4': isOpen !== null,
+            'hidden': isOpen === false,
+            'flex': isOpen
+        })}>
+            {children}
+            <Card title={title} fullWidth className="py-3 bg-lul-black/55">
+                <div className="w-full flex items-center pt-2">
+                    <input
+                        type={type}
+                        value={value}
+                        required
+                        onChange={(e) => {
+                            if (setMessage) setMessage('')
+                            setValue(e.target.value)
+                        }}
+                        className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
+                    />
+                    <div className="w-1/3 flex items-center justify-end">
+                        <button
+                            onClick={handler}
+                            className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
+                            {saving
+                                ? (<><Spinner className="w-4"/> <div className="hidden lg:block">Saving...</div></>)
+                                : 'Save'
+                            }
+                        </button>
+                    </div>
+                </div>
+            </Card>
+        </div>
     )
 }
 
