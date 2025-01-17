@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma'
 import { createClient } from '@/lib/supabase/server'
-import { ERRORS } from '@/lib/utils'
+import { DOMAIN, ERRORS, standardizePhoneNumber } from '@/lib/utils'
 
 /**
  * fetchUserProfile:
@@ -82,35 +82,85 @@ export async function fetchUserProfile() {
 }
 
 /**
- * updateUserAction:
- * For name, phone, email, image updates (all optional).
- * Only the Supabase user themself can do so.
+ * updateNameAction:
+ * Updates the user's name in Prisma.
  */
-export async function updateUserAction(data: {
-    userId: string;
-    name?: string;
-    phone?: string;
-    email?: string | null;
-    image?: string;  // The file name stored in Supabase
-}) {
-    // This is naive. For real usage, confirm that the session user matches data.userId
-    // or check if user is an admin.
-    // We'll skip that step for brevity.
-
-    const {userId, ...updateFields} = data
-
-    // Filter out undefined fields so we don't override with undefined
-    const toUpdate: any = {}
-    if (typeof updateFields.name !== 'undefined') toUpdate.name = updateFields.name
-    if (typeof updateFields.phone !== 'undefined') toUpdate.phone = updateFields.phone
-    if (typeof updateFields.email !== 'undefined') toUpdate.email = updateFields.email
-    if (typeof updateFields.image !== 'undefined') toUpdate.image = updateFields.image
-
-    // If no fields, do nothing
-    if (Object.keys(toUpdate).length === 0) return null
+export async function updateName({userId, name,}: { userId: string, name: string }) {
+    if (!name) throw new Error('Name cannot be empty.')
 
     return await prisma.user.update({
         where: {id: userId},
-        data: toUpdate,
+        data: {name},
     })
 }
+
+/**
+ * updatePhoneAction:
+ * Updates the user's phone number in Prisma.
+ */
+export async function updatePhone({userId, phone,}: { userId: string, phone: string }) {
+    if (!phone) throw new Error('Phone cannot be empty.')
+
+    return await prisma.user.update({
+        where: {id: userId},
+        data: {phone: standardizePhoneNumber(phone)},
+    })
+}
+
+/**
+ * updateEmailAction:
+ * Updates the user's email in Supabase and Prisma.
+ */
+export async function updateEmail({userId, newEmail,}: { userId: string, newEmail: string }) {
+    if (!newEmail) throw new Error('Email cannot be empty.')
+
+    const supabase = await createClient()
+
+    const emailRedirectTo = `${DOMAIN}/api/auth/update-email`
+    const {error} = await supabase.auth.updateUser({
+        email: newEmail,
+    }, {emailRedirectTo})
+
+    if (error) {
+        console.error(ERRORS.AUTH.EMAIL_UPDATE_FAILED, error)
+        throw new Error(error.message)
+    }
+
+    return await prisma.user.update({
+        where: {id: userId},
+        data: {newEmail},
+    })
+}
+
+
+/**
+ * updatePasswordAction:
+ * Updates the user's password in Supabase.
+ */
+export async function updatePassword({userId, newPassword,}: { userId: string, newPassword: string }) {
+    if (!newPassword) throw new Error('Password cannot be empty')
+
+    const supabase = await createClient()
+    const {data, error} = await supabase.auth.updateUser({password: newPassword,})
+
+    if (error) {
+        console.error(ERRORS.AUTH.PASSWORD_UPDATE_FAILED, error)
+        throw new Error(error.message)
+    }
+
+    return data
+}
+
+/**
+ * updateProfilePicAction:
+ * Updates the user's profile picture in Prisma.
+ */
+export async function updateProfilePic({userId, image}: { userId: string, image: string }) {
+    if (!image) throw new Error('Image cannot be empty.')
+
+    return await prisma.user.update({
+        where: {id: userId},
+        data: {image},
+    })
+}
+

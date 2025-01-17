@@ -12,7 +12,7 @@ export const PROFILE_PIC_BUILDER = (user: User) => user.image
     : DEFAULT_PROFILE_PIC_BUILDER(user.name)
 
 
-export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/matches`
+export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/settings`
 export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/sign-in'
 
 export const ERRORS = {
@@ -36,6 +36,10 @@ export const ERRORS = {
         SUPABASE_AUTH_ERROR: 'Supabase authentication error.',
         USER_NOT_FOUND_IN_SUPABASE_SESSION: 'No user found in Supabase session.',
         UNAUTHORIZED_ACCESS_ATTEMPT: 'Unauthorized access attempt. Admin privileges are required.',
+        PASSWORD_UPDATE_FAILED: 'Couldn\'t update password',
+        EMAIL_UPDATE_FAILED: 'Couldn\'t update email',
+        USER_NOT_FOUND: 'User not found',
+        NO_NEW_EMAIL: 'No new email',
     },
     MATCH: {
         ERROR_UPDATING_MATCH_STATUS: 'Error updating match status.',
@@ -54,6 +58,7 @@ export const ERRORS = {
         FAILED_TO_LOAD_PROFILE: 'Failed to load profile',
         NO_FILE_SELECTED: 'No File Selected',
         USER_PROFILE_NOT_LOADED: 'User profile not loaded',
+        FAILED_TO_CLAIM_PLAYER_PROFILE: 'Couldn\'t claim player profile',
     }
 }
 

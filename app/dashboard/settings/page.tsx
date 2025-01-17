@@ -1,28 +1,51 @@
 'use client'
 
-import { useState, useEffect, FormEvent, useRef, ChangeEvent } from 'react'
+import { useState, useEffect, useRef, ChangeEvent, ReactNode } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
 import { DOMAIN, ERRORS, PROFILE_PIC_BUILDER } from '@/lib/utils'
-import { fetchUserProfile, updateUserAction } from './actions'
+import {
+    fetchUserProfile,
+    updateEmail,
+    updatePhone,
+    updateName,
+    updatePassword,
+    updateProfilePic
+} from './actions'
 import { createClient } from '@/lib/supabase/client'
 import { Container } from '@/ui/container'
 import Spinner from '@/ui/spinner'
+import { RiArrowDropDownLine, RiArrowDropUpLine } from 'react-icons/ri'
 import clsx from 'clsx'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 
 export default function SettingsPage() {
+    const searchParams = useSearchParams()
+    const emailChanged = searchParams.get('email_changed')
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<any>(null)
 
     // For updating user fields
-    const [name, setName] = useState('')
-    const [phone, setPhone] = useState('')
-    const [email, setEmail] = useState<string | null>(null)
-
-    // For uploading a new profile pic
+    const [name, setName] = useState<string>('')
+    const [phone, setPhone] = useState<string>('')
+    const [email, setEmail] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
+    const [newEmail, setNewEmail] = useState<string | null>(null)
+    const [savingName, setSavingName] = useState<boolean>(false)
+    const [savingPhone, setSavingPhone] = useState<boolean>(false)
+    const [savingEmail, setSavingEmail] = useState<boolean>(false)
+    const [savingPassword, setSavingPassword] = useState<boolean>(false)
+    const [passwordError, setPasswordError] = useState<string>('')
+    const [secSectionOpen, setSecSectionOpen] = useState<boolean>(false)
     const [uploadingPic, setUploadingPic] = useState(false)
+
+    useEffect(() => {
+        if (emailChanged) {
+            setTimeout(() => toast.success('You\'ve updated your email', {duration: 4000}), 500)
+        }
+    }, [emailChanged, newEmail])
 
     useEffect(() => {
         async function loadProfile() {
@@ -33,7 +56,8 @@ export default function SettingsPage() {
                 if (data?.sessionUser) {
                     setName(data.sessionUser.name || '')
                     setPhone(data.sessionUser.phone || '')
-                    setEmail(data.sessionUser.email || null)
+                    setEmail(data.sessionUser.email || '')
+                    setNewEmail(data.sessionUser.newEmail || '')
                 }
             } catch (error) {
                 console.error(ERRORS.SETTINGS.ERROR_LOADING_PROFILE, error)
@@ -66,14 +90,14 @@ export default function SettingsPage() {
             const fileName = `profile-pics/${sessionUser.id}.${fileExt}`
 
             const supabase = createClient()
-            const {data, error} = await supabase
+            const {error} = await supabase
                 .storage
                 .from('lul') // Replace with your bucket name
                 .upload(fileName, file, {upsert: true})
             if (error) throw error
 
             // Update the user record with the new image filename
-            await updateUserAction({
+            await updateProfilePic({
                 userId: sessionUser.id,
                 image: fileName,
             })
@@ -95,37 +119,47 @@ export default function SettingsPage() {
         }
     }
 
-    // Update user fields form submission handler
-    async function handleUpdateProfile(e: FormEvent) {
-        e.preventDefault()
-        if (!sessionUser) {
-            toast.error('User profile not loaded.')
-            return
-        }
+    const handleNameChange = async () => {
+        setSavingName(true)
+        await updateName({userId: sessionUser.id, name})
+        setSavingName(false)
+        toast.success('Name updated')
+    }
+
+    const handlePhoneChange = async () => {
+        setSavingPhone(true)
+        await updatePhone({userId: sessionUser.id, phone})
+        setSavingPhone(false)
+        toast.success('Phone updated')
+    }
+
+    const handleEmailChange = async () => {
+        setSavingEmail(true)
         try {
-            toast.loading('Updating profile...', {id: 'update-profile'})
-            await updateUserAction({
-                userId: sessionUser.id,
-                name,
-                phone,
-                email,
-            })
-            // Update local profile state so the new values show immediately.
-            setProfile((prev: any) => ({
-                ...prev,
-                sessionUser: {
-                    ...prev.sessionUser,
-                    name,
-                    phone,
-                    email,
-                },
-            }))
-            toast.success('Profile updated!', {id: 'update-profile'})
-            window.location.reload()
-        } catch (error: any) {
-            console.error('Error updating user:', error)
-            toast.error(error.message || 'Failed to update profile', {id: 'update-profile'})
+            await updateEmail({userId: sessionUser.id, newEmail: email})
+            toast.success('We\'ve sent you an email with further instructions', {duration: 4000})
+        } catch (err) {
+            const error = err as Error
+            console.error(error.message)
+            toast.error(error.message || 'Failed to update email')
+        } finally {
+            setSavingEmail(false)
         }
+    }
+
+    const handlePasswordChange = async () => {
+        setSavingPassword(true)
+        try {
+            await updatePassword({userId: sessionUser.id, newPassword: password})
+            toast.success('Password updated')
+        } catch (err) {
+            const error = err as Error
+            console.error(error.message)
+            setPasswordError(error.message || 'Failed to update password')
+        } finally {
+            setSavingPassword(false)
+        }
+
     }
 
     // Trigger file input click when image is clicked
@@ -164,7 +198,7 @@ export default function SettingsPage() {
         } catch (error) {
             console.error(error)
             toast.dismiss('claim')
-            toast.error('Failed to claim player profile')
+            toast.error(ERRORS.SETTINGS.FAILED_TO_CLAIM_PLAYER_PROFILE)
         }
     }
 
@@ -184,13 +218,13 @@ export default function SettingsPage() {
     const unclaimedPlayerExists = unclaimedPlayer !== null
 
     return (
-        <Container className="text-white flex flex-col gap-y-8 py-6 px-4">
-            <h1 className="text-2xl font-bold uppercase border-lul-blue border-b">Settings</h1>
+        <Container className="w-full h-full text-white flex flex-col items-center gap-y-8 py-6 px-4">
+            <h1 className="w-full text-2xl font-bold uppercase border-lul-blue border-b">Settings</h1>
 
             {/* ============================================== */}
             {/* PROFILE PICTURE SECTION */}
             {/* ============================================== */}
-            <div className="relative mt-2 flex flex-col items-center gap-y-2">
+            <div className="mt-2 flex flex-col items-center gap-y-2">
                 <div className="relative">
                     <img
                         src={PROFILE_PIC_BUILDER(sessionUser)}
@@ -227,7 +261,7 @@ export default function SettingsPage() {
                         <div>⚠️</div>
                     </div>
 
-                    <div className="bg-lul-grey/20 flex flex-col gap-y-4 rounded-md p-6 pt-4 w-full max-w-md">
+                    <div className="bg-lul-grey/20 flex flex-col gap-y-4 rounded-md p-6 pt-4 w-full">
                         <h2 className={clsx('text-lul-green font-bold text-base mb-2 uppercase border-b border-lul-blue',
                             {
                                 'text-lul-green': unclaimedPlayerExists,
@@ -264,61 +298,180 @@ export default function SettingsPage() {
             {/* PLAYER CARD*/}
             {/* ============================================== */}
             {Player &&
-                <div className="mx-auto bg-lul-grey/20  flex flex-col gap-y-4 rounded-md px-6 py-4 w-full max-w-md">
-                    <h2 className="text-white font-bold text-base mb-2 uppercase border-b border-lul-green">
-                        PLAYER PROFILE LINKED
-                    </h2>
-
-                    <p className="text-base text-white mb-4 normal-case">
-                        Your user profile is linked with Player ID <span className="text-lul-green font-bold">{Player.id}</span>.
-                        <br/>
-                        <br/>
-                        You can view your stats over at your <Link href={`/dashboard/profile`} className="text-lul-blue">player profile</Link>.
-                    </p>
-                </div>
+                <Card title="Player profile linked" className="flex flex-col gap-y-2" color="green">
+                    <div>Your user profile is linked with Player ID <span className="text-lul-green font-bold">{Player.id}</span>.</div>
+                    <div>You can view your stats over at your <Link href={`/dashboard/profile`} className="text-lul-blue underline">player profile</Link>.</div>
+                </Card>
             }
 
             {/* ============================================== */}
-            {/* FORM TO UPDATE BASIC USER INFO */}
+            {/* NAME FORM*/}
             {/* ============================================== */}
-            <form onSubmit={handleUpdateProfile} className="bg-lul-dark-grey p-6 pt-4 rounded-md flex flex-col gap-y-4 w-full max-w-md mx-auto">
-                <h1 className="border-b border-lul-blue uppercase font-bold">UPDATE PROFILE</h1>
-                <div className="flex flex-col gap-y-1">
-                    <label className="text-xs text-lul-white uppercase font-semibold">Name</label>
+            <Card title="Name">
+                <div className="w-full flex items-center pt-2">
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                        className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
                     />
+                    <div className="w-1/3 flex items-center justify-end">
+                        <button
+                            onClick={handleNameChange}
+                            className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
+                            {savingName
+                                ? (<><Spinner className="w-4"/> Saving...</>)
+                                : 'Save'
+                            }
+                        </button>
+                    </div>
                 </div>
-                <div className="flex flex-col gap-y-1">
-                    <label className="text-xs text-lul-white uppercase font-semibold">Phone</label>
+            </Card>
+
+            {/* ============================================== */}
+            {/* PHONE FORM*/}
+            {/* ============================================== */}
+            <Card title="Phone">
+                <div className="w-full flex items-center pt-2">
                     <input
-                        type="text"
+                        type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         required
-                        className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                        className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
                     />
+
+                    <div className="w-1/3 flex items-center justify-end">
+                        <button
+                            onClick={handlePhoneChange}
+                            className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
+                            {savingPhone
+                                ? (<><Spinner className="w-4"/> Saving...</>)
+                                : 'Save'
+                            }
+                        </button>
+                    </div>
                 </div>
-                <div className="flex flex-col gap-y-1">
-                    <label className="text-xs text-lul-white uppercase font-semibold">Email</label>
-                    <input
-                        type="email"
-                        value={email || ''}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="py-1 px-2 rounded-md text-white bg-lul-black/50"
-                    />
+            </Card>
+
+            <Card
+                className={secSectionOpen ? 'pb-0' : 'pb-6'}
+                color="yellow"
+                title={
+                    <button
+                        onClick={() => setSecSectionOpen(!secSectionOpen)}
+                        className="-mt-1 w-full h-full flex justify-between items-center cursor-pointer uppercase">
+                        <div>Security</div>
+                        {secSectionOpen
+                            ? <RiArrowDropUpLine className="text-lul-yellow text-4xl"/>
+                            : <RiArrowDropDownLine className="text-lul-yellow text-4xl"/>
+                        }
+                    </button>
+                }
+            >
+                {/* ============================================== */}
+                {/* EMAIL FORM*/}
+                {/* ============================================== */}
+                <div className={clsx('py-4', {'hidden': !secSectionOpen, 'block': secSectionOpen})}>
+                    <Card title="Email" fullWidth className="py-3 bg-lul-black/55">
+                        {newEmail && <p className="text-sm text-lul-yellow">You requested an email change; check your inbox</p>}
+                        <div className="w-full flex items-center pt-2">
+                            <input
+                                type="text"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
+                            />
+                            <div className="w-1/3 flex items-center justify-end">
+                                <button
+                                    onClick={handleEmailChange}
+                                    className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
+                                    {savingEmail
+                                        ? (<><Spinner className="w-4"/> Saving...</>)
+                                        : 'Save'
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* ============================================== */}
+                    {/* PASSWORD FORM*/}
+                    {/* ============================================== */}
+                    <div className={clsx('py-4', {'hidden': !secSectionOpen, 'block': secSectionOpen})}>
+                        <Card title="Password" fullWidth className="py-3 bg-lul-black/55">
+                            <div className="w-full flex items-center pt-2">
+                                <input
+                                    type="password"
+                                    value={password}
+                                    required
+                                    onChange={(e) => {
+                                        setPasswordError('')
+                                        setPassword(e.target.value)
+
+                                    }}
+                                    className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
+                                />
+                                <div className="w-1/3 flex items-center justify-end">
+                                    <button
+                                        onClick={handlePasswordChange}
+                                        className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
+                                        {savingPassword
+                                            ? (<><Spinner className="w-4"/> Saving...</>)
+                                            : 'Save'
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* ============================================== */}
+                    {/* PASSWORD ERROR */}
+                    {/* ============================================== */}
+                    <div className="w-full text-center text-lul-red">
+                        {passwordError}
+                    </div>
+
                 </div>
-                <button
-                    type="submit"
-                    className="mt-2 px-4 py-2 bg-lul-blue text-white uppercase font-semibold rounded-md hover:bg-lul-blue/70"
-                >
-                    SAVE
-                </button>
-            </form>
+            </Card>
+
         </Container>
+    )
+}
+
+function Card({
+                  title,
+                  children,
+                  fullWidth = false,
+                  color = 'blue',
+                  className = '',
+              }: {
+    title: string | ReactNode,
+    children
+        :
+        ReactNode,
+    fullWidth?: boolean,
+    color?: 'blue' | 'green' | 'red' | 'yellow' | 'orange',
+    className?: string,
+}) {
+    return (
+        <div className={clsx(`lg:w-1/2 w-full bg-lul-grey/20 rounded-md p-4 ${className}`, {
+            'lg:w-full': fullWidth
+        })}>
+            <h2 className={clsx('text-white font-bold text-base mb-2 uppercase border-b', {
+                'border-lul-green': color === 'green',
+                'border-lul-blue': color === 'blue',
+                'border-lul-red': color === 'red',
+                'border-lul-yellow': color === 'yellow',
+                'border-lul-orange': color === 'orange',
+            })}>
+                {title}
+            </h2>
+
+            {children}
+        </div>
     )
 }
