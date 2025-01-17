@@ -73,17 +73,19 @@ export default function Navbar({className}: { className?: string }) {
                                 key={i}
                                 href={link.href}
                                 className={clsx(
-                                    'flex flex-col justify-center items-center gap-y-1 px-2 lg:px-0 text-lul-blue',
+                                    'flex flex-col justify-center items-center px-2 lg:px-0 text-lul-blue',
                                     {
-                                        'bg-lul-blue text-white w-16 h-16 rounded-md': pathname.startsWith(link.href)
+                                        'bg-lul-blue text-white w-16 h-16 rounded-md': pathname.startsWith(link.href),
+                                        'w-16 h-16 rounded-md': !pathname.startsWith(link.href), // Optional for non-active links
                                     }
                                 )}
+                                style={{minWidth: '4rem', minHeight: '4rem'}} // Ensure consistency across different devices
                             >
-                                <link.icon className="text-2xl"/>
-                                <span className="text-xs font-semibold text-white">{link.name}</span>
-
-                            </Link>
-                        )
+                                <div className="flex flex-col items-center justify-center w-full h-full gap-y-2">
+                                    <link.icon className="text-2xl"/>
+                                    <span className="text-xs font-semibold text-white">{link.name}</span>
+                                </div>
+                            </Link>)
                     })}
 
                 <div className="lg:hidden flex flex-col items-center gap-y-1 text-lul-blue antialiased cursor-pointer" onClick={handleSignOut}>

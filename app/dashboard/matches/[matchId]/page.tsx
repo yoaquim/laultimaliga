@@ -568,9 +568,9 @@ function Tracker({
                         {/*====================================================*/}
                         {/* PLAYER NUMBER */}
                         {/*====================================================*/}
-                        <div className="absolute top-0.5 right-4 font-bold text-lul-orange">
-                            <Score className="text-3xl" value="#"/>
-                            <Score className="text-4xl" value={`${player.seasonDetails[0]?.number}`}/>
+                        <div className="absolute top-0.5 right-4 font-bold text-white">
+                            <Score className="text-4xl lg:text-3xl" value="#"/>
+                            <Score className="text-6xl lg:text-5xl" value={`${player.seasonDetails[0]?.number}`}/>
                         </div>
 
                         {/*====================================================*/}
