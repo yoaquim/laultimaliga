@@ -1,9 +1,11 @@
 import { User } from '@prisma/client'
+import { BackendResponse } from '@/lib/types'
+import { NextResponse } from 'next/server'
+import { StatusCodes } from 'http-status-codes'
 
-export const DOMAIN: string = process.env.NODE_ENV === 'production'
-    ? 'https://laultimaliga.com'
-    : 'http://localhost:3000'
-
+export const DOMAIN: string = process.env.NODE_ENV === 'production' ? 'https://laultimaliga.com' : 'http://localhost:3000'
+export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/settings`
+export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/sign-in'
 export const BUCKET_ENDPOINT = 'https://opkpwsseguyivdrawleq.supabase.co/storage/v1/object/public/lul'
 export const TEAM_LOGO_URL_BUILDER = (path: string) => `${BUCKET_ENDPOINT}/teams/logos/${path}`
 export const DEFAULT_PROFILE_PIC_BUILDER = (name: string) => `https://ui-avatars.com/api/?name=${name}`
@@ -11,9 +13,14 @@ export const PROFILE_PIC_BUILDER = (user: User) => user.image
     ? `${BUCKET_ENDPOINT}/${user.image}?v=${new Date().getTime()}`
     : DEFAULT_PROFILE_PIC_BUILDER(user.name)
 
-
-export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/settings`
-export const DEFAULT_URL_WHEN_NOT_AUTHENTICATED = '/sign-in'
+export const EMPTY_MESSAGES = {
+    MATCH_DOES_NOT_EXIST: 'This Match does not exist',
+    TEAM_DOES_NOT_EXIST: 'This Team does not exist',
+    PLAYER_DOES_NOT_EXIST: 'This Player does not exist',
+    NO_MATCHES: 'There aren\'t any matches yet',
+    NO_TEAMS: 'There aren\'t any teams yet',
+    NO_PLAYERS: 'There aren\'t any players yet',
+}
 
 export const ERRORS = {
     ISE: 'Internal server error.',
@@ -62,15 +69,10 @@ export const ERRORS = {
     }
 }
 
-export const EMPTY_MESSAGES = {
-    MATCH_DOES_NOT_EXIST: 'This Match does not exist',
-    TEAM_DOES_NOT_EXIST: 'This Team does not exist',
-    PLAYER_DOES_NOT_EXIST: 'This Player does not exist',
-    NO_MATCHES: 'There aren\'t any matches yet',
-    NO_TEAMS: 'There aren\'t any teams yet',
-    NO_PLAYERS: 'There aren\'t any players yet',
+export function jsonResponse<T>(payload: BackendResponse<T>, config: { status: StatusCodes }) {
+    const plainPayload = JSON.parse(JSON.stringify(payload))
+    return NextResponse.json(plainPayload, config)
 }
-
 
 export function formatTimeElapsed(seconds: number) {
     const mins = Math.floor((seconds % 3600) / 60)

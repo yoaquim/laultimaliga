@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { DOMAIN, ERRORS, standardizePhoneNumber } from '@/lib/utils'
+import { DOMAIN, ERRORS, jsonResponse, standardizePhoneNumber } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { StatusCodes } from 'http-status-codes'
@@ -44,7 +44,7 @@ async function registerUser(email: string, password: string): Promise<FunctionRe
     return {data, error: null}
 }
 
-export async function signUpUser(formData: FormData): Promise<NextResponse<BackendResponse<User>>> {
+export async function signUpUser(formData: FormData): Promise<NextResponse<string>> {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const name = formData.get('name') as string
@@ -52,10 +52,7 @@ export async function signUpUser(formData: FormData): Promise<NextResponse<Backe
 
     if (await userExists(email)) {
         const error: BackendError = {message: ERRORS.AUTH.USER_ALREADY_EXISTS, error: new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)}
-        return NextResponse.json(
-            {data: null, errors: [error]},
-            {status: StatusCodes.CONFLICT}
-        )
+        return jsonResponse({data: null, errors: [error]}, {status: StatusCodes.CONFLICT})
     }
 
     const {data: userSignUpData, error: userSignUpError}: FunctionResponse<SupabaseDataResponse> = await registerUser(email, password)
@@ -65,7 +62,7 @@ export async function signUpUser(formData: FormData): Promise<NextResponse<Backe
             errors: [userSignUpError],
             status: StatusCodes.CONFLICT
         }
-        return NextResponse.json(payload, {status: StatusCodes.CONFLICT})
+        return jsonResponse(payload, {status: StatusCodes.CONFLICT})
     }
 
     const {data: createUserResponse, error: createUserError}: FunctionResponse<User> = await createUser(userSignUpData, email, name, phone)
@@ -75,11 +72,16 @@ export async function signUpUser(formData: FormData): Promise<NextResponse<Backe
             errors: [createUserError],
             status: StatusCodes.CONFLICT
         }
-        return NextResponse.json(payload, {status: StatusCodes.CONFLICT})
+        return jsonResponse(payload, {status: StatusCodes.CONFLICT})
     }
 
-    return NextResponse.json(
-        {data: createUserResponse, errors: null, message: 'User created successfully', status: StatusCodes.CREATED},
+    return jsonResponse(
+        {
+            data: createUserResponse,
+            errors: null,
+            message: 'User created successfully',
+            status: StatusCodes.CREATED
+        },
         {status: StatusCodes.CREATED}
     )
 }
