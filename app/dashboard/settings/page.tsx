@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, ChangeEvent, ReactNode } from 'react'
+import { useState, useEffect, useRef, ChangeEvent, ReactNode, Suspense } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
 import { DOMAIN, ERRORS, PROFILE_PIC_BUILDER } from '@/lib/utils'
@@ -20,7 +20,11 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-export default function SettingsPage() {
+export default function SuspensePage() {
+    return <Suspense><Page/></Suspense>
+}
+
+function Page() {
     const searchParams = useSearchParams()
     const emailChanged = searchParams.get('email_changed')
     const fileInputRef = useRef<HTMLInputElement>(null)
