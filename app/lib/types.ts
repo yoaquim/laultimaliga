@@ -14,7 +14,7 @@ export interface SupabaseDataResponse {
 
 export interface BackendError {
     message: string,
-    error: Error
+    error?: Error
     status?: StatusCodes
 }
 

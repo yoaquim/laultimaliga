@@ -20,7 +20,7 @@ async function createUser(userSignUpData: any, email: string, name: string, phon
         return {data: user, error: null}
     } catch (err) {
         console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, err)
-        const error = {message: ERRORS.AUTH.ERROR_SIGNING_UP_USER, error: err as Error}
+        const error = {message: ERRORS.AUTH.ERROR_SIGNING_UP_USER}
         return {data: null, error}
     }
 }
@@ -37,21 +37,21 @@ async function registerUser(email: string, password: string): Promise<FunctionRe
 
     if (error) {
         console.error(ERRORS.AUTH.ERROR_SIGNING_UP_USER_IN_SUPABASE, error)
-        const err = {message: error.message, error}
+        const err = {message: error.message}
         return {data: null, error: err}
     }
 
     return {data, error: null}
 }
 
-export async function signUpUser(formData: FormData): Promise<NextResponse<string>> {
+export async function signUpUser(formData: FormData): Promise<NextResponse<BackendResponse<User>>> {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const name = formData.get('name') as string
     const phone = standardizePhoneNumber(formData.get('phone') as string)
 
     if (await userExists(email)) {
-        const error: BackendError = {message: ERRORS.AUTH.USER_ALREADY_EXISTS, error: new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)}
+        const error: BackendError = {message: ERRORS.AUTH.USER_ALREADY_EXISTS}
         return jsonResponse({data: null, errors: [error]}, {status: StatusCodes.CONFLICT})
     }
 
