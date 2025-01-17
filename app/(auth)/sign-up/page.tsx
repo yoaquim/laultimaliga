@@ -3,6 +3,9 @@
 import { FormEvent, useState } from 'react'
 import { signUpUser } from '@/(auth)/sign-up/actions'
 import Spinner from '@/ui/spinner'
+import { NextResponse } from 'next/server'
+import { User } from '@prisma/client'
+import { BackendResponse } from '@/lib/types'
 
 function SignUpSuccess() {
     return (
@@ -14,7 +17,11 @@ function SignUpSuccess() {
     )
 }
 
-function SignUpForm({onSubmit, loading, error,}: {
+function SignUpForm({
+                        onSubmit,
+                        loading,
+                        error,
+                    }: {
     onSubmit: (formData: FormData) => Promise<void>
     loading: boolean
     error: string | null
@@ -24,18 +31,21 @@ function SignUpForm({onSubmit, loading, error,}: {
         const formData = new FormData(e.currentTarget)
         await onSubmit(formData)
     }
-    // const sizes: string[] = ['SMALL', 'MEDIUM', 'LARGE', 'X_LARGE', 'XX_LARGE']
 
     return (
         <form
             onSubmit={handleSubmit}
             className="w-full mx-auto px-6 py-4 bg-lul-grey/20 rounded-md shadow-md space-y-6"
         >
-            <h1 className="text-left text-xl font-bold text-white uppercase border-b border-lul-blue">Sign Up</h1>
+            <h1 className="text-left text-xl font-bold text-white uppercase border-b border-lul-blue">
+                Sign Up
+            </h1>
 
             {/* EMAIL FIELD */}
             <div className="flex flex-col gap-y-1">
-                <label htmlFor="email" className="text-white text-sm uppercase font-semibold">Email</label>
+                <label htmlFor="email" className="text-white text-sm uppercase font-semibold">
+                    Email
+                </label>
                 <input
                     id="email"
                     name="email"
@@ -48,7 +58,9 @@ function SignUpForm({onSubmit, loading, error,}: {
 
             {/* NAME FIELD */}
             <div className="flex flex-col gap-y-1">
-                <label htmlFor="name" className="text-white text-sm uppercase font-semibold">Name</label>
+                <label htmlFor="name" className="text-white text-sm uppercase font-semibold">
+                    Name
+                </label>
                 <input
                     id="name"
                     name="name"
@@ -61,7 +73,9 @@ function SignUpForm({onSubmit, loading, error,}: {
 
             {/* PHONE FIELD */}
             <div className="flex flex-col gap-y-1">
-                <label htmlFor="phone" className="text-white text-sm uppercase font-semibold">Phone</label>
+                <label htmlFor="phone" className="text-white text-sm uppercase font-semibold">
+                    Phone
+                </label>
                 <input
                     id="phone"
                     name="phone"
@@ -74,7 +88,9 @@ function SignUpForm({onSubmit, loading, error,}: {
 
             {/* PASSWORD FIELD */}
             <div className="flex flex-col gap-y-1">
-                <label htmlFor="password" className="text-white text-sm uppercase font-semibold">Password</label>
+                <label htmlFor="password" className="text-white text-sm uppercase font-semibold">
+                    Password
+                </label>
                 <input
                     id="password"
                     name="password"
@@ -86,7 +102,7 @@ function SignUpForm({onSubmit, loading, error,}: {
             </div>
 
             {/* ERROR MESSAGE */}
-            {error && <p className="text-center text-sm uppercase text-lul-red">{error}</p>}
+            {error && <p className="text-center text-sm text-lul-red">{error}</p>}
 
             {/* SUBMIT BUTTON */}
             <button
@@ -94,16 +110,16 @@ function SignUpForm({onSubmit, loading, error,}: {
                 disabled={loading}
                 className="w-full py-3 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
             >
-                {loading
-                    ?
+                {loading ? (
                     <div className="flex justify-center items-center gap-x-4">
                         <div className="w-4 h-4">
                             <Spinner/>
                         </div>
                         Signing Up...
                     </div>
-                    : 'Sign Up'
-                }
+                ) : (
+                    'Sign Up'
+                )}
             </button>
 
             {/* REDIRECT TO SIGN IN */}
@@ -125,13 +141,14 @@ export default function SignUpPage() {
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
         setError(null)
-
         try {
-            await signUpUser(formData)
-            setLoading(false)
-            setSuccess(true)
+            const res = await signUpUser(formData)
+            const {errors}: BackendResponse<User> = await res.json()
+            if (errors) setError(errors[0].message)
+            else setSuccess(true)
         } catch (err: any) {
             setError(err.message || 'An unknown error occurred')
+            setLoading(false)
         }
     }
 

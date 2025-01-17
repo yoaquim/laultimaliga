@@ -232,7 +232,7 @@ function Page() {
                         src={PROFILE_PIC_BUILDER(sessionUser)}
                         alt="profile-pic"
                         className={clsx(
-                            'h-52 w-52 rounded-md object-cover cursor-pointer transition-opacity duration-300',
+                            'h-52 w-52 rounded-full object-cover cursor-pointer transition-opacity duration-300',
                             {'opacity-50': uploadingPic}
                         )}
                         onClick={handleImageClick}

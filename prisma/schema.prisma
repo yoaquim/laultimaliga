@@ -42,6 +42,8 @@ enum MatchStatus {
   CANCELED
 }
 
+// User and Player relation (one-to-one)
+// We assume that a User may have one Player, and the Player holds the foreign key (userId).
 model User {
   id        String   @id @default(cuid())
   email     String?  @unique
@@ -52,9 +54,13 @@ model User {
   role      Role     @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-  Player    Player?
+
+  // Back-relation – no cascade, no fields specified here.
+  Player Player?
 }
 
+// Season model: used by Team, PlayerSeasonDetails, PlayerSeasonStats, and Match.
+// No cascade needed on the back-relations.
 model Season {
   id                  String                @id @default(cuid())
   name                String
@@ -65,20 +71,24 @@ model Season {
   teams               Team[]
   matches             Match[]
   SeasonStats         PlayerSeasonStats[]
+  PlayerSeasonDetails PlayerSeasonDetails[]
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @default(now()) @updatedAt
-  PlayerSeasonDetails PlayerSeasonDetails[]
 
   @@index([isActive])
 }
 
+// Team and Match Relations
+// In the Match model we hold the foreign keys (child side), so we specify cascading there.
+// In the Team model we define back-relations without any cascade properties.
 model Team {
   id          String                @id @default(cuid())
   name        String
   logo        String
-  season      Season                @relation(fields: [seasonId], references: [id])
+  season      Season                @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId    String
   players     PlayerSeasonDetails[]
+  // These are back-relations; no fields or onDelete here.
   homeMatches Match[]               @relation("HomeTeam")
   awayMatches Match[]               @relation("AwayTeam")
   wins        Match[]               @relation("WinnerTeam")
@@ -86,17 +96,20 @@ model Team {
   updatedAt   DateTime              @default(now()) @updatedAt
 }
 
+//
+// Match model: holds the foreign keys to Team and Season. Cascade on these fields only.
+// Note: Specify cascade on the side holding the FK.
 model Match {
   id             String                     @id @default(cuid())
   status         MatchStatus                @default(SCHEDULED)
   date           DateTime
-  homeTeam       Team                       @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  homeTeam       Team                       @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: Cascade)
   homeTeamId     String
-  awayTeam       Team                       @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  awayTeam       Team                       @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: Cascade)
   awayTeamId     String
-  winner         Team?                      @relation("WinnerTeam", fields: [winnerId], references: [id])
+  winner         Team?                      @relation("WinnerTeam", fields: [winnerId], references: [id], onDelete: Cascade)
   winnerId       String?
-  season         Season                     @relation(fields: [seasonId], references: [id])
+  season         Season                     @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId       String
   homeScore      Int                        @default(0)
   awayScore      Int                        @default(0)
@@ -109,11 +122,13 @@ model Match {
 
 model Player {
   id             String                     @id @default(cuid())
-  user           User                       @relation(fields: [userId], references: [id])
+  // Foreign key is here on this side: specify onDelete on this field.
+  user           User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String                     @unique
   position       Position?
   size           Size
-  totalStats     PlayerTotalStats?
+  // For one-to-many relations, do cascading on the foreign-key side.
+  totalStats     PlayerTotalStats? // Cascade will be set on the corresponding side.
   seasonDetails  PlayerSeasonDetails[]
   participations PlayerMatchParticipation[]
   createdAt      DateTime                   @default(now())
@@ -121,13 +136,15 @@ model Player {
   SeasonStats    PlayerSeasonStats[]
 }
 
+// PlayerSeasonDetails: holds foreign keys for player, season, and team.
+// Cascade on these fields is specified on this (child) side.
 model PlayerSeasonDetails {
   id        String   @id @default(cuid())
-  player    Player   @relation(fields: [playerId], references: [id])
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId  String
-  season    Season   @relation(fields: [seasonId], references: [id])
+  season    Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId  String
-  team      Team     @relation(fields: [teamId], references: [id])
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId    String
   number    Int
   isCaptain Boolean  @default(false)
@@ -137,12 +154,15 @@ model PlayerSeasonDetails {
   @@unique([playerId, seasonId])
 }
 
+// PlayerMatchParticipation: holds foreign keys for player and match.
+// Cascade defined on this side only.
 model PlayerMatchParticipation {
   id        String            @id @default(cuid())
-  player    Player            @relation(fields: [playerId], references: [id])
+  player    Player            @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId  String
-  match     Match             @relation(fields: [matchId], references: [id])
+  match     Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
   matchId   String
+  // For one-to-one relation with PlayerMatchStats, cascade on the child side (see below).
   stats     PlayerMatchStats?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @default(now()) @updatedAt
@@ -150,24 +170,27 @@ model PlayerMatchParticipation {
   @@unique([playerId, matchId])
 }
 
-model PlayerTotalStats {
-  id          String   @id @default(cuid())
-  player      Player   @relation(fields: [playerId], references: [id])
-  playerId    String   @unique
-  points      Int      @default(0)
-  assists     Int      @default(0)
-  rebounds    Int      @default(0)
-  fouls       Int      @default(0)
-  gamesPlayed Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+// PlayerMatchStats: holds the foreign key in relation to PlayerMatchParticipation.
+// Cascade is on this side only.
+model PlayerMatchStats {
+  id                         String                   @id @default(cuid())
+  playerMatchParticipationId String                   @unique
+  participation              PlayerMatchParticipation @relation(fields: [playerMatchParticipationId], references: [id], onDelete: Cascade)
+  points                     Int                      @default(0)
+  assists                    Int                      @default(0)
+  rebounds                   Int                      @default(0)
+  fouls                      Int                      @default(0)
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @default(now()) @updatedAt
 }
 
+// PlayerSeasonStats: holds foreign keys for player and season.
+// Specify onDelete on its own fields.
 model PlayerSeasonStats {
   id          String   @id @default(cuid())
-  player      Player   @relation(fields: [playerId], references: [id])
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId    String
-  season      Season   @relation(fields: [seasonId], references: [id])
+  season      Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId    String
   points      Int      @default(0)
   assists     Int      @default(0)
@@ -180,14 +203,16 @@ model PlayerSeasonStats {
   @@unique([playerId, seasonId])
 }
 
-model PlayerMatchStats {
-  id                         String                   @id @default(cuid())
-  playerMatchParticipationId String                   @unique
-  participation              PlayerMatchParticipation @relation(fields: [playerMatchParticipationId], references: [id])
-  points                     Int                      @default(0)
-  assists                    Int                      @default(0)
-  rebounds                   Int                      @default(0)
-  fouls                      Int                      @default(0)
-  createdAt                  DateTime                 @default(now())
-  updatedAt                  DateTime                 @default(now()) @updatedAt
+// PlayerTotalStats: holds the foreign key in PlayerTotalStats (child side).
+model PlayerTotalStats {
+  id          String   @id @default(cuid())
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId    String   @unique
+  points      Int      @default(0)
+  assists     Int      @default(0)
+  rebounds    Int      @default(0)
+  fouls       Int      @default(0)
+  gamesPlayed Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 }

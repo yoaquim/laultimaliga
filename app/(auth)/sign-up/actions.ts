@@ -1,20 +1,31 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { ERRORS, DOMAIN, standardizePhoneNumber } from '@/lib/utils'
+import { DOMAIN, ERRORS, standardizePhoneNumber } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server'
+import { StatusCodes } from 'http-status-codes'
+import { User } from '@prisma/client'
+import { BackendError, BackendResponse, FunctionResponse, SupabaseDataResponse } from '@/lib/types'
 
 async function userExists(email: string) {
     return prisma.user.findUnique({where: {email}})
 }
 
-async function createUser(userSignUpData: any, email: string, name: string, phone: string) {
-    await prisma.user.create({
-        data: {id: userSignUpData.user?.id, email, name, phone},
-    })
+async function createUser(userSignUpData: any, email: string, name: string, phone: string): Promise<FunctionResponse<User>> {
+    try {
+        const user: User = await prisma.user.create({
+            data: {id: userSignUpData.user?.id, email, name, phone},
+        })
+        return {data: user, error: null}
+    } catch (err) {
+        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, err)
+        const error = {message: ERRORS.AUTH.ERROR_SIGNING_UP_USER, error: err as Error}
+        return {data: null, error}
+    }
 }
 
-async function registerUser(email: string, password: string) {
+async function registerUser(email: string, password: string): Promise<FunctionResponse<SupabaseDataResponse>> {
     const supabase = await createClient()
     const emailRedirectTo = `${DOMAIN}/api/auth/confirm`
 
@@ -26,28 +37,49 @@ async function registerUser(email: string, password: string) {
 
     if (error) {
         console.error(ERRORS.AUTH.ERROR_SIGNING_UP_USER_IN_SUPABASE, error)
-        throw new Error(ERRORS.AUTH.ERROR_SIGNING_UP_USER)
+        const err = {message: error.message, error}
+        return {data: null, error: err}
     }
 
-    return data
+    return {data, error: null}
 }
 
-export async function signUpUser(formData: FormData) {
+export async function signUpUser(formData: FormData): Promise<NextResponse<BackendResponse<User>>> {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const name = formData.get('name') as string
     const phone = standardizePhoneNumber(formData.get('phone') as string)
 
     if (await userExists(email)) {
-        throw new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)
+        const error: BackendError = {message: ERRORS.AUTH.USER_ALREADY_EXISTS, error: new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)}
+        return NextResponse.json(
+            {data: null, errors: [error]},
+            {status: StatusCodes.CONFLICT}
+        )
     }
 
-    const userSignUpData = await registerUser(email, password)
-
-    try {
-        await createUser(userSignUpData, email, name, phone)
-    } catch (error) {
-        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, error)
-        throw new Error(ERRORS.AUTH.ERROR_SIGNING_UP_USER)
+    const {data: userSignUpData, error: userSignUpError}: FunctionResponse<SupabaseDataResponse> = await registerUser(email, password)
+    if (userSignUpError) {
+        const payload: BackendResponse<User> = {
+            data: null,
+            errors: [userSignUpError],
+            status: StatusCodes.CONFLICT
+        }
+        return NextResponse.json(payload, {status: StatusCodes.CONFLICT})
     }
+
+    const {data: createUserResponse, error: createUserError}: FunctionResponse<User> = await createUser(userSignUpData, email, name, phone)
+    if (createUserError) {
+        const payload: BackendResponse<User> = {
+            data: null,
+            errors: [createUserError],
+            status: StatusCodes.CONFLICT
+        }
+        return NextResponse.json(payload, {status: StatusCodes.CONFLICT})
+    }
+
+    return NextResponse.json(
+        {data: createUserResponse, errors: null, message: 'User created successfully', status: StatusCodes.CREATED},
+        {status: StatusCodes.CREATED}
+    )
 }

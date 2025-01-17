@@ -200,7 +200,7 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 <img
                     src={PROFILE_PIC_BUILDER(player.user)}
                     alt="profile-pic"
-                    className="h-48 w-48 rounded-md object-cover cursor-pointer transition-opacity duration-300"
+                    className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
                 />
 
 
@@ -274,23 +274,23 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                             const {match, stats} = participation
 
                             return (
-                                <div key={match.id} className={`flex flex-col ${jersey10.className}`}>
+                                <div key={match.id} className="flex flex-col">
                                     <div className="w-full bg-lul-grey/20 py-2 px-5 flex justify-between rounded-t-md border-b border-b-lul-light-grey">
                                         <div className="flex gap-x-1 items-center">
                                             <MdScoreboard className="text-lul-green text-2.5xl"/>
-                                            <p className="text-4xl leading-none font-bold text-white">{stats.points}</p>
+                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.points}</p>
                                         </div>
                                         <div className="flex gap-x-1 items-center">
                                             <FaHandsHelping className="text-lul-blue text-2.5xl"/>
-                                            <p className="text-4xl leading-none font-bold text-white">{stats.assists}</p>
+                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.assists}</p>
                                         </div>
                                         <div className="flex gap-x-1 items-center">
                                             <MdSportsHandball className="text-lul-yellow text-2.5xl"/>
-                                            <p className="text-4xl leading-none font-bold text-white">{stats.rebounds}</p>
+                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.rebounds}</p>
                                         </div>
                                         <div className="flex gap-x-1 items-center">
                                             <MdSports className="text-lul-red text-2.5xl"/>
-                                            <p className="text-4xl leading-none font-bold text-white">{stats.fouls}</p>
+                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.fouls}</p>
                                         </div>
                                     </div>
                                     <MatchCard match={match} noTopRadius/>
