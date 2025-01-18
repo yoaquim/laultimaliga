@@ -82,6 +82,16 @@ function StatsCard({
                        fouls,
                        games
                    }: { title: string, titleColor?: 'white' | 'red' | 'blue' | 'green' | 'yellow' | 'orange', points: number, assists: number, rebounds: number, fouls: number, games: number }) {
+
+    const avgPoints =
+        games > 0 ? (points / games).toFixed(1) : '0.0'
+    const avgAssists =
+        games > 0 ? (assists / games).toFixed(1) : '0.0'
+    const avgRebounds =
+        games > 0 ? (rebounds / games).toFixed(1) : '0.0'
+    const avgFouls =
+        games > 0 ? (fouls / games).toFixed(1) : '0.0'
+
     return (
         <div className="w-full flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
             <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue', {
@@ -98,22 +108,58 @@ function StatsCard({
             <div className={`w-full pt-8 pb-4 grid lg:grid-cols-5 grid-cols-2 gap-6`}>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdScoreboard className="text-lul-green text-3xl"/>
-                    <Score className="text-5xl font-bold text-white" value={points}/>
+                    <div className="flex flex-col items-center gap-y-2">
+                        <div className="w-full flex gap-x-5 justify-between text-xs font-semibold">
+                            <div>ALL</div>
+                            <div>AVG</div>
+                        </div>
+                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                            <div>{points}</div>
+                            <div className="text-lul-light-grey text-3xl">{avgPoints}</div>
+                        </div>
+                    </div>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Points</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <FaHandsHelping className="text-lul-blue text-3xl"/>
-                    <Score className="text-5xl font-bold text-white" value={assists}/>
+                    <div className="flex flex-col items-center gap-y-2">
+                        <div className="w-full flex gap-x-5 justify-between text-xs font-semibold">
+                            <div>ALL</div>
+                            <div>AVG</div>
+                        </div>
+                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                            <div>{assists}</div>
+                            <div className="text-lul-light-grey text-3xl">{avgAssists}</div>
+                        </div>
+                    </div>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Assists</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdSportsHandball className="text-lul-yellow text-3xl"/>
-                    <Score className="text-5xl font-bold text-white" value={rebounds}/>
+                    <div className="flex flex-col items-center gap-y-2">
+                        <div className="w-full flex gap-x-5 justify-between text-xs font-semibold">
+                            <div>ALL</div>
+                            <div>AVG</div>
+                        </div>
+                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                            <div>{rebounds}</div>
+                            <div className="text-lul-light-grey text-3xl">{avgRebounds}</div>
+                        </div>
+                    </div>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Rebounds</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdSports className="text-lul-red text-3xl"/>
-                    <Score className="text-5xl font-bold text-white" value={fouls}/>
+                    <div className="flex flex-col items-center gap-y-2">
+                        <div className="w-full flex gap-x-5 justify-between text-xs font-semibold">
+                            <div>ALL</div>
+                            <div>AVG</div>
+                        </div>
+                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                            <div>{fouls}</div>
+                            <div className="text-lul-light-grey text-3xl">{avgFouls}</div>
+                        </div>
+                    </div>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Fouls</p>
                 </div>
                 <div className="flex flex-col justify-center items-center gap-y-2 lg:col-span-1 col-span-full">
@@ -230,12 +276,9 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 }
             </div>
 
-            {/* =============================*/
-            }
-            {/* STAT SECTION */
-            }
-            {/* =============================*/
-            }
+            {/* =============================*/}
+            {/* STAT SECTION */}
+            {/* =============================*/}
             <div className="mt-8 lg:mt-0 flex flex-col gap-y-6">
                 {/* -----------------------------*/}
                 {/* TOTAL STATS CARD */}

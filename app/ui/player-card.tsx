@@ -40,10 +40,11 @@ export default function PlayerCard({player}: Props) {
     const seasonStats = player.SeasonStats.find(
         (stat: any) => stat.seasonId === seasonId
     )
-    const {points, assists, rebounds, gamesPlayed} = seasonStats || {
+    const {points, assists, rebounds, fouls, gamesPlayed} = seasonStats || {
         points: 0,
         assists: 0,
         rebounds: 0,
+        fouls: 0,
         gamesPlayed: 0,
     }
 
@@ -54,6 +55,8 @@ export default function PlayerCard({player}: Props) {
         gamesPlayed > 0 ? (assists / gamesPlayed).toFixed(1) : '0.0'
     const avgRebounds =
         gamesPlayed > 0 ? (rebounds / gamesPlayed).toFixed(1) : '0.0'
+    const avgFouls =
+        gamesPlayed > 0 ? (fouls / gamesPlayed).toFixed(1) : '0.0'
 
     return (
         <Link
@@ -102,15 +105,19 @@ export default function PlayerCard({player}: Props) {
 
                     <div className="flex items-end justify-end text-white text-base">PTS</div>
                     <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={points}/>
-                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={avgPoints}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={avgPoints}/>
 
                     <div className="flex items-end justify-end text-white text-base">AST</div>
-                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={assists}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={assists}/>
                     <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={avgAssists}/>
 
                     <div className="flex items-end justify-end text-white text-base">REB</div>
-                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-green" value={rebounds}/>
-                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-blue" value={avgRebounds}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-yellow" value={rebounds}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-yellow" value={avgRebounds}/>
+
+                    <div className="flex items-end justify-end text-white text-base">FLS</div>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-red" value={rebounds}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-red" value={avgRebounds}/>
                 </div>
             </div>
 
