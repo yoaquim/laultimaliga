@@ -5,12 +5,11 @@ import { useRouter } from 'next/navigation'
 import { signInUser } from './actions'
 import Spinner from '@/ui/spinner'
 import { DOMAIN } from '@/lib/utils'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
+import Link from 'next/link'
 
-function SignInForm({onSubmit, loading, error,}: {
-    onSubmit: (formData: FormData) => Promise<void>
-    loading: boolean
-    error: string | null
-}) {
+function SignInForm({onSubmit, loading, error,}: { onSubmit: (formData: FormData) => Promise<void>, loading: boolean, error: string | null }) {
+    const [passwordShown, setPasswordShown] = useState<boolean>(false)
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -34,27 +33,38 @@ function SignInForm({onSubmit, loading, error,}: {
                     type="email"
                     placeholder="email@example.com"
                     required
-                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                    className="py-1 px-2 rounded-md text-white bg-lul-black/50 border-lul-light-grey"
                 />
             </div>
 
-            {/* Password Field */}
+            {/* PASSWORD FIELD */}
             <div className="flex flex-col gap-y-1">
                 <label htmlFor="password" className="text-white text-sm uppercase font-semibold">Password</label>
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    required
-                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
-                />
+                <div className="flex">
+                    <input
+                        id="password"
+                        name="password"
+                        type={passwordShown ? 'text' : 'password'}
+                        placeholder="Enter your password"
+                        required
+                        className="flex-1 py-2 px-2 rounded-md text-white bg-lul-black/50 border-lul-light-grey rounded-r-none"
+                    />
+                    <div className="flex flex-col justify-center item-center border border-l-0 border-lul-light-grey bg-lul-black/50 rounded-r-md px-3 py-1 cursor-pointer">
+                        {!passwordShown && <IoEye className="text-xl text-white" onClick={() => setPasswordShown(true)}/>}
+                        {passwordShown && <IoEyeOff className="text-xl text-white" onClick={() => setPasswordShown(false)}/>}
+                    </div>
+                </div>
+
+                {/* FORGOT PASSWORD */}
+                <Link href="/reset-password" className="text-lul-blue flex justify-end items-center font-medium">
+                    Forgot Password?
+                </Link>
             </div>
 
-            {/* Error Message */}
-            {error && <p className="text-center text-lul-red">{error}</p>}
+            {/* ERROR MESSAGE */}
+            {error && <p className="font-semibold text-center text-lul-red">{error}</p>}
 
-            {/* Submit Button */}
+            {/* SUBMIT BUTTON */}
             <button
                 type="submit"
                 disabled={loading}
@@ -73,11 +83,11 @@ function SignInForm({onSubmit, loading, error,}: {
             </button>
 
             {/* Redirect to Sign Up */}
-            <p className="text-center text-sm  font-semibold text-lul-light-grey uppercase">
+            <p className="text-center  text-lul-light-grey">
                 Don&#39;t have an account?{' '}
-                <a href="/sign-up" className="text-lul-blue font-bold">
+                <Link href="/sign-up" className="text-lul-blue font-semibold">
                     Sign Up
-                </a>
+                </Link>
             </p>
         </form>
     )

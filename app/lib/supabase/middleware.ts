@@ -5,6 +5,7 @@ import { DEFAULT_URL_WHEN_AUTHENTICATED, DEFAULT_URL_WHEN_NOT_AUTHENTICATED, DOM
 const PUBLIC_PATHS = [
     '/sign-in',
     '/sign-up',
+    '/reset-password',
     '/auth'
 ]
 

@@ -33,7 +33,6 @@ async function createUser(
 async function registerUser(email: string, password: string): Promise<FunctionResponse<SupabaseDataResponse>> {
     const supabase = await createClient()
     const emailRedirectTo = `${DOMAIN}/api/auth/confirm`
-    console.log(`EMAIL REDIRECT TO: ${emailRedirectTo}`)
 
     const {data, error} = await supabase.auth.signUp({
         email,

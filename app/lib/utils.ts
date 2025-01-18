@@ -1,5 +1,7 @@
 import { User } from '@prisma/client'
 import { BackendResponse } from '@/lib/types'
+import { NextResponse } from 'next/server'
+import { StatusCodes } from 'http-status-codes'
 
 export const DOMAIN: string = process.env.NODE_ENV === 'production' ? 'https://laultimaliga.com' : 'http://localhost:3000'
 export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/settings`
@@ -45,6 +47,7 @@ export const ERRORS = {
         EMAIL_UPDATE_FAILED: 'Couldn\'t update email',
         USER_NOT_FOUND: 'User not found',
         NO_NEW_EMAIL: 'No new email',
+        UNKNOWN_AUTH_FLOW: 'Unknown auth flow',
     },
     MATCH: {
         ERROR_UPDATING_MATCH_STATUS: 'Error updating match status.',
@@ -72,13 +75,17 @@ export const SUPABASE_ERROR_TABLE: Record<string, string> = {
     'email_address_invalid': 'This email address cannot be used to signup',
     'email_exists': 'A user with this email already exists',
     'email_not_confirmed': 'You must confirm your email address before signing in',
-    'otp_expired': 'The one-time code that was provided has expired',
     'reauthentication_needed': 'You need to sign out and sign in again',
     'user_already_exists': 'A user with this information already exists',
 }
 
 export function jsonResponse<T>(payload: BackendResponse<T>) {
     return JSON.parse(JSON.stringify(payload))
+}
+
+export function jsonNextResponse<T>(payload: BackendResponse<T>, status?: StatusCodes): NextResponse<BackendResponse<T>> {
+    const plainPayload = JSON.parse(JSON.stringify(payload))
+    return NextResponse.json(plainPayload, {status})
 }
 
 export function formatTimeElapsed(seconds: number) {

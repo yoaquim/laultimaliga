@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { EmailOtpType } from '@supabase/auth-js'
-import { DEFAULT_URL_WHEN_AUTHENTICATED, ERRORS } from '@/lib/utils'
-import { NextResponse } from 'next/server'
+import { DEFAULT_URL_WHEN_AUTHENTICATED, ERRORS, jsonNextResponse, jsonResponse, SUPABASE_ERROR_TABLE } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
+import { StatusCodes } from 'http-status-codes'
 
 export async function GET(request: Request) {
     const url = new URL(request.url)
@@ -13,16 +13,19 @@ export async function GET(request: Request) {
     if (token_hash && type) {
         const supabase = await createClient()
         const {error: otpError} = await supabase.auth.verifyOtp({type, token_hash})
-        const {data, error} = await supabase.auth.getUser()
+        const {data, error: userError} = await supabase.auth.getUser()
+        const error = otpError || userError
 
-        if (otpError || error) {
-            const err = otpError || error
-            console.error(ERRORS.AUTH.ERROR_VERIFYING_EMAIL, err)
-            return new Response(ERRORS.AUTH.EMAIL_VERIFICATION_FAILED, {status: 400})
+        if (error) {
+            console.error(ERRORS.AUTH.ERROR_VERIFYING_EMAIL, error)
+            const message = SUPABASE_ERROR_TABLE[error.code as string] || error.message
+            return jsonNextResponse({data: null, errors: [{message}], status: StatusCodes.UNPROCESSABLE_ENTITY})
         }
 
         if (!data?.user) {
-            return new Response(ERRORS.AUTH.USER_NOT_FOUND_IN_SUPABASE_SESSION, {status: 400})
+            const error = {message: ERRORS.AUTH.USER_NOT_FOUND_IN_SUPABASE_SESSION}
+            console.error(error)
+            return jsonNextResponse({data: null, errors: [error]})
         }
 
         switch (type) {
@@ -64,10 +67,10 @@ export async function GET(request: Request) {
                     },
                 })
 
-                return redirect(`/settings?email_changed=true`)
+                return redirect(`/settings?email-changed=true`)
 
             default:
-                return NextResponse.json('Unknown auth flow', {status: 400})
+                return jsonNextResponse({data: null, errors: [{message: ERRORS.AUTH.UNKNOWN_AUTH_FLOW}], status: 400})
         }
     }
 

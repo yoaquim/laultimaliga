@@ -122,9 +122,9 @@ function SignUpForm({
             </button>
 
             {/* REDIRECT TO SIGN IN */}
-            <p className="text-center text-lul-light-grey uppercase font-semibold text-sm">
+            <p className="text-center text-lul-light-grey ">
                 Have an account?{' '}
-                <a href="/sign-in" className="text-lul-blue font-bold">
+                <a href="/sign-in" className="text-lul-blue font-semibold">
                     Sign In
                 </a>
             </p>

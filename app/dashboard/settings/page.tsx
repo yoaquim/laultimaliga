@@ -27,7 +27,9 @@ export default function SuspensePage() {
 
 function Page() {
     const searchParams = useSearchParams()
-    const emailChanged = searchParams.get('email_changed')
+    const emailChanged = searchParams.get('email-changed')
+    const resetPassword = searchParams.get('reset-password')
+    const defaultSecSectionOpen = emailChanged === 'true' || resetPassword === 'true'
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [loading, setLoading] = useState(true)
     const [profile, setProfile] = useState<any>(null)
@@ -43,7 +45,7 @@ function Page() {
     const [savingEmail, setSavingEmail] = useState<boolean>(false)
     const [savingPassword, setSavingPassword] = useState<boolean>(false)
     const [passwordError, setPasswordError] = useState<string>('')
-    const [secSectionOpen, setSecSectionOpen] = useState<boolean>(false)
+    const [secSectionOpen, setSecSectionOpen] = useState<boolean>(defaultSecSectionOpen)
     const [uploadingPic, setUploadingPic] = useState(false)
 
     useEffect(() => {
@@ -99,7 +101,8 @@ function Page() {
                 .storage
                 .from('lul') // Replace with your bucket name
                 .upload(fileName, file, {upsert: true})
-            if (error) throw error
+
+            if (error) toast.error(error.message)
 
             // Update the user record with the new image filename
             await updateProfilePic({
@@ -258,7 +261,7 @@ function Page() {
             {/* ============================================== */}
             {!Player &&
                 <div className="flex flex-col gap-y-4 items-center mt-4">
-                    <div className="w-full max-w-md flex justify-center gap-x-4 bg-lul-grey/50 text-lul-red px-6 py-3 text-sm uppercase font-bold rounded-md">
+                    <div className="text-center w-full max-w-md flex justify-center gap-x-4 bg-lul-grey/50 text-lul-red px-6 py-3 text-sm uppercase font-bold rounded-md">
                         <div>⚠️</div>
                         <div>You do not have a player profile linked</div>
                         <div>⚠️</div>
