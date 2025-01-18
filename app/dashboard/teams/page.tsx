@@ -1,23 +1,23 @@
 'use client'
 
-import { Grid } from '@/ui/grid'
 import { TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import Link from 'next/link'
 import Score from '@/ui/score'
 import { getPaginatedTeams } from '@/dashboard/teams/actions'
 import { TeamWithStats } from '@/dashboard/teams/types'
+import { SeasonFilteredGrid } from '@/ui/season-filtered-grid'
 
 // This page component uses the Grid to display paginated teams.
 export default function Page() {
     // Define a function that fetches teams for the given page.
-    const fetchTeams = async (page: number) => {
+    const fetchTeams = async (page: number, seasonId: string) => {
         const perPage = 20
-        const {teams, total} = await getPaginatedTeams({page, perPage})
+        const {teams, total} = await getPaginatedTeams({page, perPage, seasonId})
         return {data: teams, totalPages: Math.ceil(total / perPage)}
     }
 
     return (
-        <Grid<TeamWithStats>
+        <SeasonFilteredGrid<TeamWithStats>
             title="Teams"
             fetchData={fetchTeams}
             renderItem={(team) => (

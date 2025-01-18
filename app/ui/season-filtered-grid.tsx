@@ -3,6 +3,8 @@ import Empty from '@/ui/empty'
 import Loader from '@/ui/loader'
 import { SeasonOption } from '@/dashboard/types'
 import { getAllSeasons } from '@/dashboard/actions'
+import { BiSolidChevronDownSquare } from 'react-icons/bi'
+import { jersey10 } from '@/ui/fonts'
 
 interface CommonProps<T> {
     title: string
@@ -25,8 +27,11 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
     const [data, setData] = useState<T[]>([])
     const [totalPages, setTotalPages] = useState(1)
     const [loading, setLoading] = useState(true)
-    const [isFetching, setIsFetching] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isFetching, setIsFetching] = useState(false)
+
+    // New state variable to indicate that initial load is complete.
+    const [hasLoaded, setHasLoaded] = useState(false)
 
     // State for season filtering
     const [seasons, setSeasons] = useState<SeasonOption[]>([])
@@ -43,7 +48,7 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
             try {
                 const seasonOptions: SeasonOption[] = await getAllSeasons()
                 setSeasons(seasonOptions)
-                // Default to the first season (latest)
+                // Default to the first season (assumed latest)
                 if (seasonOptions.length > 0) {
                     setSelectedSeasonId(seasonOptions[0].id)
                 }
@@ -72,6 +77,9 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
             } finally {
                 setLoading(false)
                 setIsFetching(false)
+                if (page === 1) {
+                    setHasLoaded(true)
+                }
             }
         }
 
@@ -113,7 +121,6 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
         }
     }, [observerCallback, isEmpty, loading, isFetching, page, totalPages, data])
 
-    // If empty, render empty view
     if (isEmpty) {
         return (
             <div className="h-full flex flex-col pt-6">
@@ -127,7 +134,8 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
 
     // While loading the first page, show Loader.
     const isLoading = loading && page === 1
-    const shouldShowDropdown = seasons.length > 0
+    // Always show the dropdown once seasons have loaded and the initial load is complete.
+    const shouldShowDropdown = seasons.length > 0 && hasLoaded
 
     return (
         <div className="h-full flex flex-col pt-6">
@@ -137,10 +145,10 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
             </div>
 
             {/* Season Filter Dropdown */}
-            {shouldShowDropdown &&
-                <div className="mt-2 flex justify-center lg:justify-end">
+            {shouldShowDropdown && (
+                <div className="mt-3 flex justify-center items-center gap-x-1">
                     <select
-                        className="lg:w-1/6 text-sm font-semibold w-full bg-lul-black border-lul-orange rounded py-1 text-white"
+                        className={`lg:w-1/4 text-lg bg-none font-semibold w-full text-center  border-lul-yellow border bg-lul-dark-grey px-1 rounded-full uppercase text-lul-yellow py-1.5 mb-2 cursor-pointer`}
                         name="filter"
                         id="filter"
                         value={selectedSeasonId}
@@ -149,14 +157,16 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
                             setSelectedSeasonId(e.target.value)
                         }}
                     >
-                        {seasons.map(({id, name}) => (
-                            <option key={id} value={id}>
-                                {name}
-                            </option>
-                        ))}
+                        <optgroup>
+                            {seasons.map(({id, name}) => (
+                                <option key={id} value={id} style={{fontSize: '12px'}}>
+                                    {name}
+                                </option>
+                            ))}
+                        </optgroup>
                     </select>
                 </div>
-            }
+            )}
 
             {/* Grid Content */}
             <div ref={containerRef} className="pt-6 flex-1 flex-col items-center justify-center overflow-y-auto">
@@ -168,7 +178,7 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
                     </div>
                 )}
 
-                {!isLoading &&
+                {!isLoading && (
                     <>
                         <div className="w-full 2xl:grid-cols-4 lg:grid-cols-3 grid grid-cols-1 gap-6 items-stretch">
                             {data.map((item) => (props as CommonProps<T>).renderItem(item))}
@@ -176,7 +186,7 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
                         {/* Sentinel for infinite scrolling */}
                         <div ref={sentinelRef} className="h-2"/>
                     </>
-                }
+                )}
             </div>
 
             {/* Loader for infinite scroll */}
