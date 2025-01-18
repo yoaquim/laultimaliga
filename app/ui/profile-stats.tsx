@@ -203,7 +203,6 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                     className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
                 />
 
-
                 {/* PLAYER NAME & POSITION*/}
                 <div className="flex flex-col items-center justify-center">
                     <h1 className="uppercase lg:text-5xl text-3xl font-bold tracking-wide text-center">{player.user.name}</h1>

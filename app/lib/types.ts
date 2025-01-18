@@ -19,7 +19,7 @@ export interface BackendError {
 }
 
 export interface BackendResponse<T> {
-    data: T | T[] | null
+    data: T[] | null
     errors: Error[] | BackendError[] | null
     message?: string
     status?: StatusCodes

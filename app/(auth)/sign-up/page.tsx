@@ -107,7 +107,7 @@ function SignUpForm({
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
+                className="w-full py-2 text-white bg-lul-blue uppercase text-sm rounded-md font-medium hover:bg-lul-blue/80 transition"
             >
                 {loading ? (
                     <div className="flex justify-center items-center gap-x-4">
@@ -140,15 +140,12 @@ export default function SignUpPage() {
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
         setError(null)
-        try {
-            const res = await signUpUser(formData)
-            const {errors}: BackendResponse<User> = await res.json()
-            if (errors) setError(errors[0].message)
-            else setSuccess(true)
-        } catch (err: any) {
-            setError(err.message || 'An unknown error occurred')
+        // @ts-ignore
+        const {errors}: BackendResponse<User> = await signUpUser(formData)
+        if (errors) {
             setLoading(false)
-        }
+            setError(errors[0].message)
+        } else setSuccess(true)
     }
 
     if (success) return <SignUpSuccess/>

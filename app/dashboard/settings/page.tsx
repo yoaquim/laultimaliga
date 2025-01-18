@@ -262,38 +262,33 @@ function Page() {
                         <div>You do not have a player profile linked</div>
                         <div>⚠️</div>
                     </div>
-
-                    <div className="bg-lul-grey/20 flex flex-col gap-y-4 rounded-md p-6 pt-4 w-full">
-                        <h2 className={clsx('text-lul-green font-bold text-base mb-2 uppercase border-b border-lul-blue',
-                            {
-                                'text-lul-green': unclaimedPlayerExists,
-                                'text-lul-yellow': !unclaimedPlayerExists
-                            }
-                        )}>
-                            {unclaimedPlayerExists ? 'Claim Your Player Profile' : 'No Matching Player Profile'}
-
-                        </h2>
-
-                        <p className="text-sm text-white mb-4 normal-case">
-                            {unclaimedPlayerExists ?
-                                'We found a matching unclaimed player record with the same phone number.\n' +
-                                'You can claim it and start tracking your stats.\n'
-                                :
-                                'We couldn\'t find an unclaimed player record with your phone number.\n' +
-                                'If you think this is a mistake, please contact the match administrator.'
-                            }
-                        </p>
-
-                        {unclaimedPlayerExists &&
-                            <button
-                                onClick={handleClaimPlayerProfile}
-                                className="px-4 py-2 bg-lul-green/90 rounded-md text-white font-semibold hover:bg-lul-green/70 transition-colors uppercase"
-                            >
-                                Claim Player Profile
-                            </button>
-                        }
-                    </div>
                 </div>
+            }
+
+            {!Player && unclaimedPlayerExists &&
+                <Card title="Claim Your Player Profile" color="green" className="flex flex-col gap-y-2">
+                    <p className="">
+                        We found a matching unclaimed player record with the same phone number.
+                        You can claim it and start tracking your stats.
+                    </p>
+
+                    <button
+                        onClick={handleClaimPlayerProfile}
+                        className="mt-4 py-2 bg-lul-green/90 rounded text-white font-semibold hover:bg-lul-green/70 transition-colors uppercase"
+                    >
+                        Claim Player Profile
+                    </button>
+                </Card>
+            }
+
+            {!Player && !unclaimedPlayerExists &&
+                <Card title="No Matching Player Profile Found" color="red" className="flex flex-col gap-y-2">
+                    <p className="">
+                        We couldn't find an unclaimed player record with your phone number.
+                        <br/>
+                        If you think this is a mistake, please contact the season administrator.
+                    </p>
+                </Card>
             }
 
             {/* ============================================== */}
@@ -432,7 +427,9 @@ function InputGroup({
                             onClick={handler}
                             className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
                             {saving
-                                ? (<><Spinner className="w-4"/> <div className="hidden lg:block">Saving...</div></>)
+                                ? (<><Spinner className="w-4"/>
+                                    <div className="hidden lg:block">Saving...</div>
+                                </>)
                                 : 'Save'
                             }
                         </button>
@@ -462,7 +459,7 @@ function Card({
         <div className={clsx(`lg:w-1/2 w-full bg-lul-grey/20 rounded-md p-4 ${className}`, {
             'lg:w-full': fullWidth
         })}>
-            <h2 className={clsx('text-white font-bold text-base mb-2 uppercase border-b', {
+            <h2 className={clsx('text-white font-bold text-lg mb-2 uppercase border-b', {
                 'border-lul-green': color === 'green',
                 'border-lul-blue': color === 'blue',
                 'border-lul-red': color === 'red',

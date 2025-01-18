@@ -1,7 +1,5 @@
 import { User } from '@prisma/client'
 import { BackendResponse } from '@/lib/types'
-import { NextResponse } from 'next/server'
-import { StatusCodes } from 'http-status-codes'
 
 export const DOMAIN: string = process.env.NODE_ENV === 'production' ? 'https://laultimaliga.com' : 'http://localhost:3000'
 export const DEFAULT_URL_WHEN_AUTHENTICATED = `/dashboard/settings`
@@ -32,7 +30,7 @@ export const ERRORS = {
         INVALID_EMAIL_OR_PASSWORD: 'Invalid email or password',
         USER_ALREADY_EXISTS: 'A user with this email already exists.',
         ERROR_CREATING_USER_IN_PRISMA: 'Error creating user in prisma.',
-        ERROR_SIGNING_UP_USER: 'Error signing up user.',
+        ERROR_SIGNING_UP_USER: 'Error signing up user',
         ERROR_SIGNING_UP_USER_IN_SUPABASE: 'Error signing up user in Supabase.',
         ERROR_VERIFYING_EMAIL: 'Error verifying email.',
         EMAIL_VERIFICATION_FAILED: 'Email verification failed.',
@@ -69,9 +67,18 @@ export const ERRORS = {
     }
 }
 
-export function jsonResponse<T>(payload: BackendResponse<T>, config: { status: StatusCodes }) {
-    const plainPayload = JSON.parse(JSON.stringify(payload))
-    return NextResponse.json(plainPayload, config)
+export const SUPABASE_ERROR_TABLE: Record<string, string> = {
+    'weak_password': 'Passwords need to be at least 10 characters long, and should include uppercase, lowercase, digits, and special characters ',
+    'email_address_invalid': 'This email address cannot be used to signup',
+    'email_exists': 'A user with this email already exists',
+    'email_not_confirmed': 'You must confirm your email address before signing in',
+    'otp_expired': 'The one-time code that was provided has expired',
+    'reauthentication_needed': 'You need to sign out and sign in again',
+    'user_already_exists': 'A user with this information already exists',
+}
+
+export function jsonResponse<T>(payload: BackendResponse<T>) {
+    return JSON.parse(JSON.stringify(payload))
 }
 
 export function formatTimeElapsed(seconds: number) {

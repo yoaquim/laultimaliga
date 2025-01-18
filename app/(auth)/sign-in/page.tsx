@@ -90,13 +90,13 @@ export default function SignInPage() {
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
         setError(null)
+        const {data, errors} = await signInUser(formData) // Invoke server action
 
-        try {
-            const {redirectTo} = await signInUser(formData) // Invoke server action
-            router.push(redirectTo)
-        } catch (err: any) {
-            setError(err.message || 'Invalid email or password')
+        if (errors) {
+            setError(errors[0].message)
             setLoading(false)
+        } else if (data) {
+            router.push(data[0].redirectTo)
         }
     }
 

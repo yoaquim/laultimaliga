@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { DOMAIN, ERRORS, jsonResponse, standardizePhoneNumber } from '@/lib/utils'
+import { DOMAIN, ERRORS, jsonResponse, standardizePhoneNumber, SUPABASE_ERROR_TABLE } from '@/lib/utils'
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 import { StatusCodes } from 'http-status-codes'
@@ -24,8 +24,9 @@ async function createUser(
         })
         return {data: user, error: null}
     } catch (err) {
-        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA)
-        return {data: null, error: {message: ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA}}
+        const error = err as Error
+        console.error(ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, error)
+        return {data: null, error: {message: ERRORS.AUTH.ERROR_CREATING_USER_IN_PRISMA, error}}
     }
 }
 
@@ -41,7 +42,9 @@ async function registerUser(email: string, password: string): Promise<FunctionRe
 
     if (error) {
         console.error(ERRORS.AUTH.ERROR_SIGNING_UP_USER_IN_SUPABASE, error)
-        return {data: null, error: {message: error.message}}
+        const code = error.code as string
+        const message = SUPABASE_ERROR_TABLE[code] || error.message
+        return {data: null, error: {message, error}}
     }
 
     return {data, error: null}
@@ -53,39 +56,51 @@ export async function signUpUser(formData: FormData): Promise<NextResponse<Backe
     const name = formData.get('name') as string
     const phone = standardizePhoneNumber(formData.get('phone') as string)
 
-    if (await userExists(email)) {
-        const error: BackendError = {message: ERRORS.AUTH.USER_ALREADY_EXISTS}
-        return jsonResponse({data: null, errors: [error]}, {status: StatusCodes.CONFLICT})
-    }
-
-    const {data: userSignUpData, error: userSignUpError}: FunctionResponse<SupabaseDataResponse> = await registerUser(email, password)
-    if (userSignUpError) {
-        const payload: BackendResponse<User> = {
-            data: null,
-            errors: [userSignUpError],
-            status: StatusCodes.CONFLICT,
+    try {
+        if (await userExists(email)) {
+            const error: BackendError = {message: ERRORS.AUTH.USER_ALREADY_EXISTS, error: new Error(ERRORS.AUTH.USER_ALREADY_EXISTS)}
+            return jsonResponse({data: null, errors: [error]})
         }
-        return jsonResponse(payload, {status: StatusCodes.CONFLICT})
-    }
 
-    const {data: createUserResponse, error: createUserError}: FunctionResponse<User> =
-        await createUser(userSignUpData, email, name, phone)
-    if (createUserError) {
-        const payload: BackendResponse<User> = {
-            data: null,
-            errors: [createUserError],
-            status: StatusCodes.CONFLICT,
+        const {data: userSignUpData, error: userSignUpError}: FunctionResponse<SupabaseDataResponse> = await registerUser(email, password)
+        if (userSignUpError) {
+            const payload: BackendResponse<User> = {
+                data: null,
+                errors: [userSignUpError],
+                status: StatusCodes.UNPROCESSABLE_ENTITY,
+            }
+            return jsonResponse(payload)
         }
-        return jsonResponse(payload, {status: StatusCodes.CONFLICT})
-    }
 
-    return jsonResponse(
-        {
-            data: createUserResponse,
-            errors: null,
-            message: 'User created successfully',
-            status: StatusCodes.CREATED,
-        },
-        {status: StatusCodes.CREATED}
-    )
+        const {data: createUserResponse, error: createUserError}: FunctionResponse<User> =
+            await createUser(userSignUpData, email, name, phone)
+        if (createUserError) {
+            const payload: BackendResponse<User> = {
+                data: null,
+                errors: [createUserError],
+                status: StatusCodes.UNPROCESSABLE_ENTITY,
+            }
+            return jsonResponse(payload)
+        }
+
+        return jsonResponse(
+            {
+                data: [createUserResponse],
+                errors: null,
+                message: 'User created successfully',
+                status: StatusCodes.CREATED,
+            })
+    } catch (err) {
+        const error = err as Error
+        console.error(ERRORS.AUTH.ERROR_SIGNING_UP_USER, error)
+        return jsonResponse(
+            {
+                data: null,
+                errors: [error],
+                message: 'User created successfully',
+                status: StatusCodes.CREATED,
+            }
+        )
+    }
 }
+
