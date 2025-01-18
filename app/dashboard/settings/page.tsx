@@ -283,9 +283,9 @@ function Page() {
             }
 
             {!Player && !unclaimedPlayerExists &&
-                <InfoCard title="No Matching Player Profile Found" color="red" className="flex flex-col gap-y-2">
+                <InfoCard title="No Player Profile Found" color="red" className="flex flex-col gap-y-2">
                     <p className="">
-                        We couldn't find an unclaimed player record with your phone number.
+                        We couldn't find a matching player record with your phone number.
                         <br/>
                         If you think this is a mistake, please contact the season administrator.
                     </p>

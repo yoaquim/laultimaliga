@@ -207,7 +207,10 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 <div className="flex flex-col items-center justify-center">
                     <h1 className="uppercase lg:text-5xl text-3xl font-bold tracking-wide text-center">{player.user.name}</h1>
                     {activeSeasonDetail &&
-                        <h1 className="font-bold text-3xl text-lul-yellow">#{activeSeasonDetail.number}</h1>
+                        <div className="flex items-end">
+                            <Score className="pb-1 flex font-bold leading-none text-4.5xl text-lul-yellow" value="#"/>
+                            <Score className="font-bold leading-none text-6xl text-lul-yellow" value={`${activeSeasonDetail.number}`}/>
+                        </div>
                     }
                     <p className="pt-1 text-lul-blue uppercase tracking-wider text-sm font-semibold">
                         {player.position ? positionMap[player.position] : 'No position yet'}
@@ -227,9 +230,12 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 }
             </div>
 
-            {/* =============================*/}
-            {/* STAT SECTION */}
-            {/* =============================*/}
+            {/* =============================*/
+            }
+            {/* STAT SECTION */
+            }
+            {/* =============================*/
+            }
             <div className="mt-8 lg:mt-0 flex flex-col gap-y-6">
                 {/* -----------------------------*/}
                 {/* TOTAL STATS CARD */}
@@ -254,9 +260,12 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                            games={seasonGP}/>
             </div>
 
-            {/* =============================*/}
-            {/* MATCHES SECTION */}
-            {/* =============================*/}
+            {/* =============================*/
+            }
+            {/* MATCHES SECTION */
+            }
+            {/* =============================*/
+            }
             <div className="lg:mt-0 mt-6 w-full h-fit flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
                 <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue')}>
                     Matches

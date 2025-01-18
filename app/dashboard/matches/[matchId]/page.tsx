@@ -393,7 +393,7 @@ export default function Page() {
                     {/*====================================================*/}
                     <div className="hidden lg:flex w-full max-w-screen-lg mx-auto justify-between text-3xl font-bold">
                         <div className="w-1/3 flex flex-col pt-4">
-                            <Link href={`/dashboard/teams/${match.homeTeam.id}`} target="_blank" className="w-full h-full flex justify-start items-center">
+                            <Link href={`/dashboard/teams/${match.homeTeam.id}`} className="w-full h-full flex justify-start items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-56"/>
                             </Link>
                         </div>
@@ -472,7 +472,7 @@ export default function Page() {
                         </div>
 
                         <div className="w-1/3 flex flex-col pt-4">
-                            <Link href={`/dashboard/teams/${match.awayTeam.id}`} target="_blank" className="w-full h-full flex justify-end items-center">
+                            <Link href={`/dashboard/teams/${match.awayTeam.id}`} className="w-full h-full flex justify-end items-center">
                                 <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-56"/>
                             </Link>
                         </div>
@@ -576,7 +576,7 @@ function Tracker({
                         {/*====================================================*/}
                         {/* PROFILE PIC + NAME */}
                         {/*====================================================*/}
-                        <Link href={`/dashboard/players/${player.id}`} target="_blank" className="flex flex-col items-center gap-y-2">
+                        <Link href={`/dashboard/players/${player.id}`} className="flex flex-col items-center gap-y-2">
                             <img src={PROFILE_PIC_BUILDER(player.user)} alt="profile-image" className="rounded-full w-16"/>
                             <span className="uppercase font-bold">{player.user.name}</span>
                         </Link>
