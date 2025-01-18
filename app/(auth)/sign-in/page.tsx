@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signInUser } from './actions'
 import Spinner from '@/ui/spinner'
+import { DOMAIN } from '@/lib/utils'
 
 function SignInForm({onSubmit, loading, error,}: {
     onSubmit: (formData: FormData) => Promise<void>
@@ -90,13 +91,16 @@ export default function SignInPage() {
     const handleSubmit = async (formData: FormData) => {
         setLoading(true)
         setError(null)
-        const {data, errors} = await signInUser(formData) // Invoke server action
+        const {data, errors} = await signInUser(formData)
 
         if (errors) {
             setError(errors[0].message)
             setLoading(false)
         } else if (data) {
-            router.push(data[0].redirectTo)
+            setLoading(false)
+            const x = `${DOMAIN}${data[0].redirectTo}`
+            console.log(`DOMAIN: ${x}`)
+            router.push(x)
         }
     }
 

@@ -10,7 +10,7 @@ export async function signInUser(formData: FormData): Promise<BackendResponse<{ 
     const password = formData.get('password') as string
 
     if (!email || !password) {
-        jsonResponse({
+        return jsonResponse({
             data: null,
             errors: [new Error(ERRORS.AUTH.INVALID_CREDENTIALS)],
             status: StatusCodes.BAD_REQUEST
@@ -23,7 +23,7 @@ export async function signInUser(formData: FormData): Promise<BackendResponse<{ 
     if (error) {
         const code = error.code as string
         const message = SUPABASE_ERROR_TABLE[code] || error.message
-        jsonResponse({
+        return jsonResponse({
             data: null,
             errors: [{message, error}],
             status: StatusCodes.UNAUTHORIZED
