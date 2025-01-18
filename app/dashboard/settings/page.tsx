@@ -19,6 +19,7 @@ import { RiArrowDropDownLine, RiArrowDropUpLine } from 'react-icons/ri'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { InfoCard } from '@/ui/info-card'
 
 export default function SuspensePage() {
     return <Suspense><Page/></Suspense>
@@ -266,7 +267,7 @@ function Page() {
             }
 
             {!Player && unclaimedPlayerExists &&
-                <Card title="Claim Your Player Profile" color="green" className="flex flex-col gap-y-2">
+                <InfoCard title="Claim Your Player Profile" color="green" className="flex flex-col gap-y-2">
                     <p className="">
                         We found a matching unclaimed player record with the same phone number.
                         You can claim it and start tracking your stats.
@@ -278,27 +279,27 @@ function Page() {
                     >
                         Claim Player Profile
                     </button>
-                </Card>
+                </InfoCard>
             }
 
             {!Player && !unclaimedPlayerExists &&
-                <Card title="No Matching Player Profile Found" color="red" className="flex flex-col gap-y-2">
+                <InfoCard title="No Matching Player Profile Found" color="red" className="flex flex-col gap-y-2">
                     <p className="">
                         We couldn't find an unclaimed player record with your phone number.
                         <br/>
                         If you think this is a mistake, please contact the season administrator.
                     </p>
-                </Card>
+                </InfoCard>
             }
 
             {/* ============================================== */}
-            {/* PLAYER CARD*/}
+            {/* PLAYER InfoCard*/}
             {/* ============================================== */}
             {Player &&
-                <Card title="Player profile linked" className="flex flex-col gap-y-2" color="green">
+                <InfoCard title="Player profile linked" className="flex flex-col gap-y-2" color="green">
                     <div>Your user profile is linked with Player ID <span className="text-lul-green font-bold">{Player.id}</span>.</div>
                     <div>You can view your stats over at your <Link href={`/dashboard/profile`} className="text-lul-blue underline">player profile</Link>.</div>
-                </Card>
+                </InfoCard>
             }
 
             {/* ============================================== */}
@@ -323,7 +324,7 @@ function Page() {
                 saving={savingPhone}
                 handler={handlePhoneChange}/>
 
-            <Card
+            <InfoCard
                 className={secSectionOpen ? 'pb-0' : 'pb-6'}
                 color="yellow"
                 title={
@@ -374,7 +375,7 @@ function Page() {
                     </div>
 
                 </div>
-            </Card>
+            </InfoCard>
 
         </Container>
     )
@@ -410,7 +411,7 @@ function InputGroup({
             'flex': isOpen
         })}>
             {children}
-            <Card title={title} fullWidth className="py-3 bg-lul-black/55">
+            <InfoCard title={title} fullWidth className="py-3 bg-lul-black/55">
                 <div className="w-full flex items-center pt-2">
                     <input
                         type={type}
@@ -435,41 +436,7 @@ function InputGroup({
                         </button>
                     </div>
                 </div>
-            </Card>
-        </div>
-    )
-}
-
-function Card({
-                  title,
-                  children,
-                  fullWidth = false,
-                  color = 'blue',
-                  className = '',
-              }: {
-    title: string | ReactNode,
-    children
-        :
-        ReactNode,
-    fullWidth?: boolean,
-    color?: 'blue' | 'green' | 'red' | 'yellow' | 'orange',
-    className?: string,
-}) {
-    return (
-        <div className={clsx(`lg:w-1/2 w-full bg-lul-grey/20 rounded-md p-4 ${className}`, {
-            'lg:w-full': fullWidth
-        })}>
-            <h2 className={clsx('text-white font-bold text-lg mb-2 uppercase border-b', {
-                'border-lul-green': color === 'green',
-                'border-lul-blue': color === 'blue',
-                'border-lul-red': color === 'red',
-                'border-lul-yellow': color === 'yellow',
-                'border-lul-orange': color === 'orange',
-            })}>
-                {title}
-            </h2>
-
-            {children}
+            </InfoCard>
         </div>
     )
 }

@@ -85,7 +85,7 @@ export default function PlayerCard({player}: Props) {
                 {/* IMAGE */}
                 <div className="w-1/2 text-center">
                     <img
-                        className="h-24 mx-auto rounded-md"
+                        className="h-24 mx-auto rounded-full"
                         src={
                             player.user.image
                                 ? `${BUCKET_ENDPOINT}/players/${player.user.image}`
