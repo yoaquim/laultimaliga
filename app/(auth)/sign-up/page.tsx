@@ -5,6 +5,7 @@ import { signUpUser } from '@/(auth)/sign-up/actions'
 import Spinner from '@/ui/spinner'
 import { User } from '@prisma/client'
 import { BackendResponse } from '@/lib/types'
+import { IoEye, IoEyeOff } from 'react-icons/io5'
 
 function SignUpSuccess() {
     return (
@@ -25,6 +26,8 @@ function SignUpForm({
     loading: boolean
     error: string | null
 }) {
+    const [passwordShown, setPasswordShown] = useState<boolean>(false)
+
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
@@ -51,7 +54,7 @@ function SignUpForm({
                     type="email"
                     placeholder="email@example.com"
                     required
-                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                    className="py-2 px-2 rounded-md text-white bg-lul-black/50 border-white"
                 />
             </div>
 
@@ -66,7 +69,7 @@ function SignUpForm({
                     type="text"
                     placeholder="Juan Doe"
                     required
-                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                    className="py-2 px-2 rounded-md text-white bg-lul-black/50 border-white"
                 />
             </div>
 
@@ -81,7 +84,7 @@ function SignUpForm({
                     type="tel"
                     placeholder="787-555-6789"
                     required
-                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
+                    className="py-2 px-2 rounded-md text-white bg-lul-black/50 border-white"
                 />
             </div>
 
@@ -90,14 +93,20 @@ function SignUpForm({
                 <label htmlFor="password" className="text-white text-sm uppercase font-semibold">
                     Password
                 </label>
-                <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    required
-                    className="py-1 px-2 rounded-md text-white bg-lul-black/50"
-                />
+                <div className="flex">
+                    <input
+                        id="password"
+                        name="password"
+                        type={passwordShown ? 'text' : 'password'}
+                        placeholder="Enter your password"
+                        required
+                        className="flex-1 py-2 px-2 rounded-md text-white bg-lul-black/50 border-lul-light-grey rounded-r-none"
+                    />
+                    <div className="flex flex-col justify-center item-center border border-l-0 border-lul-light-grey bg-lul-black/50 rounded-r-md px-3 py-1 cursor-pointer">
+                        {!passwordShown && <IoEye className="text-xl text-white" onClick={() => setPasswordShown(true)}/>}
+                        {passwordShown && <IoEyeOff className="text-xl text-white" onClick={() => setPasswordShown(false)}/>}
+                    </div>
+                </div>
             </div>
 
             {/* ERROR MESSAGE */}
