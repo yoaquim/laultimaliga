@@ -107,7 +107,6 @@ export default function SignInPage() {
             setError(errors[0].message)
             setLoading(false)
         } else if (data) {
-            setLoading(false)
             const x = `${DOMAIN}${data[0].redirectTo}`
             console.log(`DOMAIN: ${x}`)
             router.push(x)

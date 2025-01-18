@@ -1,7 +1,8 @@
-import { Position, Prisma } from '@prisma/client'
-import { prisma } from '@/lib/prisma'
+'use client'
+
+import { Position } from '@prisma/client'
 import Empty from '@/ui/empty'
-import { BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER, EMPTY_MESSAGES, PROFILE_PIC_BUILDER, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
+import { EMPTY_MESSAGES, PROFILE_PIC_BUILDER, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import clsx from 'clsx'
 import { MdScoreboard } from 'react-icons/md'
 import { FaHandsHelping } from 'react-icons/fa'
@@ -12,66 +13,10 @@ import MatchCard from '@/ui/match-card'
 import { Container } from '@/ui/container'
 import { jersey10 } from '@/ui/fonts'
 import Score from '@/ui/score'
-
-type PlayerDetail = Prisma.PlayerGetPayload<{
-    include: {
-        user: true
-        totalStats: true
-        SeasonStats: {
-            include: {
-                season: true
-            }
-        }
-        seasonDetails: {
-            include: {
-                season: true
-                team: true
-            }
-        }
-        participations: {
-            include: {
-                match: {
-                    include: {
-                        season: true
-                    }
-                }
-            }
-        }
-    }
-}>
-
-async function getPlayer(playerId: string): Promise<PlayerDetail | null> {
-    return prisma.player.findUnique({
-        where: {id: playerId},
-        include: {
-            user: true,
-            totalStats: true,
-            SeasonStats: {
-                include: {
-                    season: true,
-                },
-            },
-            seasonDetails: {
-                include: {
-                    season: true,
-                    team: true,
-                },
-            },
-            participations: {
-                include: {
-                    match: {
-                        include: {
-                            homeTeam: true,
-                            awayTeam: true,
-                            season: true,
-                        },
-                    },
-                    stats: true
-                },
-            },
-        },
-    })
-}
+import { ChangeEvent, useEffect, useState } from 'react'
+import { ProfileWithDetails, SeasonOption } from '@/dashboard/types'
+import { getAllSeasons, getPlayerStatsForSeason } from '@/dashboard/actions'
+import Loader from '@/ui/loader'
 
 function StatsCard({
                        title,
@@ -113,7 +58,7 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{points}</div>
                             <div className="text-lul-light-grey text-3xl">{avgPoints}</div>
                         </div>
@@ -127,7 +72,7 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{assists}</div>
                             <div className="text-lul-light-grey text-3xl">{avgAssists}</div>
                         </div>
@@ -141,7 +86,7 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{rebounds}</div>
                             <div className="text-lul-light-grey text-3xl">{avgRebounds}</div>
                         </div>
@@ -155,7 +100,7 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-1 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{fouls}</div>
                             <div className="text-lul-light-grey text-3xl">{avgFouls}</div>
                         </div>
@@ -172,46 +117,79 @@ function StatsCard({
     )
 }
 
-export default async function ProfileStats({playerId}: { playerId: string }) {
-    const player = await getPlayer(playerId)
 
-    if (!player) {
-        return <Empty message={EMPTY_MESSAGES.PLAYER_DOES_NOT_EXIST}/>
-    }
+export default function ProfileStats({playerId}: { playerId: string }) {
+    const [profile, setProfile] = useState<ProfileWithDetails | null>(null)
+    const [loading, setLoading] = useState<boolean>(true)
 
-    // Find an "active" or "current" season detail to show the player's current team
-    const activeSeasonDetail = player.seasonDetails.find((sd) => sd.season.isActive)
-    const currentTeam = activeSeasonDetail?.team
+    // State for season filtering
+    const [seasons, setSeasons] = useState<SeasonOption[]>([])
+    const [selectedSeasonId, setSelectedSeasonId] = useState<string>('')
 
-    // total stats
+    // Load seasons on mount
+    useEffect(() => {
+        async function loadSeasons() {
+            try {
+                const seasonOptions: SeasonOption[] = await getAllSeasons()
+                setSeasons(seasonOptions)
+                // Default to the first season (assumed latest)
+                if (seasonOptions.length > 0) {
+                    setSelectedSeasonId(seasonOptions[0].id)
+                }
+            } catch (err) {
+                console.error('Error fetching seasons', err)
+            }
+        }
+
+        loadSeasons()
+    }, [])
+
+    // Fetch page data whenever page or selectedSeasonId changes
+    useEffect(() => {
+        if (!selectedSeasonId) return
+
+        async function fetchProfileData() {
+            setLoading(true)
+            const profileData: ProfileWithDetails | null = await getPlayerStatsForSeason(playerId, selectedSeasonId)
+            setProfile(profileData)
+            setLoading(false)
+        }
+
+        fetchProfileData()
+    }, [selectedSeasonId])
+
+    if (loading) return <Loader/>
+    if (!profile) return <Empty message={EMPTY_MESSAGES.PLAYER_DOES_NOT_EXIST}/>
+
+    const seasonDetail = profile.seasonDetails.find((sd) => sd.season.id === selectedSeasonId)
+    const seasonStats = profile.SeasonStats.find((st) => st.season.id === selectedSeasonId)
+
+    const seasonTeam = seasonDetail?.team
+    const seasonJerseyNumber = seasonDetail?.number
+
+    // Total Stats
     const {
         points: totalPoints = 0,
         assists: totalAssists = 0,
         rebounds: totalRebounds = 0,
         fouls: totalFouls = 0,
         gamesPlayed: totalGamesPlayed = 0,
-    } = player.totalStats || {}
+    } = profile.totalStats || {}
 
-    // Find "current" SeasonStats record (for the active season)
-    const activeSeasonStats = player.SeasonStats.find(
-        (st) => st.season.isActive === true
-    )
+    // Season Stats
     const {
         points: seasonPoints = 0,
         assists: seasonAssists = 0,
         rebounds: seasonRebounds = 0,
         fouls: seasonFouls = 0,
         gamesPlayed: seasonGP = 0,
-    } = activeSeasonStats || {}
+    } = seasonStats || {}
 
     // Gather matches (by date ascending)
-    const matches = player.participations
+    const matches = profile.participations
+        .filter((p) => p.match.seasonId === selectedSeasonId)
         .map((p) => p.match)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-
-    const profilePic = player.user.image
-        ? `${BUCKET_ENDPOINT}/${player.user.image}`
-        : DEFAULT_PROFILE_PIC_BUILDER(player.user.name)
 
     const positionMap: Record<Position, string> = {
         PG: 'Point Guard',
@@ -227,50 +205,62 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
         PF_C: 'Power Forward - Center'
     }
 
-    if (!player) {
-        return <Empty message={EMPTY_MESSAGES.PLAYER_DOES_NOT_EXIST}/>
-    }
-
-
-    const currentSeasonCardTitle = activeSeasonDetail?.season.shortName
-        ? activeSeasonDetail.season.shortName
-        : activeSeasonDetail?.season.name || 'No active season'
-
     return (
         <Container className="gap-y-8 py-8">
+            <div className="mt-3 flex justify-center items-center gap-x-1">
+                <select
+                    className={`lg:w-1/4 text-lg bg-none font-semibold w-full text-center  border-lul-yellow focus:border-lul-yellow active:border-lul-yellow border outline-lul-yellow bg-lul-dark-grey px-1 rounded-full uppercase text-lul-yellow py-1.5 mb-2 cursor-pointer`}
+                    name="filter"
+                    id="filter"
+                    value={selectedSeasonId}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                        e.preventDefault()
+                        setSelectedSeasonId(e.target.value)
+                    }}
+                >
+                    <optgroup>
+                        {seasons.map(({id, name}) => (
+                            <option key={id} value={id} style={{textAlign: 'center', width: '100%'}}>
+                                {name}
+                            </option>
+                        ))}
+                    </optgroup>
+                </select>
+            </div>
+
             {/* =============================*/}
             {/* PLAYER HEADER */}
             {/* =============================*/}
             <div className="pt-6 flex lg:flex-row flex-col justify-between items-center gap-y-8">
                 {/* PLAYER PIC */}
                 <img
-                    src={PROFILE_PIC_BUILDER(player.user)}
+                    src={PROFILE_PIC_BUILDER(profile.user)}
                     alt="profile-pic"
                     className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
                 />
 
                 {/* PLAYER NAME & POSITION*/}
                 <div className="flex flex-col items-center justify-center">
-                    <h1 className="uppercase lg:text-5xl text-3xl font-bold tracking-wide text-center">{player.user.name}</h1>
-                    {activeSeasonDetail &&
+                    <h1 className="uppercase lg:text-5xl text-3xl font-bold tracking-wide text-center">{profile.user.name}</h1>
+                    {seasonJerseyNumber &&
                         <div className="flex items-end">
                             <Score className="pb-1 flex font-bold leading-none text-4.5xl text-lul-yellow" value="#"/>
-                            <Score className="font-bold leading-none text-6xl text-lul-yellow" value={`${activeSeasonDetail.number}`}/>
+                            <Score className="font-bold leading-none text-6xl text-lul-yellow" value={seasonJerseyNumber}/>
                         </div>
                     }
                     <p className="pt-1 text-lul-blue uppercase tracking-wider text-sm font-semibold">
-                        {player.position ? positionMap[player.position] : 'No position yet'}
+                        {profile.position ? positionMap[profile.position] : 'No position yet'}
                     </p>
 
                 </div>
 
                 {/* PLAYER TEAM*/}
-                {currentTeam &&
-                    <img src={TEAM_LOGO_URL_BUILDER(currentTeam.logo)} alt="team-logo" className="h-40"/>
+                {seasonTeam &&
+                    <img src={TEAM_LOGO_URL_BUILDER(seasonTeam.logo)} alt="team-logo" className="h-40"/>
                 }
 
-                {!currentTeam &&
-                    <div className="text-center font-bold text-lg text-lul-black rounded-md bg-white p-6">
+                {!seasonTeam &&
+                    <div className="text-center font-bold text-lg text-lul-black rounded-full bg-white p-6">
                         FREE<br/>AGENT
                     </div>
                 }
@@ -294,13 +284,21 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 {/* -----------------------------*/}
                 {/* CURRENT SEASON STATS CARD */}
                 {/* -----------------------------*/}
-                <StatsCard title={currentSeasonCardTitle}
-                           titleColor={activeSeasonDetail && activeSeasonDetail.season ? 'blue' : 'red'}
-                           points={seasonPoints}
-                           assists={seasonAssists}
-                           rebounds={seasonRebounds}
-                           fouls={seasonFouls}
-                           games={seasonGP}/>
+                {seasonDetail && seasonStats
+                    ? (
+                        <StatsCard
+                            title={seasonDetail.season.name}
+                            points={seasonPoints}
+                            assists={seasonAssists}
+                            rebounds={seasonRebounds}
+                            fouls={seasonFouls}
+                            games={seasonGP}
+                        />
+                    )
+                    : (
+                        <h1 className="text-5xl text-lul-red">NO SEASON STATS</h1>
+                    )
+                }
             </div>
 
             {/* =============================*/
@@ -317,11 +315,11 @@ export default async function ProfileStats({playerId}: { playerId: string }) {
                 {matches.length === 0
                     ?
                     <div className="pt-8 pb-4">
-                        <Empty message={EMPTY_MESSAGES.NO_MATCHES}/>
+                        <Empty message="No matches found for this season"/>
                     </div>
                     :
                     <div className="grid lg:grid-cols-3 grid-cols-1 lg:gap-6 gap-y-6 py-6">
-                        {player.participations.map((participation: any) => {
+                        {profile.participations.map((participation: any) => {
                             const {match, stats} = participation
 
                             return (

@@ -148,7 +148,7 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
             {shouldShowDropdown && (
                 <div className="mt-3 flex justify-center items-center gap-x-1">
                     <select
-                        className={`text-center lg:w-1/4 text-lg bg-none font-semibold w-full text-center  border-lul-yellow border bg-lul-dark-grey px-1 rounded-full uppercase text-lul-yellow py-1.5 mb-2 cursor-pointer`}
+                        className={`lg:w-1/4 text-lg bg-none font-semibold w-full text-center  border-lul-yellow focus:border-lul-yellow active:border-lul-yellow border outline-lul-yellow bg-lul-dark-grey px-1 rounded-full uppercase text-lul-yellow py-1.5 mb-2 cursor-pointer`}
                         name="filter"
                         id="filter"
                         value={selectedSeasonId}
