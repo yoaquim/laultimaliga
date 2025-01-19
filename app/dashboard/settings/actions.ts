@@ -116,7 +116,7 @@ export async function updateEmail({userId, newEmail,}: { userId: string, newEmai
 
     const supabase = await createClient()
 
-    const emailRedirectTo = `${DOMAIN}/api/auth/update-email`
+    const emailRedirectTo = `${DOMAIN}/api/auth/confirm`
     const {error} = await supabase.auth.updateUser({
         email: newEmail,
     }, {emailRedirectTo})
