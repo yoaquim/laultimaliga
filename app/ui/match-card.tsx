@@ -4,9 +4,6 @@ import { TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import clsx from 'clsx'
 import Score from '@/ui/score'
 
-// --------------------------------------------------
-// Types
-// --------------------------------------------------
 type MatchWithTeams = Prisma.MatchGetPayload<{
     include: {
         season: true
@@ -29,9 +26,6 @@ export default function MatchCard({match, noTopRadius}: Props) {
 
     // Show scoreboard if Ongoing or Completed
     const isScoreVisible = match.status === 'COMPLETED'
-    // We'll color the scoreboard green if ONGOING, blue if COMPLETED
-    const scoreColor =
-        match.status === 'ONGOING' ? 'text-lul-green' : 'text-lul-blue'
 
     return (
         <Link

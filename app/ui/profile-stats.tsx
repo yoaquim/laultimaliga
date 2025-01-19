@@ -17,6 +17,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { ProfileWithDetails, SeasonOption } from '@/dashboard/types'
 import { getAllSeasons, getPlayerStatsForSeason } from '@/dashboard/actions'
 import Loader from '@/ui/loader'
+import { InfoCard } from '@/ui/info-card'
 
 function StatsCard({
                        title,
@@ -121,6 +122,7 @@ function StatsCard({
 export default function ProfileStats({playerId}: { playerId: string }) {
     const [profile, setProfile] = useState<ProfileWithDetails | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
+    const [seasonLoading, setSeasonLoading] = useState<boolean>(false)
 
     // State for season filtering
     const [seasons, setSeasons] = useState<SeasonOption[]>([])
@@ -149,10 +151,11 @@ export default function ProfileStats({playerId}: { playerId: string }) {
         if (!selectedSeasonId) return
 
         async function fetchProfileData() {
-            setLoading(true)
+            setSeasonLoading(true)
             const profileData: ProfileWithDetails | null = await getPlayerStatsForSeason(playerId, selectedSeasonId)
             setProfile(profileData)
             setLoading(false)
+            setSeasonLoading(false)
         }
 
         fetchProfileData()
@@ -207,40 +210,21 @@ export default function ProfileStats({playerId}: { playerId: string }) {
 
     return (
         <Container className="gap-y-8 py-8">
-            <div className="mt-3 flex justify-center items-center gap-x-1">
-                <select
-                    className={`lg:w-1/4 text-lg bg-none font-semibold w-full text-center  border-lul-yellow focus:border-lul-yellow active:border-lul-yellow border outline-lul-yellow bg-lul-dark-grey px-1 rounded-full uppercase text-lul-yellow py-1.5 mb-2 cursor-pointer`}
-                    name="filter"
-                    id="filter"
-                    value={selectedSeasonId}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                        e.preventDefault()
-                        setSelectedSeasonId(e.target.value)
-                    }}
-                >
-                    <optgroup>
-                        {seasons.map(({id, name}) => (
-                            <option key={id} value={id} style={{textAlign: 'center', width: '100%'}}>
-                                {name}
-                            </option>
-                        ))}
-                    </optgroup>
-                </select>
-            </div>
-
             {/* =============================*/}
             {/* PLAYER HEADER */}
             {/* =============================*/}
-            <div className="pt-6 flex lg:flex-row flex-col justify-between items-center gap-y-8">
+            <div className="pt-2 flex lg:flex-row flex-col justify-between items-center gap-y-8">
                 {/* PLAYER PIC */}
-                <img
-                    src={PROFILE_PIC_BUILDER(profile.user)}
-                    alt="profile-pic"
-                    className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
-                />
+                <div className="flex lg:w-1/3 justify-start">
+                    <img
+                        src={PROFILE_PIC_BUILDER(profile.user)}
+                        alt="profile-pic"
+                        className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
+                    />
+                </div>
 
                 {/* PLAYER NAME & POSITION*/}
-                <div className="flex flex-col items-center justify-center">
+                <div className="lg:w-1/3 flex flex-col items-center justify-center">
                     <h1 className="uppercase lg:text-5xl text-3xl font-bold tracking-wide text-center">{profile.user.name}</h1>
                     {seasonJerseyNumber &&
                         <div className="flex items-end">
@@ -255,15 +239,18 @@ export default function ProfileStats({playerId}: { playerId: string }) {
                 </div>
 
                 {/* PLAYER TEAM*/}
-                {seasonTeam &&
-                    <img src={TEAM_LOGO_URL_BUILDER(seasonTeam.logo)} alt="team-logo" className="h-40"/>
-                }
+                <div className="flex lg:w-1/3 justify-end">
+                    {seasonTeam &&
+                        <img src={TEAM_LOGO_URL_BUILDER(seasonTeam.logo)} alt="team-logo" className="h-40"/>
+                    }
 
-                {!seasonTeam &&
-                    <div className="text-center font-bold text-lg text-lul-black rounded-full bg-white p-6">
-                        FREE<br/>AGENT
-                    </div>
-                }
+                    {/* FREE AGENT */}
+                    {!seasonTeam &&
+                        <div className="text-center font-bold text-lg text-lul-black rounded-full bg-white p-6">
+                            FREE<br/>AGENT
+                        </div>
+                    }
+                </div>
             </div>
 
             {/* =============================*/}
@@ -271,7 +258,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
             {/* =============================*/}
             <div className="mt-8 lg:mt-0 flex flex-col gap-y-6">
                 {/* -----------------------------*/}
-                {/* TOTAL STATS CARD */}
+                {/* TOTAL STATS CARD             */}
                 {/* -----------------------------*/}
                 <StatsCard title="Total Stats"
                            points={totalPoints}
@@ -280,73 +267,99 @@ export default function ProfileStats({playerId}: { playerId: string }) {
                            fouls={totalFouls}
                            games={totalGamesPlayed}/>
 
-
                 {/* -----------------------------*/}
-                {/* CURRENT SEASON STATS CARD */}
+                {/* SEASON FILTER                */}
                 {/* -----------------------------*/}
-                {seasonDetail && seasonStats
-                    ? (
-                        <StatsCard
-                            title={seasonDetail.season.name}
-                            points={seasonPoints}
-                            assists={seasonAssists}
-                            rebounds={seasonRebounds}
-                            fouls={seasonFouls}
-                            games={seasonGP}
-                        />
-                    )
-                    : (
-                        <h1 className="text-5xl text-lul-red">NO SEASON STATS</h1>
-                    )
-                }
-            </div>
+                <div className="z-10 flex justify-center items-center gap-x-1 sticky -top-8">
+                    <select
+                        className={`lg:w-full text-lg font-semibold w-full text-center bg-none  bg-lul-blue text-white  px-1 rounded-md py-1.5 mb-2 cursor-pointer`}
+                        name="filter"
+                        id="filter"
+                        value={selectedSeasonId}
+                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
+                            e.preventDefault()
+                            setSelectedSeasonId(e.target.value)
+                        }}>
+                        <optgroup>
+                            {seasons.map(({id, name}) => (
+                                <option key={id} value={id} style={{textAlign: 'center', width: '100%'}}>
+                                    {name}
+                                </option>
+                            ))}
+                        </optgroup>
+                    </select>
+                </div>
+                {seasonLoading && <div className="mt-10"><Loader/></div>}
 
-            {/* =============================*/
-            }
-            {/* MATCHES SECTION */
-            }
-            {/* =============================*/
-            }
-            <div className="lg:mt-0 mt-6 w-full h-fit flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
-                <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue')}>
-                    Matches
-                </h2>
-
-                {matches.length === 0
-                    ?
-                    <div className="pt-8 pb-4">
-                        <Empty message="No matches found for this season"/>
-                    </div>
-                    :
-                    <div className="grid lg:grid-cols-3 grid-cols-1 lg:gap-6 gap-y-6 py-6">
-                        {profile.participations.map((participation: any) => {
-                            const {match, stats} = participation
-
-                            return (
-                                <div key={match.id} className="flex flex-col">
-                                    <div className="w-full bg-lul-grey/20 py-2 px-5 flex justify-between rounded-t-md border-b border-b-lul-light-grey">
-                                        <div className="flex gap-x-1 items-center">
-                                            <MdScoreboard className="text-lul-green text-2.5xl"/>
-                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.points}</p>
-                                        </div>
-                                        <div className="flex gap-x-1 items-center">
-                                            <FaHandsHelping className="text-lul-blue text-2.5xl"/>
-                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.assists}</p>
-                                        </div>
-                                        <div className="flex gap-x-1 items-center">
-                                            <MdSportsHandball className="text-lul-yellow text-2.5xl"/>
-                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.rebounds}</p>
-                                        </div>
-                                        <div className="flex gap-x-1 items-center">
-                                            <MdSports className="text-lul-red text-2.5xl"/>
-                                            <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.fouls}</p>
-                                        </div>
-                                    </div>
-                                    <MatchCard match={match} noTopRadius/>
-                                </div>
+                {/* =============================*/}
+                {/*CURRENT SEASON & MATCHES*/}
+                {/* =============================*/}
+                {!seasonLoading &&
+                    <>
+                        {/* -----------------------------*/}
+                        {/* CURRENT SEASON STATS CARD */}
+                        {/* -----------------------------*/}
+                        {seasonDetail && seasonStats
+                            ? (
+                                <StatsCard
+                                    title={seasonDetail.season.name}
+                                    points={seasonPoints}
+                                    assists={seasonAssists}
+                                    rebounds={seasonRebounds}
+                                    fouls={seasonFouls}
+                                    games={seasonGP}
+                                />
                             )
-                        })}
-                    </div>
+                            : (
+                                <InfoCard title="No Stats available" titleClassName="text-xl" color="red" fullWidth>
+                                    <p className="text-white py-10 text-center">
+                                        Stats are not available for the selected season.
+                                    </p>
+                                </InfoCard>
+                            )
+                        }
+
+                        {/* ----------------------------- */}
+                        {/* MATCHES SECTION */}
+                        {/* ----------------------------- */}
+                        {matches.length > 0 &&
+                            <div className="lg:mt-0 mt-6 w-full h-fit flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
+                                <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue')}>
+                                    Matches
+                                </h2>
+
+                                <div className="grid lg:grid-cols-3 grid-cols-1 lg:gap-6 gap-y-6 py-6">
+                                    {profile.participations.map((participation: any) => {
+                                        const {match, stats} = participation
+
+                                        return (
+                                            <div key={match.id} className="flex flex-col">
+                                                <div className="w-full bg-lul-grey/20 py-2 px-5 flex justify-between rounded-t-md border-b border-b-lul-light-grey">
+                                                    <div className="flex gap-x-1 items-center">
+                                                        <MdScoreboard className="text-lul-green text-2.5xl"/>
+                                                        <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.points}</p>
+                                                    </div>
+                                                    <div className="flex gap-x-1 items-center">
+                                                        <FaHandsHelping className="text-lul-blue text-2.5xl"/>
+                                                        <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.assists}</p>
+                                                    </div>
+                                                    <div className="flex gap-x-1 items-center">
+                                                        <MdSportsHandball className="text-lul-yellow text-2.5xl"/>
+                                                        <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.rebounds}</p>
+                                                    </div>
+                                                    <div className="flex gap-x-1 items-center">
+                                                        <MdSports className="text-lul-red text-2.5xl"/>
+                                                        <p className={`text-4xl leading-none font-bold text-white ${jersey10.className}`}>{stats.fouls}</p>
+                                                    </div>
+                                                </div>
+                                                <MatchCard match={match} noTopRadius/>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        }
+                    </>
                 }
             </div>
         </Container>
