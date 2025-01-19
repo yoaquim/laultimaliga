@@ -218,7 +218,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
     }
 
     return (
-        <Container className="gap-y-8 py-8">
+        <Container title="Player Profile" className="gap-y-8">
             {/* =============================*/}
             {/* PLAYER HEADER */}
             {/* =============================*/}

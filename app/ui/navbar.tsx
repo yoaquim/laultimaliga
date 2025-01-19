@@ -53,8 +53,8 @@ export default function Navbar({className}: { className?: string }) {
     return (
         <nav
             className={clsx(
-                'fixed bottom-0 w-full flex border-t border-white py-3 px-6 bg-lul-black z-50 uppercase',
-                'lg:relative lg:w-24 lg:flex-col lg:h-screen lg:px-4 lg:py-8 lg:border-r lg:border-t-0',
+                'fixed bottom-0 w-full flex border-t border-white py-2 px-6 bg-lul-black z-50 uppercase',
+                'lg:relative lg:w-auto lg:flex-col lg:h-screen lg:px-3 lg:py-8 lg:border-r lg:border-t-0',
                 className
             )}>
             <img src="/alt-logo-lul.svg" alt="Logo" className="h-16 lg:flex hidden"/>
@@ -73,16 +73,14 @@ export default function Navbar({className}: { className?: string }) {
                                 key={i}
                                 href={link.href}
                                 className={clsx(
-                                    'flex flex-col justify-center items-center px-2 lg:px-0 text-lul-blue',
+                                    'flex flex-col justify-center items-center px-2 lg:px-0 text-lul-blue min-h-16 min-w-16 ',
                                     {
-                                        'bg-lul-blue text-white w-16 h-16 rounded-md': pathname.startsWith(link.href),
-                                        'w-16 h-16 rounded-md': !pathname.startsWith(link.href), // Optional for non-active links
+                                        'bg-lul-blue text-white rounded-md': pathname.startsWith(link.href),
                                     }
                                 )}
-                                style={{minWidth: '4rem', minHeight: '4rem'}} // Ensure consistency across different devices
                             >
                                 <div className="flex flex-col items-center justify-center w-full h-full gap-y-2">
-                                    <link.icon className="text-2xl"/>
+                                    <link.icon className="text-xl lg:text-2xl"/>
                                     <span className="text-xs font-semibold text-white">{link.name}</span>
                                 </div>
                             </Link>)

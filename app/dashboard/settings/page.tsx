@@ -224,9 +224,7 @@ function Page() {
     const unclaimedPlayerExists = unclaimedPlayer !== null
 
     return (
-        <Container className="w-full h-full text-white flex flex-col items-center gap-y-8 py-6 px-4">
-            <h1 className="w-full text-2xl font-bold uppercase border-lul-blue border-b">Settings</h1>
-
+        <Container title="Settings" className="w-full h-full text-white flex flex-col items-center gap-y-8">
             {/* ============================================== */}
             {/* PROFILE PICTURE SECTION */}
             {/* ============================================== */}
@@ -354,7 +352,7 @@ function Page() {
                         isOpen={secSectionOpen}
                         saving={savingEmail}
                         handler={handleEmailChange}>
-                        {newEmail && <p className="text-sm text-lul-yellow">You requested an email change; check your inbox</p>}
+                        {newEmail && <p className="pl-1 text-sm text-lul-yellow">You requested an email change; check your inbox</p>}
                     </InputGroup>
 
                     {/* ============================================== */}
@@ -407,7 +405,7 @@ function InputGroup({
 }) {
 
     return (
-        <div className={clsx('flex flex-col',{
+        <div className={clsx('flex flex-col', {
             'lg:w-1/2 w-full': isOpen === null,
             'py-4': isOpen !== null,
             'hidden': isOpen === false,
@@ -415,7 +413,7 @@ function InputGroup({
         })}>
             {children}
             <InfoCard title={title} fullWidth className="py-3 bg-lul-black/55">
-                <div className="w-full flex items-center pt-2">
+                <div className="w-full flex lg:flex-row lg:gap-x-6 flex-col items-center pt-2 gap-y-3">
                     <input
                         type={type}
                         value={value}
@@ -424,17 +422,20 @@ function InputGroup({
                             if (setMessage) setMessage('')
                             setValue(e.target.value)
                         }}
-                        className="w-2/3 py-1 px-2 rounded-md text-white bg-lul-black/50"
+                        className="lg:w-2/3 w-full py-1 px-2 rounded-md text-white bg-lul-black/50"
                     />
-                    <div className="w-1/3 flex items-center justify-end">
+                    <div className="lg:w-1/3 lg:items-center lg:justify-end w-full flex">
                         <button
                             onClick={handler}
-                            className="flex items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
+                            className="w-full text-center flex justify-center items-center gap-x-2 self-end bg-lul-blue px-4 py-2 rounded font-bold uppercase text-sm text-white">
                             {saving
-                                ? (<><Spinner className="w-4"/>
-                                    <div className="hidden lg:block">Saving...</div>
-                                </>)
-                                : 'Save'
+                                ? (
+                                    <div className="w-full flex justify-center gap-x-2">
+                                        <Spinner className="w-4"/>
+                                        <div>Saving...</div>
+                                    </div>
+                                )
+                                : <div>Save</div>
                             }
                         </button>
                     </div>

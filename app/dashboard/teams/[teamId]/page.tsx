@@ -60,13 +60,11 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
     const winRate = totalMatches > 0 ? ((matchesWon / totalMatches) * 100).toFixed(2) : 'N/A'
 
     return (
-        <Container className="flex flex-col pt-6 gap-y-8">
+        <Container title={team.name} className="flex flex-col gap-y-8">
             {/*=====================================================*/}
             {/* TEAM STATS */}
             {/*=====================================================*/}
             <div className="w-full flex flex-col justify-center items-center gap-y-2">
-                <h1 className="text-center font-bold text-2xl text-white uppercase">{team.name}</h1>
-
                 <div className="w-full grid grid-cols-2 lg:grid-cols-4 gap-6 bg-lul-grey/20 py-4 rounded-md">
                     <div className="flex flex-col items-center gap-y-0.5">
                         <p className="text-sm uppercase font-bold">Season</p>

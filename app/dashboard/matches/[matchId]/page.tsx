@@ -553,8 +553,7 @@ function Tracker({
     const borderColor =
         match.status === 'COMPLETED' ? 'blue' :
             match.status === 'ONGOING' ? 'green' :
-                match.status === 'SCHEDULED' ? 'yellow' :
-                    match.status === 'CANCELED' ? 'red' : 'white'
+                match.status === 'SCHEDULED' ? 'yellow' : 'red'
     return (
         <CardGrid title={match[team].name} borderTitleColor={borderColor}>
             {mergeTeamAndParticipations(match[team], match.participations).map(
