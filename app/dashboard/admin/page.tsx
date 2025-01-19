@@ -1,20 +1,11 @@
 'use client'
 
+
 import React, { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import toast from 'react-hot-toast'
-import { JSONSchemaType } from 'ajv'
-import { AutoForm, AutoFields, ErrorsField, SubmitField } from '@/ui/uniforms'
-import { DateField } from '@/ui/uniforms'
-import createSchemaBridge from './single-entity-creator-validator'
-
+import { Container } from '@/ui/container'
 import {
-    createSeasonAction,
-    createTeamAction,
-    createPlayerAction,
-    createMatchAction,
-    createPSDetailsAction,
-    createParticipationAction,
     bulkCreateSeasonsAction,
     bulkCreateTeamsAction,
     bulkCreatePlayersAction,
@@ -24,7 +15,14 @@ import {
     fetchTableDataAction,
 } from './actions'
 import Loader from '@/ui/loader'
-import { Size, Position } from '@prisma/client'
+
+type AdminTab =
+    | 'SEASONS'
+    | 'TEAMS'
+    | 'PLAYERS'
+    | 'MATCHES'
+    | 'PSDETAILS'
+    | 'PARTICIPATIONS'
 
 
 /** Entities for DataView: We'll map them to the same table names, but let's rename to keep consistent: */
@@ -55,155 +53,6 @@ export default function AdminDashboardPage() {
     const [csvText, setCsvText] = useState('')
     const [csvParsed, setCsvParsed] = useState<any[]>([])
     const [bulkPreview, setBulkPreview] = useState(false)
-
-    // Single-entity schemas
-    const formSchemas: Record<AdminTab, JSONSchemaType<SECSchemaType>> = {
-        SEASONS: {
-            title: 'Season',
-            type: 'object',
-            required: ['name', 'shortName', 'startDate', 'endDate'],
-            properties: {
-                name: {type: 'string', title: 'Name'},
-                shortName: {type: 'string', title: 'Short Name'},
-                startDate: {
-                    type: 'string',
-                    format: 'date',
-                    title: 'Start Date',
-                    uniforms: {component: DateField},
-                },
-                endDate: {
-                    type: 'string',
-                    format: 'date',
-                    title: 'End Date',
-                    uniforms: {component: DateField},
-                },
-            },
-        },
-        TEAMS: {
-            title: 'Team',
-            type: 'object',
-            required: ['name', 'seasonId'],
-            properties: {
-                seasonId: {type: 'string', title: 'Season ID'},
-                name: {type: 'string', title: 'Team Name'},
-                logo: {type: 'string', title: 'Logo Path'},
-            },
-        },
-        PLAYERS: {
-            title: 'Player',
-            type: 'object',
-            required: ['name', 'phone', 'size'],
-            properties: {
-                name: {type: 'string', title: 'Full Name'},
-                phone: {type: 'string', title: 'Phone'},
-                size: {
-                    type: 'string',
-                    title: 'Size',
-                    enum: Object.keys(Size)
-                },
-                position: {
-                    type: 'string',
-                    title: 'Position',
-                    enum: Object.keys(Position)
-                },
-            },
-        },
-        MATCHES: {
-            title: 'Match',
-            type: 'object',
-            required: ['homeTeamId', 'awayTeamId', 'seasonId', 'date'],
-            properties: {
-                homeTeamId: {type: 'string', title: 'Home Team ID'},
-                awayTeamId: {type: 'string', title: 'Away Team ID'},
-                seasonId: {type: 'string', title: 'Season ID'},
-                date: {
-                    type: 'string',
-                    format: 'date',
-                    title: 'Date',
-                    uniforms: {component: DateField},
-                },
-            },
-        },
-        PSDETAILS: {
-            title: 'PlayerSeasonDetails',
-            type: 'object',
-            required: ['playerId', 'seasonId', 'number'],
-            properties: {
-                playerId: {type: 'string', title: 'Player ID'},
-                seasonId: {type: 'string', title: 'Season ID'},
-                teamId: {type: 'string', title: 'Team ID'},
-                number: {type: 'number', title: 'Jersey Number'},
-            },
-        },
-        PARTICIPATIONS: {
-            title: 'PlayerMatchParticipation',
-            type: 'object',
-            required: ['playerId', 'matchId'],
-            properties: {
-                playerId: {type: 'string', title: 'Player ID'},
-                matchId: {type: 'string', title: 'Match ID'},
-            },
-        },
-    }
-
-    // Build the uniform schema for the current tab
-    const currentSchema = formSchemas[currentTab]
-    let schemaBridge: any = null
-    if (currentSchema) {
-        schemaBridge = createSchemaBridge(currentSchema)
-    }
-
-    // -------------------------------
-    // Single Create
-    // -------------------------------
-    async function handleCreateSingle(data: any) {
-        setCreatingSingle(true)
-        const toastId = toast.loading(`Creating ${currentTab.toLowerCase()}...`)
-        try {
-            let created: any
-            switch (currentTab) {
-                case 'SEASONS':
-                    created = await createSeasonAction(data)
-                    break
-                case 'TEAMS':
-                    created = await createTeamAction(data)
-                    break
-                case 'PLAYERS':
-                    created = await createPlayerAction(data)
-                    break
-                case 'MATCHES':
-                    created = await createMatchAction(data)
-                    break
-                case 'PSDETAILS':
-                    created = await createPSDetailsAction(data)
-                    break
-                case 'PARTICIPATIONS':
-                    created = await createParticipationAction(data)
-                    break
-            }
-
-            toast.dismiss(toastId)
-            toast.success('Created successfully!')
-            setCreatingSingle(false)
-            if (created?.id) {
-                // push into ephemeral log
-                setLogEntries((prev) => [
-                    ...prev,
-                    {
-                        tab: currentTab,
-                        itemId: created.id,
-                        payload: data,
-                        createdAt: new Date().toLocaleString(),
-                    },
-                ])
-            }
-        } catch (err) {
-            toast.dismiss(toastId)
-            setCreatingSingle(false)
-            console.error('Error creating item:', err)
-            toast.error('Error creating item')
-        }
-    }
 
     // -------------------------------
     // Bulk CSV
@@ -302,9 +151,8 @@ export default function AdminDashboardPage() {
     // RENDER
     // --------------------------------
     return (
-        <div className="w-full h-full text-white flex flex-col py-8 gap-y-6 overflow-y-hidden">
+        <Container color="orange" title="Admin Dashboard" className="w-full h-full text-white flex flex-col py-8 gap-y-6 overflow-y-hidden">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold min-w-fit">Admin Dashboard</h1>
 
                 {/* ==================================== */}
                 {/* TABS */}
@@ -336,38 +184,6 @@ export default function AdminDashboardPage() {
                 {/* ==================================== */}
 
                 <div className="w-full h-1/4 flex flex-row gap-x-4">
-                    {/* ==================================== */}
-                    {/* SINGLE CREATION */}
-                    {/* ==================================== */}
-                    <div className="h-full w-1/2 bg-lul-dark-grey rounded-md p-4 overflow-y-hidden">
-                        <h1 className="text-xl font-bold uppercase mb-4 text-lul-orange">Create {currentTab}</h1>
-
-                        <div className="w-full h-full flex justify-center pb-12">
-                            {formSchemas[currentTab] && !creatingSingle && (
-                                <div className="w-full -h-full flex flex-col gap-y-4 text-lul-black overflow-y-scroll">
-                                    <AutoForm
-                                        schema={schemaBridge}
-                                        onSubmit={(model) => handleCreateSingle(model)}>
-                                        <div className="w-full flex justify-center">
-                                            <div className="w-2/3 flex flex-col gap-y-3 overflow-y-scroll h-full">
-                                                <AutoFields/>
-                                                <ErrorsField className="text-lul-red"/>
-                                                <div className="w-full flex justify-center">
-                                                    <SubmitField
-                                                        value={`Submit`}
-                                                        className="w-full px-4 py-2 mt-2 bg-lul-blue text-white uppercase text-sm font-bold rounded hover:bg-lul-blue/70 transition-colors cursor-pointer"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </AutoForm>
-                                </div>
-                            )}
-                            {creatingSingle && <Loader/>}
-                        </div>
-                    </div>
-
-
                     {/* ==================================== */}
                     {/* BULK CSV CREATION */}
                     {/* ==================================== */}
@@ -445,7 +261,7 @@ export default function AdminDashboardPage() {
                         )}
                 </div>
             </div>
-        </div>
+        </Container>
     )
 }
 
