@@ -5,6 +5,7 @@ import { SeasonOption } from '@/dashboard/types'
 import { getAllSeasons } from '@/dashboard/actions'
 import { BiSolidChevronDownSquare } from 'react-icons/bi'
 import { jersey10 } from '@/ui/fonts'
+import FakeSelect from '@/ui/fake-select'
 
 interface CommonProps<T> {
     title: string
@@ -146,30 +147,16 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
 
             {/* Season Filter Dropdown */}
             {shouldShowDropdown && (
-                <div className="mt-3 flex justify-center items-center gap-x-1">
-                    <select
-                        className={`lg:w-1/4 text-lg bg-none font-semibold w-full text-center  border-lul-yellow focus:border-lul-yellow active:border-lul-yellow border outline-lul-yellow bg-lul-dark-grey px-1 rounded-full uppercase text-lul-yellow py-1.5 mb-2 cursor-pointer`}
-                        name="filter"
-                        id="filter"
-                        value={selectedSeasonId}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                            e.preventDefault()
-                            setSelectedSeasonId(e.target.value)
-                        }}
-                    >
-                        <optgroup>
-                            {seasons.map(({id, name}) => (
-                                <option key={id} value={id} style={{textAlign: 'center', width: '100%'}}>
-                                    {name}
-                                </option>
-                            ))}
-                        </optgroup>
-                    </select>
-                </div>
+                <FakeSelect
+                    collection={seasons}
+                    selectedId={selectedSeasonId}
+                    setSelected={setSelectedSeasonId}
+                    className="py-4"
+                />
             )}
 
             {/* Grid Content */}
-            <div ref={containerRef} className="pt-6 flex-1 flex-col items-center justify-center overflow-y-auto">
+            <div ref={containerRef} className="flex-1 flex-col items-center justify-center overflow-y-auto">
                 {isLoading && <Loader/>}
 
                 {!isLoading && data.length === 0 && (

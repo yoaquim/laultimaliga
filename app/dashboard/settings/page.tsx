@@ -296,7 +296,7 @@ function Page() {
             }
 
             {/* ============================================== */}
-            {/* PLAYER InfoCard*/}
+            {/* PLAYER INFOCARD*/}
             {/* ============================================== */}
             {Player &&
                 <InfoCard title="Player profile linked" className="flex flex-col gap-y-2" color="green">
@@ -407,7 +407,7 @@ function InputGroup({
 }) {
 
     return (
-        <div className={clsx({
+        <div className={clsx('flex flex-col',{
             'lg:w-1/2 w-full': isOpen === null,
             'py-4': isOpen !== null,
             'hidden': isOpen === false,

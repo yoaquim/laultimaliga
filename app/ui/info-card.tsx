@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 import clsx from 'clsx'
+import { LulColor } from '@/lib/types'
 
 export function InfoCard({
                              title,
@@ -13,7 +14,7 @@ export function InfoCard({
     titleClassName?: string
     children: ReactNode,
     fullWidth?: boolean,
-    color?: 'blue' | 'green' | 'red' | 'yellow' | 'orange',
+    color?: LulColor
     className?: string,
 }) {
     return (

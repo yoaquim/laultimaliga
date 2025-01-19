@@ -18,16 +18,26 @@ import { ProfileWithDetails, SeasonOption } from '@/dashboard/types'
 import { getAllSeasons, getPlayerStatsForSeason } from '@/dashboard/actions'
 import Loader from '@/ui/loader'
 import { InfoCard } from '@/ui/info-card'
+import FakeSelect from '@/ui/fake-select'
+import { LulColor } from '@/lib/types'
 
 function StatsCard({
                        title,
-                       titleColor = 'white',
+                       titleColor,
                        points,
                        assists,
                        rebounds,
                        fouls,
                        games
-                   }: { title: string, titleColor?: 'white' | 'red' | 'blue' | 'green' | 'yellow' | 'orange', points: number, assists: number, rebounds: number, fouls: number, games: number }) {
+                   }: {
+    title: string,
+    titleColor?: LulColor
+    points: number,
+    assists: number,
+    rebounds: number,
+    fouls: number,
+    games: number
+}) {
 
     const avgPoints =
         games > 0 ? (points / games).toFixed(1) : '0.0'
@@ -40,13 +50,12 @@ function StatsCard({
 
     return (
         <div className="w-full flex flex-col bg-lul-grey/20 rounded-md py-4 px-6">
-            <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue', {
+            <h2 className={clsx('w-full flex justify-between text-xl font-bold uppercase border-b border-b-lul-blue text-white', {
                 'text-lul-red': titleColor === 'red',
                 'text-lul-blue': titleColor === 'blue',
                 'text-lul-green': titleColor === 'green',
                 'text-lul-yellow': titleColor === 'yellow',
                 'text-lul-orange': titleColor === 'orange',
-                'text-white': titleColor === 'white',
             })}>
                 {title}
             </h2>
@@ -270,25 +279,11 @@ export default function ProfileStats({playerId}: { playerId: string }) {
                 {/* -----------------------------*/}
                 {/* SEASON FILTER                */}
                 {/* -----------------------------*/}
-                <div className="z-10 flex justify-center items-center gap-x-1 sticky -top-8">
-                    <select
-                        className={`lg:w-full text-lg font-semibold w-full text-center bg-none  bg-lul-blue text-white  px-1 rounded-md py-1.5 mb-2 cursor-pointer`}
-                        name="filter"
-                        id="filter"
-                        value={selectedSeasonId}
-                        onChange={(e: ChangeEvent<HTMLSelectElement>) => {
-                            e.preventDefault()
-                            setSelectedSeasonId(e.target.value)
-                        }}>
-                        <optgroup>
-                            {seasons.map(({id, name}) => (
-                                <option key={id} value={id} style={{textAlign: 'center', width: '100%'}}>
-                                    {name}
-                                </option>
-                            ))}
-                        </optgroup>
-                    </select>
-                </div>
+                <FakeSelect
+                    collection={seasons}
+                    selectedId={selectedSeasonId}
+                    setSelected={setSelectedSeasonId}
+                />
                 {seasonLoading && <div className="mt-10"><Loader/></div>}
 
                 {/* =============================*/}
