@@ -13,7 +13,7 @@ import MatchCard from '@/ui/match-card'
 import { Container } from '@/ui/container'
 import { jersey10 } from '@/ui/fonts'
 import Score from '@/ui/score'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ProfileWithDetails, SeasonOption } from '@/dashboard/types'
 import { getAllSeasons, getPlayerStatsForSeason } from '@/dashboard/actions'
 import Loader from '@/ui/loader'
@@ -61,6 +61,7 @@ function StatsCard({
             </h2>
 
             <div className={`w-full pt-8 pb-4 grid lg:grid-cols-5 grid-cols-2 gap-6`}>
+
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdScoreboard className="text-lul-green text-3xl"/>
                     <div className="flex flex-col items-center gap-y-2">
@@ -68,13 +69,14 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-2 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{points}</div>
                             <div className="text-lul-light-grey text-3xl">{avgPoints}</div>
                         </div>
                     </div>
-                    <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Points</p>
+                    <p className="-mt-2 uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Points</p>
                 </div>
+
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <FaHandsHelping className="text-lul-blue text-3xl"/>
                     <div className="flex flex-col items-center gap-y-2">
@@ -82,13 +84,14 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-2 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{assists}</div>
                             <div className="text-lul-light-grey text-3xl">{avgAssists}</div>
                         </div>
                     </div>
-                    <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Assists</p>
+                    <p className="-mt-2 uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Assists</p>
                 </div>
+
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdSportsHandball className="text-lul-yellow text-3xl"/>
                     <div className="flex flex-col items-center gap-y-2">
@@ -96,13 +99,14 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-2 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{rebounds}</div>
                             <div className="text-lul-light-grey text-3xl">{avgRebounds}</div>
                         </div>
                     </div>
-                    <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Rebounds</p>
+                    <p className="-mt-2 uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Rebounds</p>
                 </div>
+
                 <div className="flex flex-col justify-center items-center gap-y-2">
                     <MdSports className="text-lul-red text-3xl"/>
                     <div className="flex flex-col items-center gap-y-2">
@@ -110,14 +114,15 @@ function StatsCard({
                             <div>ALL</div>
                             <div>AVG</div>
                         </div>
-                        <div className={`flex items-end -mt-3 gap-x-5 text-5xl ${jersey10.className}`}>
+                        <div className={`flex items-end -mt-2 gap-x-5 text-5xl ${jersey10.className}`}>
                             <div>{fouls}</div>
                             <div className="text-lul-light-grey text-3xl">{avgFouls}</div>
                         </div>
                     </div>
-                    <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Fouls</p>
+                    <p className="-mt-2 uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Fouls</p>
                 </div>
-                <div className="flex flex-col justify-center items-center gap-y-2 lg:col-span-1 col-span-full">
+
+                <div className="flex flex-col justify-center items-center lg:col-span-1 col-span-full">
                     <MdSportsScore className="text-white text-3xl"/>
                     <Score className="text-5xl font-bold text-white" value={games}/>
                     <p className="uppercase text-xs text-lul-light-grey tracking-wider font-semibold">Games</p>
@@ -242,7 +247,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
                         </div>
                     }
                     <p className="pt-1 text-lul-blue uppercase tracking-wider text-sm font-semibold">
-                        {profile.position ? positionMap[profile.position] : 'No position yet'}
+                        {profile.position ? positionMap[profile.position] : ''}
                     </p>
 
                 </div>

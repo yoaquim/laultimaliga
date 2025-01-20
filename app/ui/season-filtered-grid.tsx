@@ -160,8 +160,8 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
                 {isLoading && <Loader/>}
 
                 {!isLoading && data.length === 0 && (
-                    <div className="lg:-mt-20 w-full flex flex-col justify-center items-center h-full">
-                        Nothing here...yet
+                    <div className="-mt-20 w-full flex flex-col justify-center items-center h-full">
+                        No entries for this season
                     </div>
                 )}
 
