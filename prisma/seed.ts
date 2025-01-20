@@ -207,7 +207,7 @@ async function seed() {
                         playerId: player.id,
                         seasonId,
                         teamId: team.id,
-                        number: j + 1,
+                        number: (j + 1).toString(),
                     },
                 })
 
