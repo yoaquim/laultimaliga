@@ -20,7 +20,7 @@ function SignInForm({onSubmit, loading, error,}: { onSubmit: (formData: FormData
     return (
         <form
             onSubmit={handleSubmit}
-            className="w-full mx-auto px-6 py-4 bg-lul-grey/20 rounded-md shadow-md space-y-6">
+            className="w-full max-w-md mx-auto px-6 py-4 bg-lul-grey/20 rounded-md shadow-md space-y-6">
 
             <h1 className="text-left text-xl font-bold text-white uppercase border-b border-lul-blue">Sign In</h1>
 

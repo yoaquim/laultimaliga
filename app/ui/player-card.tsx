@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Prisma } from '@prisma/client'
-import { BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER } from '@/lib/utils'
+import { BUCKET_ENDPOINT, DEFAULT_PROFILE_PIC_BUILDER, PROFILE_PIC_BUILDER } from '@/lib/utils'
 import Score from '@/ui/score'
 
 // --------------------------------------------------
@@ -79,8 +79,8 @@ export default function PlayerCard({player}: Props) {
 
             {/* PLAYER NUMBER */}
             <div className="absolute top-1 right-4 flex self-end items-end">
-                <Score className="text-3xl font-bold uppercase" value={firstDetail?.number ? `#` : ''}/>
-                <Score className="text-5xl font-bold uppercase" value={firstDetail?.number ? `${firstDetail.number}` : 'N/A'}/>
+                <Score className="text-3xl font-bold uppercase" value={firstDetail?.number >= 0 ? `#` : ''}/>
+                <Score className="text-5xl font-bold uppercase" value={firstDetail?.number >= 0 ? `${firstDetail.number}` : 'N/A'}/>
             </div>
 
             {/* BOTTOM SECTION */}
@@ -88,12 +88,8 @@ export default function PlayerCard({player}: Props) {
                 {/* IMAGE */}
                 <div className="w-1/2 text-center">
                     <img
-                        className="h-24 mx-auto rounded-full"
-                        src={
-                            player.user.image
-                                ? `${BUCKET_ENDPOINT}/players/${player.user.image}`
-                                : DEFAULT_PROFILE_PIC_BUILDER(player.user.name)
-                        }
+                        className="h-24 w-24 mx-auto rounded-full object-cover"
+                        src={PROFILE_PIC_BUILDER(player.user)}
                         alt="user-image"/>
                 </div>
 

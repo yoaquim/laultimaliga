@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 
 function AuthHeader() {
     return (
-        <div className="lg:w-1/3 lg:items-center lg:relative lg:space-y-0 w-full px-8 flex justify-between items-center space-y-4">
+        <div className="max-w-md lg:items-center lg:relative lg:space-y-0 w-full px-8 flex justify-between items-center space-y-4">
             <img src="/alt-logo-lul.svg" alt="La Ultima Liga" className="w-14"/>
             <h1 className="w-full text-2xl font-bold text-center text-white uppercase">La Ultima Liga</h1>
             <img src="/alt-logo-lul.svg" alt="La Ultima Liga" className="w-14"/>
@@ -17,7 +17,7 @@ export default function AuthLayout({children}: { children: ReactNode }) {
             <div className="-mt-40 flex flex-col items-center w-full">
                 <AuthHeader/>
 
-                <div className="lg:w-1/3 w-full mt-10 px-8 flex flex-col items-center">
+                <div className="max-w-md w-full mt-10 px-8 flex flex-col items-center">
                     <div className="w-full flex flex-col">
                         {children}
                     </div>

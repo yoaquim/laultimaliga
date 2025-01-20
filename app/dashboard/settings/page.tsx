@@ -186,7 +186,7 @@ function Page() {
     const handleClaimPlayerProfile = async () => {
         try {
             toast.loading('Claiming player profile...', {id: 'claim'})
-            const res = await fetch(`${DOMAIN}/api/players/claim`, {
+            const res = await fetch(`/api/players/claim`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({playerId: unclaimedPlayer.id}),

@@ -557,107 +557,109 @@ function Tracker({
     return (
         <CardGrid title={match[team].name} borderTitleColor={borderColor}>
             {mergeTeamAndParticipations(match[team], match.participations).map(
-                ({id, player, stats, participationExists}: any) => (
+                ({id, player, stats, participationExists}: any) => {
+                    if (participationExists) return (
 
-                    // ===================================================
-                    // PLAYER CARD
-                    // ===================================================
-                    <div key={id} className="relative flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
+                        // ===================================================
+                        // PLAYER CARD
+                        // ===================================================
+                        <div key={id} className="relative flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
 
-                        {/*====================================================*/}
-                        {/* PLAYER NUMBER */}
-                        {/*====================================================*/}
-                        <div className="absolute top-0.5 right-4 font-bold text-white">
-                            <Score className="text-4xl lg:text-3xl" value="#"/>
-                            <Score className="text-6xl lg:text-5xl" value={`${player.seasonDetails[0]?.number}`}/>
-                        </div>
+                            {/*====================================================*/}
+                            {/* PLAYER NUMBER */}
+                            {/*====================================================*/}
+                            <div className="absolute top-0.5 right-4 font-bold text-white">
+                                <Score className="text-4xl lg:text-3xl" value="#"/>
+                                <Score className="text-6xl lg:text-5xl" value={`${player.seasonDetails[0]?.number}`}/>
+                            </div>
 
-                        {/*====================================================*/}
-                        {/* PROFILE PIC + NAME */}
-                        {/*====================================================*/}
-                        <Link href={`/dashboard/players/${player.id}`} className="flex flex-col items-center gap-y-2">
-                            <img src={PROFILE_PIC_BUILDER(player.user)} alt="profile-image" className="rounded-full w-16"/>
-                            <span className="uppercase font-bold">{player.user.name}</span>
-                        </Link>
+                            {/*====================================================*/}
+                            {/* PROFILE PIC + NAME */}
+                            {/*====================================================*/}
+                            <Link href={`/dashboard/players/${player.id}`} className="flex flex-col items-center gap-y-2">
+                                <img src={PROFILE_PIC_BUILDER(player.user)} alt="profile-image" className="rounded-full object-cover w-16 h-16"/>
+                                <span className="uppercase font-bold">{player.user.name}</span>
+                            </Link>
 
-                        {/*====================================================*/}
-                        {/* STAT TRACKER*/}
-                        {/*====================================================*/}
-                        <div className="w-full mt-4 flex justify-between gap-2">
-                            {statKeys.map((statKey) => (
-                                <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
+                            {/*====================================================*/}
+                            {/* STAT TRACKER*/}
+                            {/*====================================================*/}
+                            <div className="w-full mt-4 flex justify-between gap-2">
+                                {statKeys.map((statKey) => (
+                                    <div key={statKey} className="flex flex-col items-center text-2xl gap-y-2">
 
-                                    {/*----------------------------------------------------*/}
-                                    {/* USER ONLY: SHOW ICONS, STAT VALUE, & STAT ABBRV */}
-                                    {/*----------------------------------------------------*/}
-                                    {participationExists && !userIsAdmin &&
-                                        <div className="flex flex-col gap-y-2 items-center antialiased">
-                                            <div className={clsx('uppercase text-sm font-bold',
-                                                {
-                                                    'text-lul-green': statKey === 'points',
-                                                    'text-lul-blue': statKey === 'assists',
-                                                    'text-lul-yellow': statKey === 'rebounds',
-                                                    'text-lul-red': statKey === 'fouls',
-                                                }
-                                            )}>
-                                                {iconMap[statKey as StatType]({
-                                                    className: `text-3xl antialiased ${
-                                                        statKey === 'points' ? 'text-lul-green' :
-                                                            statKey === 'assists' ? 'text-lul-blue' :
-                                                                statKey === 'rebounds' ? 'text-lul-yellow' :
-                                                                    statKey === 'fouls' ? 'text-lul-red' : 'text-white'
+                                        {/*----------------------------------------------------*/}
+                                        {/* USER ONLY: SHOW ICONS, STAT VALUE, & STAT ABBRV */}
+                                        {/*----------------------------------------------------*/}
+                                        {participationExists && !userIsAdmin &&
+                                            <div className="flex flex-col gap-y-2 items-center antialiased">
+                                                <div className={clsx('uppercase text-sm font-bold',
+                                                    {
+                                                        'text-lul-green': statKey === 'points',
+                                                        'text-lul-blue': statKey === 'assists',
+                                                        'text-lul-yellow': statKey === 'rebounds',
+                                                        'text-lul-red': statKey === 'fouls',
+                                                    }
+                                                )}>
+                                                    {iconMap[statKey as StatType]({
+                                                        className: `text-3xl antialiased ${
+                                                            statKey === 'points' ? 'text-lul-green' :
+                                                                statKey === 'assists' ? 'text-lul-blue' :
+                                                                    statKey === 'rebounds' ? 'text-lul-yellow' :
+                                                                        statKey === 'fouls' ? 'text-lul-red' : 'text-white'
 
-                                                    }`
-                                                })}
-                                            </div>
-                                            <div className="text-4xl"><Score value={stats[statKey]}/></div>
-                                            <div className="text-xs text-lul-light-grey uppercase font-bold">{statAbbrv[statKey]}</div>
-                                        </div>
-                                    }
-
-                                    {/*----------------------------------------------------*/}
-                                    {/* ADMIN ONLY: SHOW STAT ABBRV, STAT VALUE, & CONTROLS  */}
-                                    {/*----------------------------------------------------*/}
-                                    {participationExists && userIsAdmin &&
-                                        <div className="flex flex-col gap-y-1 items-center antialiased">
-
-                                            <div className={clsx('uppercase text-sm font-bold',
-                                                {
-                                                    'text-lul-green': statKey === 'points',
-                                                    'text-lul-blue': statKey === 'assists',
-                                                    'text-lul-yellow': statKey === 'rebounds',
-                                                    'text-lul-red': statKey === 'fouls',
-                                                }
-                                            )}>
-                                                {statAbbrv[statKey]}
-                                            </div>
-
-                                            <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, true)}>
-                                                <FaPlusSquare
-                                                    className={clsx('text-3xl', {
-                                                        'text-lul-green': match.status === 'ONGOING',
-                                                        'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                        }`
                                                     })}
-                                                />
-                                            </button>
+                                                </div>
+                                                <div className="text-4xl"><Score value={stats[statKey]}/></div>
+                                                <div className="text-xs text-lul-light-grey uppercase font-bold">{statAbbrv[statKey]}</div>
+                                            </div>
+                                        }
 
-                                            <div className="text-4xl py-0.5"><Score value={stats[statKey]}/></div>
+                                        {/*----------------------------------------------------*/}
+                                        {/* ADMIN ONLY: SHOW STAT ABBRV, STAT VALUE, & CONTROLS  */}
+                                        {/*----------------------------------------------------*/}
+                                        {userIsAdmin &&
+                                            <div className="flex flex-col gap-y-1 items-center antialiased">
 
-                                            <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, false)}>
-                                                <FaMinusSquare
-                                                    className={clsx('text-3xl', {
-                                                        'text-lul-red': match.status === 'ONGOING',
-                                                        'text-lul-dark-grey': match.status !== 'ONGOING',
-                                                    })}
-                                                />
-                                            </button>
-                                        </div>
-                                    }
-                                </div>
-                            ))}
+                                                <div className={clsx('uppercase text-sm font-bold',
+                                                    {
+                                                        'text-lul-green': statKey === 'points',
+                                                        'text-lul-blue': statKey === 'assists',
+                                                        'text-lul-yellow': statKey === 'rebounds',
+                                                        'text-lul-red': statKey === 'fouls',
+                                                    }
+                                                )}>
+                                                    {statAbbrv[statKey]}
+                                                </div>
+
+                                                <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, true)}>
+                                                    <FaPlusSquare
+                                                        className={clsx('text-3xl', {
+                                                            'text-lul-green': match.status === 'ONGOING',
+                                                            'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                        })}
+                                                    />
+                                                </button>
+
+                                                <div className="text-4xl py-0.5"><Score value={stats[statKey]}/></div>
+
+                                                <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, false)}>
+                                                    <FaMinusSquare
+                                                        className={clsx('text-3xl', {
+                                                            'text-lul-red': match.status === 'ONGOING',
+                                                            'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                        })}
+                                                    />
+                                                </button>
+                                            </div>
+                                        }
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
         </CardGrid>
     )
 }
