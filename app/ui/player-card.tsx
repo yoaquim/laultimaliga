@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Prisma } from '@prisma/client'
 import { PROFILE_PIC_BUILDER } from '@/lib/utils'
 import Score from '@/ui/score'
+import { GiCaptainHatProfile } from 'react-icons/gi'
 
 // --------------------------------------------------
 // Types
@@ -91,6 +92,13 @@ export default function PlayerCard({player}: Props) {
                         className="h-24 w-24 mx-auto rounded-full object-cover"
                         src={PROFILE_PIC_BUILDER(player.user)}
                         alt="user-image"/>
+                    {firstDetail?.isCaptain &&
+                        <div className="mt-2 flex items-center justify-center gap-x-2 text-lul-yellow text-base font-bold uppercase">
+                            <GiCaptainHatProfile className="scale-x-[-1]"/>
+                            CAPTAIN
+                            <GiCaptainHatProfile className=""/>
+                        </div>
+                    }
                 </div>
 
                 {/* STATS */}

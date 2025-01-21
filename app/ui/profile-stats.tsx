@@ -20,6 +20,7 @@ import Loader from '@/ui/loader'
 import { InfoCard } from '@/ui/info-card'
 import FakeSelect from '@/ui/fake-select'
 import { LulColor } from '@/lib/types'
+import { GiCaptainHatProfile } from 'react-icons/gi'
 
 function StatsCard({
                        title,
@@ -183,6 +184,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
 
     const seasonTeam = seasonDetail?.team
     const seasonJerseyNumber = seasonDetail?.number
+    const isCaptain = seasonDetail?.isCaptain
 
     // Total Stats
     const {
@@ -239,11 +241,20 @@ export default function ProfileStats({playerId}: { playerId: string }) {
 
                 {/* PLAYER NAME & POSITION*/}
                 <div className="lg:w-1/3 flex flex-col items-center justify-center">
+                    {isCaptain &&
+                        <div className="flex items-center gap-x-2 text-lul-yellow text-xl font-bold uppercase">
+                            <GiCaptainHatProfile className="scale-x-[-1]"/>
+                            CAPTAIN
+                            <GiCaptainHatProfile className=""/>
+                        </div>
+                    }
                     <h1 className="uppercase lg:text-5xl text-3xl font-bold tracking-wide text-center">{profile.user.name}</h1>
                     {seasonJerseyNumber &&
-                        <div className="flex items-end">
-                            <Score className="pb-1 flex font-bold leading-none text-4.5xl text-lul-yellow" value="#"/>
-                            <Score className="font-bold leading-none text-6xl text-lul-yellow" value={seasonJerseyNumber}/>
+                        <div className="flex items-end gap-x-4">
+                            <div className="flex">
+                                <Score className="pb-1 flex font-bold leading-none text-4.5xl text-lul-yellow" value="#"/>
+                                <Score className="font-bold leading-none text-6xl text-lul-yellow" value={seasonJerseyNumber}/>
+                            </div>
                         </div>
                     }
                     <p className="pt-1 text-lul-blue uppercase tracking-wider text-sm font-semibold">

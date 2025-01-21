@@ -63,7 +63,7 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
     await requireAdmin()
     const created = []
     for (const row of rows) {
-        const [name, phone, size, position, seasonId, teamId, number] = row
+        const [name, phone, size, position, seasonId, teamId, number, isCaptain] = row
 
         // 1) Create user
         const user = await prisma.user.create({
@@ -89,7 +89,8 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
                 playerId: player.id,
                 seasonId,
                 teamId,
-                number
+                number,
+                isCaptain: isCaptain === 'true',
             },
         })
 
@@ -98,29 +99,6 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
             playerId: player.id,
             psDetailsId: psDetails.id,
         })
-    }
-    revalidatePath('/dashboard/admin')
-    return created
-}
-
-/**
- * Bulk create Matches: each row: [homeTeamId, awayTeamId, seasonId, dateString]
- * Returns an array of created match objects.
- */
-export async function bulkCreateMatchesAction(rows: string[][]) {
-    await requireAdmin()
-    const created = []
-    for (const row of rows) {
-        const [homeTeamId, awayTeamId, seasonId, dateStr] = row
-        const match = await prisma.match.create({
-            data: {
-                homeTeamId,
-                awayTeamId,
-                seasonId,
-                date: new Date(dateStr),
-            },
-        })
-        created.push(match)
     }
     revalidatePath('/dashboard/admin')
     return created
@@ -259,4 +237,91 @@ export async function fetchTableDataAction(params: {
     }
 
     return {items, totalCount}
+}
+
+/**
+ * Generate a round-robin schedule of Matches for the selected Season,
+ * with each Team playing exactly one match against every other Team.
+ * Also automatically creates PlayerMatchParticipation + stats=0
+ * for all players on those teams.
+ */
+export async function generateRoundRobinMatches(seasonId: string) {
+    await requireAdmin()
+
+    // 1) Get all teams in this season
+    const teams = await prisma.team.findMany({
+        where: {seasonId},
+        include: {
+            // Need the seasonDetails to find the Player IDs
+            players: {
+                include: {
+                    player: true
+                }
+            }
+        }
+    })
+
+    // Early exit if < 2 teams
+    if (teams.length < 2) {
+        return {
+            createdMatches: 0,
+            createdParticipations: 0,
+            msg: 'Not enough teams in this Season to create matches.',
+        }
+    }
+
+    let createdMatches = 0
+    let createdParticipations = 0
+
+    // 2) For each unique pair of teams
+    for (let i = 0; i < teams.length; i++) {
+        for (let j = i + 1; j < teams.length; j++) {
+            const teamA = teams[i]
+            const teamB = teams[j]
+
+            // 2a) Create a match
+            const match = await prisma.match.create({
+                data: {
+                    homeTeamId: teamA.id,
+                    awayTeamId: teamB.id,
+                    seasonId,
+                    // you can assign any date or status if needed
+                    date: new Date(),
+                    status: 'SCHEDULED'
+                }
+            })
+            createdMatches++
+
+            // 2b) For each team, create participations for ALL players on that team
+            const twoTeamsPlayers = [teamA.players, teamB.players]
+            for (const psDetailsArr of twoTeamsPlayers) {
+                for (const psDetails of psDetailsArr) {
+                    const playerId = psDetails.playerId
+                    // create participation + stats=0
+                    await prisma.playerMatchParticipation.create({
+                        data: {
+                            playerId,
+                            matchId: match.id,
+                            stats: {
+                                create: {
+                                    points: 0,
+                                    assists: 0,
+                                    rebounds: 0,
+                                    fouls: 0,
+                                }
+                            }
+                        }
+                    })
+                    createdParticipations++
+                }
+            }
+        }
+    }
+
+    revalidatePath('/dashboard/admin')
+    return {
+        createdMatches,
+        createdParticipations,
+        msg: `Created ${createdMatches} matches and ${createdParticipations} participations.`
+    }
 }
