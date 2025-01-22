@@ -175,7 +175,7 @@ async function seed() {
                                         role: 'USER',
                                     },
                                 },
-                                size: 'LARGE',
+                                shirtSize: 'LARGE',
                             },
                             include: {user: true},
                         })
