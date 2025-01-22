@@ -63,7 +63,7 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
     await requireAdmin()
     const created = []
     for (const row of rows) {
-        const [name, phone, size, position, seasonId, teamId, number, isCaptain] = row
+        const [name, phone, shirtSize, pantsSize, position, seasonId, teamId, number, isCaptain] = row
 
         // 1) Create user
         const user = await prisma.user.create({
@@ -78,7 +78,8 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
         const player = await prisma.player.create({
             data: {
                 userId: user.id,
-                size: (size as Size) || 'MEDIUM',
+                shirtSize: shirtSize === 'null' ? null : shirtSize as Size,
+                pantsSize: pantsSize === 'null' ? null : pantsSize as Size,
                 ...(position ? {position: position as any} : {}),
             },
         })
@@ -99,27 +100,6 @@ export async function bulkCreatePlayersAction(rows: string[][]) {
             playerId: player.id,
             psDetailsId: psDetails.id,
         })
-    }
-    revalidatePath('/dashboard/admin')
-    return created
-}
-
-/**
- * Bulk create PlayerMatchParticipation: each row: [playerId, matchId]
- * Returns an array of created participation objects.
- */
-export async function bulkCreateParticipationsAction(rows: string[][]) {
-    await requireAdmin()
-    const created = []
-    for (const row of rows) {
-        const [playerId, matchId] = row
-        const participation = await prisma.playerMatchParticipation.create({
-            data: {
-                playerId,
-                matchId,
-            },
-        })
-        created.push(participation)
     }
     revalidatePath('/dashboard/admin')
     return created
@@ -324,4 +304,67 @@ export async function generateRoundRobinMatches(seasonId: string) {
         createdParticipations,
         msg: `Created ${createdMatches} matches and ${createdParticipations} participations.`
     }
+}
+
+/**
+ * Bulk create Matches (CSV: [homeTeamId, awayTeamId, seasonId, dateString])
+ * and also create PlayerMatchParticipation + stats=0 for all players in both teams.
+ *
+ * Returns array of created matches.
+ */
+export async function bulkCreateMatchesWithParticipationsAction(rows: string[][]) {
+    await requireAdmin()
+    const created = []
+
+    for (const row of rows) {
+        const [homeTeamId, awayTeamId, seasonId, dateStr] = row
+
+        // 1) Create the match
+        const match = await prisma.match.create({
+            data: {
+                homeTeamId,
+                awayTeamId,
+                seasonId,
+                date: new Date(dateStr),
+                status: 'SCHEDULED',
+            },
+        })
+
+        // 2) Load both teams (including their players)
+        const teams = await prisma.team.findMany({
+            where: {
+                id: {in: [homeTeamId, awayTeamId]},
+            },
+            include: {
+                players: {
+                    include: {player: true}
+                }
+            }
+        })
+
+        // 3) For each team’s players, create participation + stats=0
+        for (const t of teams) {
+            for (const psDetails of t.players) {
+                await prisma.playerMatchParticipation.create({
+                    data: {
+                        playerId: psDetails.playerId,
+                        matchId: match.id,
+                        stats: {
+                            create: {
+                                points: 0,
+                                assists: 0,
+                                rebounds: 0,
+                                fouls: 0,
+                            },
+                        },
+                    },
+                })
+            }
+        }
+
+        created.push(match)
+    }
+
+    revalidatePath('/dashboard/admin')
+    return created
 }

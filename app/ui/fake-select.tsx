@@ -2,7 +2,6 @@ import { ChangeEvent, use, useState } from 'react'
 import { LulColor } from '@/lib/types'
 import clsx from 'clsx'
 import { BsFillCaretDownFill } from 'react-icons/bs'
-import { BsFillCaretUpFill } from 'react-icons/bs'
 
 
 interface Props {

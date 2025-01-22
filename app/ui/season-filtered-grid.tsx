@@ -6,6 +6,7 @@ import { getAllSeasons } from '@/dashboard/actions'
 import { BiSolidChevronDownSquare } from 'react-icons/bi'
 import { jersey10 } from '@/ui/fonts'
 import FakeSelect from '@/ui/fake-select'
+import { red } from 'next/dist/lib/picocolors'
 
 interface CommonProps<T> {
     title: string
@@ -52,6 +53,8 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
                 // Default to the first season (assumed latest)
                 if (seasonOptions.length > 0) {
                     setSelectedSeasonId(seasonOptions[0].id)
+                } else {
+                    setLoading(false)
                 }
             } catch (err) {
                 console.error('Error fetching seasons', err)
@@ -165,7 +168,7 @@ export function SeasonFilteredGrid<T>(props: CommonProps<T> | EmptyProps) {
                     </div>
                 )}
 
-                {!isLoading && (
+                {!isLoading && data.length > 0 && (
                     <>
                         <div className="w-full 2xl:grid-cols-4 lg:grid-cols-3 grid grid-cols-1 gap-6 items-stretch">
                             {data.map((item) => (props as CommonProps<T>).renderItem(item))}

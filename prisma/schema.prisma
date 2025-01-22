@@ -126,9 +126,9 @@ model Player {
   user           User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String                     @unique
   position       Position?
-  size           Size
-  // For one-to-many relations, do cascading on the foreign-key side.
-  totalStats     PlayerTotalStats? // Cascade will be set on the corresponding side.
+  shirtSize      Size?
+  pantsSize      Size?
+  totalStats     PlayerTotalStats?
   seasonDetails  PlayerSeasonDetails[]
   participations PlayerMatchParticipation[]
   createdAt      DateTime                   @default(now())
