@@ -71,7 +71,8 @@ model Season {
   shortName           String?
   startDate           DateTime
   endDate             DateTime
-  isActive            Boolean               @default(true)
+  isActive            Boolean               @default(false)
+  isPractice          Boolean               @default(false)
   teams               Team[]
   matches             Match[]
   SeasonStats         PlayerSeasonStats[]

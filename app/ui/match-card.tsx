@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client'
 import { TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
 import clsx from 'clsx'
 import Score from '@/ui/score'
+import { format, toZonedTime } from 'date-fns-tz'
 
 type MatchWithTeams = Prisma.MatchGetPayload<{
     include: {
@@ -18,11 +19,8 @@ interface Props {
 }
 
 export default function MatchCard({match, noTopRadius}: Props) {
-    const dateStr = new Date(match.date).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-    })
+    const zonedDate = toZonedTime(match.date, 'UTC')
+    const dateStr = format(zonedDate, 'MMMM d, yyyy')
 
     // Show scoreboard if Ongoing or Completed
     const isScoreVisible = match.status === 'COMPLETED'

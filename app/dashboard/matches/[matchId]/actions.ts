@@ -152,7 +152,7 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
 
                 // 3) Determine the winner based on the current scoreboard
                 // (Assuming the match's homeScore and awayScore have been kept up-to-date via stat updates)
-                let winnerId = null
+                let winnerId
                 if (updatedMatch.homeScore > updatedMatch.awayScore) {
                     winnerId = updatedMatch.homeTeamId
                 } else if (updatedMatch.awayScore > updatedMatch.homeScore) {
@@ -162,7 +162,7 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
                     // or define some tie-breaker logic.
                     winnerId = null
                 }
-               
+
                 // Update the match to set the winnerId
                 await tx.match.update({
                     where: {id: matchId},
@@ -185,7 +185,9 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
 export async function updatePlayerStat(playerStatId: string, statType: StatType, increment: boolean) {
     await requireAdmin()
     return prisma.$transaction(async (tx) => {
+        // ----------------------------------------------------------------------
         // 1) Update PlayerMatchStats (the individual's stat row for that match)
+        // ----------------------------------------------------------------------
         const updatedStat = await tx.playerMatchStats.update({
             where: {id: playerStatId},
             data: {
@@ -193,7 +195,9 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
             },
         })
 
+        // ----------------------------------------------------------------------
         // 2) Fetch the participation & match
+        // ----------------------------------------------------------------------
         const participation = await tx.playerMatchParticipation.findUnique({
             where: {id: updatedStat.playerMatchParticipationId},
             include: {
@@ -207,8 +211,11 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
 
         const match = participation.match
         const {homeTeamId, awayTeamId, seasonId, status} = match
+        const playerId = participation.playerId
 
+        // ----------------------------------------------------------------------
         // 2a) If points changed and match is ongoing/completed, update scoreboard
+        // ----------------------------------------------------------------------
         if (statType === 'points' && (status === 'ONGOING' || status === 'COMPLETED')) {
             // figure out if the player is home or away
             const psd = await tx.playerSeasonDetails.findFirst({
@@ -238,44 +245,23 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
             }
         }
 
-        // 3) Update PlayerTotalStats
-        // We'll recalc `gamesPlayed` each time by counting all match participations
-        const playerId = participation.playerId
-
-        // Count how many total matches the player has participated in (any season)
-        const totalGames = await tx.playerMatchParticipation.count({
-            where: {playerId},
+        // ----------------------------------------------------------------------
+        // 2b) Check if season is practice
+        // ----------------------------------------------------------------------
+        const seasonRecord = await tx.season.findUnique({
+            where: {id: seasonId},
+            select: {isPractice: true},
         })
 
-        // Upsert PlayerTotalStats
-        await tx.playerTotalStats.upsert({
-            where: {playerId},
-            create: {
-                playerId,
-                points: statType === 'points' ? 1 : 0,
-                assists: statType === 'assists' ? 1 : 0,
-                rebounds: statType === 'rebounds' ? 1 : 0,
-                gamesPlayed: totalGames, // newly counted
-            },
-            update: {
-                [statType]: {
-                    increment: increment ? 1 : -1,
-                },
-                gamesPlayed: totalGames,
-            },
-        })
+        // If the record is null, default to false
+        const practice = seasonRecord?.isPractice ?? false
 
-        // 4) Update SeasonStats for the *current* season
-        // We'll also recalc how many matches the player participated in that season
+        // ----------------------------------------------------------------------
+        // 3) ALWAYS update PlayerSeasonStats
+        // ----------------------------------------------------------------------
         const seasonGames = await tx.playerMatchParticipation.count({
-            where: {
-                playerId,
-                match: {
-                    seasonId,
-                },
-            },
+            where: {playerId, match: {seasonId}},
         })
-
         await tx.playerSeasonStats.upsert({
             where: {
                 playerId_seasonId: {playerId, seasonId},
@@ -286,15 +272,38 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
                 points: statType === 'points' ? 1 : 0,
                 assists: statType === 'assists' ? 1 : 0,
                 rebounds: statType === 'rebounds' ? 1 : 0,
+                fouls: statType === 'fouls' ? 1 : 0,
                 gamesPlayed: seasonGames,
             },
             update: {
-                [statType]: {
-                    increment: increment ? 1 : -1,
-                },
+                [statType]: {increment: increment ? 1 : -1},
                 gamesPlayed: seasonGames,
             },
         })
+
+        // ----------------------------------------------------------------------
+        // 4) ONLY update total stats if !isPractice (it's not a practice season)
+        // ----------------------------------------------------------------------
+        if (!practice) {
+            const totalGames = await tx.playerMatchParticipation.count({
+                where: {playerId},
+            })
+            await tx.playerTotalStats.upsert({
+                where: {playerId},
+                create: {
+                    playerId,
+                    points: statType === 'points' ? 1 : 0,
+                    assists: statType === 'assists' ? 1 : 0,
+                    rebounds: statType === 'rebounds' ? 1 : 0,
+                    fouls: statType === 'fouls' ? 1 : 0,
+                    gamesPlayed: totalGames,
+                },
+                update: {
+                    [statType]: {increment: increment ? 1 : -1},
+                    gamesPlayed: totalGames,
+                },
+            })
+        }
 
         return updatedStat
     })

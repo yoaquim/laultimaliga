@@ -213,7 +213,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
     const positionMap: Record<Position, string> = {
         PG: 'Point Guard',
         SG: 'Shooting Guard',
-        SF: 'Short Forward',
+        SF: 'Small Forward',
         PF: 'Power Forward',
         C: 'Center',
         PG_SG: 'Point Guard - Shooting Guard',
@@ -223,7 +223,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
         SG_PF: 'Shooting Guard - Power Forward',
         PF_C: 'Power Forward - Center',
         C_PF: 'Center - Power Forward',
-        SF_PF: 'Short Forward - Power Forward',
+        SF_PF: 'Small Forward - Power Forward',
     }
 
     return (
