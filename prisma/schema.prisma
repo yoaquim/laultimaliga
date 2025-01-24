@@ -14,6 +14,8 @@ enum Size {
   LARGE
   X_LARGE
   XX_LARGE
+  XXX_LARGE
+  XXXX_LARGE
 }
 
 enum Role {
@@ -32,7 +34,9 @@ enum Position {
   PG_PF
   SG_SF
   SG_PF
+  SF_PF
   PF_C
+  C_PF
 }
 
 enum MatchStatus {
