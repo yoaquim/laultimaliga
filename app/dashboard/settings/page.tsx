@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, ChangeEvent, ReactNode, Suspense } from 'react'
 import toast from 'react-hot-toast'
 import Loader from '@/ui/loader'
-import { DOMAIN, ERRORS, PROFILE_PIC_BUILDER } from '@/lib/utils'
+import { ERRORS, PROFILE_PIC_BUILDER } from '@/lib/utils'
 import {
     fetchUserProfile,
     updateEmail,
@@ -132,6 +132,7 @@ function Page() {
     }
 
     const handleEmailChange = async () => {
+        if (email === sessionUser.email) return
         setSavingEmail(true)
         try {
             await updateEmail({userId: sessionUser.id, newEmail: email})
@@ -145,6 +146,7 @@ function Page() {
     }
 
     const handlePasswordChange = async () => {
+        
         setSavingPassword(true)
         try {
             await updatePassword({userId: sessionUser.id, newPassword: password})
