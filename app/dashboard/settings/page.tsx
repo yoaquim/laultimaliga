@@ -20,6 +20,7 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { InfoCard } from '@/ui/info-card'
+import imageCompression from 'browser-image-compression'
 
 export default function SuspensePage() {
     return <Suspense><Page/></Suspense>
@@ -82,46 +83,35 @@ function Page() {
 
     // Handle profile picture upload
     async function uploadPic(file: File) {
-        if (!file) {
-            toast.error(ERRORS.SETTINGS.NO_FILE_SELECTED)
-            return
-        }
-        if (!sessionUser) {
-            toast.error(ERRORS.SETTINGS.USER_PROFILE_NOT_LOADED)
-            return
-        }
+        if (!file) return
         try {
             setUploadingPic(true)
-            // Determine file extension and build filename using sessionUser.id
-            const fileExt = file.name.split('.').pop()
+
+            // (1) Compress or resize
+            // e.g. max width = 800px, quality = 0.7, etc.
+            const options = {
+                maxWidthOrHeight: 800,
+                maxSizeMB: 1,            // compress to ~1MB
+                useWebWorker: true
+            }
+            const compressedFile = await imageCompression(file, options)
+
+            // (2) Upload compressedFile instead of file
+            const fileExt = compressedFile.name.split('.').pop()
             const fileName = `profile-pics/${sessionUser.id}.${fileExt}`
 
             const supabase = createClient()
             const {error} = await supabase
                 .storage
-                .from('lul') // Replace with your bucket name
-                .upload(fileName, file, {upsert: true})
+                .from('lul')
+                .upload(fileName, compressedFile, {upsert: true})
 
             if (error) toast.error(error.message)
 
-            // Update the user record with the new image filename
-            await updateProfilePic({
-                userId: sessionUser.id,
-                image: fileName,
-            })
-
+            // (3) DB update
+            await updateProfilePic({userId: sessionUser.id, image: fileName})
             toast.success('Profile picture updated')
-            // Optionally, update local profile state to reflect the new image.
-            setProfile((prev: any) => ({
-                ...prev,
-                sessionUser: {
-                    ...prev.sessionUser,
-                    image: fileName,
-                },
-            }))
-        } catch (err: any) {
-            console.error('Error uploading file:', err)
-            toast.error(err.message || 'Failed to update profile picture')
+            // ...
         } finally {
             setUploadingPic(false)
         }
@@ -176,11 +166,16 @@ function Page() {
     }
 
     // Handle file input change event
-    const handlePicChange = async (e: ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            const file = e.target.files[0]
-            await uploadPic(file)
+    async function handlePicChange(e: ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+        // If > 5MB, reject
+        if (file.size > 20 * 1024 * 1024) {
+            toast.error('Image is too large - must be under 20MB')
+            return
         }
+        // Proceed
+        await uploadPic(file)
     }
 
     const handleClaimPlayerProfile = async () => {
