@@ -138,6 +138,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
     const [profile, setProfile] = useState<ProfileWithDetails | null>(null)
     const [loading, setLoading] = useState<boolean>(true)
     const [seasonLoading, setSeasonLoading] = useState<boolean>(false)
+    const [showImage, setShowImage] = useState<boolean>(false)
 
     // State for season filtering
     const [seasons, setSeasons] = useState<SeasonOption[]>([])
@@ -229,14 +230,30 @@ export default function ProfileStats({playerId}: { playerId: string }) {
     return (
         <Container title="Player Profile" className="gap-y-8">
             {/* =============================*/}
+            {/* IMG MODAL */}
+            {/* =============================*/}
+            {showImage &&
+                <div
+                    className="fixed inset-0 p-4 flex items-center justify-center bg-black/80 z-10"
+                    onClick={() => setShowImage(false)}
+                >
+                    <img
+                        src={PROFILE_PIC_BUILDER(profile.user)}
+                        alt="profile-pic"
+                        className="max-w-full max-h-full w-auto h-auto rounded-full object-cover cursor-pointer transition-transform duration-300"
+                    />
+                </div>}
+
+            {/* =============================*/}
             {/* PLAYER HEADER */}
             {/* =============================*/}
-            <div className="pt-2 flex lg:flex-row flex-col justify-between items-center gap-y-8">
+            <div className="pt-8 lg:pt-2 flex lg:flex-row flex-col justify-between items-center gap-y-8">
                 {/* PLAYER PIC */}
                 <div className="flex lg:w-1/3 justify-start">
                     <img
                         src={PROFILE_PIC_BUILDER(profile.user)}
                         alt="profile-pic"
+                        onClick={() => setShowImage(true)}
                         className="h-48 w-48 rounded-full object-cover cursor-pointer transition-opacity duration-300"
                     />
                 </div>
@@ -254,7 +271,7 @@ export default function ProfileStats({playerId}: { playerId: string }) {
                     {seasonJerseyNumber &&
                         <div className="flex items-end gap-x-4">
                             <div className="flex">
-                                <Score className="pb-1 flex font-bold leading-none text-4.5xl text-lul-yellow" value="#"/>
+                                <Score className="pb-1 flex font-bold leading-none text-4.5xl text-lul-yellow self-end" value="#"/>
                                 <Score className="font-bold leading-none text-6xl text-lul-yellow" value={seasonJerseyNumber}/>
                             </div>
                         </div>

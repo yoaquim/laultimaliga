@@ -11,6 +11,13 @@ import Score from '@/ui/score'
 export default async function Page({params}: { params: Promise<{ teamId: string }> }) {
     const {teamId} = await params
 
+    // Step 1: Get the team's seasonId
+    const bareTeam = await prisma.team.findUnique({
+        where: {id: teamId},
+        select: {seasonId: true}
+    })
+
+    // Step 2: Now use that seasonId in your 'include' query
     // Fetch team details, players, matches, and stats
     const team = await prisma.team.findUnique({
         where: {id: teamId},
@@ -21,6 +28,7 @@ export default async function Page({params}: { params: Promise<{ teamId: string 
                         include: {
                             user: true,
                             seasonDetails: {
+                                where: {seasonId: bareTeam?.seasonId},
                                 include: {
                                     team: {
                                         include: {

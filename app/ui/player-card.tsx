@@ -89,14 +89,12 @@ export default function PlayerCard({player}: Props) {
                 {/* IMAGE */}
                 <div className="w-1/2 text-center">
                     <img
-                        className="h-24 w-24 mx-auto rounded-full object-cover"
+                        className="h-36 w-36 mx-auto rounded-full object-cover"
                         src={PROFILE_PIC_BUILDER(player.user)}
                         alt="user-image"/>
                     {firstDetail?.isCaptain &&
-                        <div className="mt-2 flex items-center justify-center gap-x-2 text-lul-yellow text-base font-bold uppercase">
-                            <GiCaptainHatProfile className="scale-x-[-1]"/>
+                        <div className="mt-2 flex items-center justify-center gap-x-2 text-lul-orange text-xl font-bold uppercase">
                             CAPTAIN
-                            <GiCaptainHatProfile className=""/>
                         </div>
                     }
                 </div>

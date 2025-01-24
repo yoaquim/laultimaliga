@@ -47,6 +47,7 @@ export async function getPaginatedPlayers({
         include: {
             user: true,
             seasonDetails: {
+                where: {seasonId: activeSeasonId},
                 include: {
                     team: {
                         include: {
