@@ -170,8 +170,8 @@ function Page() {
         const file = e.target.files?.[0]
         if (!file) return
         // If > 5MB, reject
-        if (file.size > 20 * 1024 * 1024) {
-            toast.error('Image is too large - must be under 20MB')
+        if (file.size > 18 * 1024 * 1024) {
+            toast.error('Image is too large - must be under 18MB')
             return
         }
         // Proceed
