@@ -20,7 +20,7 @@ export function InfoCard({
     className?: string,
 }) {
     return (
-        <div className={clsx(`lg:w-1/2 w-full bg-lul-grey/20 rounded-md p-4 ${className}`, {'lg:w-full': fullWidth})}>
+        <div className={clsx(`w-full bg-lul-grey/20 rounded-md p-4 ${className}`, {'lg:w-full': fullWidth})}>
             {style === 'bordered' &&
                 <h2 className={clsx(`text-white font-bold text-lg mb-2 uppercase border-b ${titleClassName}`, {
                     'border-lul-green': color === 'green',

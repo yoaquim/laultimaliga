@@ -224,160 +224,162 @@ function Page() {
     const unclaimedPlayerExists = unclaimedPlayer !== null
 
     return (
-        <Container title="Settings" className="w-full h-full text-white flex flex-col items-center gap-y-8">
-            {/* ============================================== */}
-            {/* PROFILE PICTURE SECTION */}
-            {/* ============================================== */}
-            <div className="mt-2 flex flex-col items-center gap-y-2">
-                <div className="relative">
-                    <img
-                        src={PROFILE_PIC_BUILDER(sessionUser)}
-                        alt="profile-pic"
-                        className={clsx(
-                            'h-52 w-52 rounded-full object-cover cursor-pointer transition-opacity duration-300',
-                            {'opacity-50': uploadingPic}
+        <Container title="Settings" className="w-full h-full text-white">
+            <div className="mt-6 flex flex-col items-center gap-y-8 mx-auto">
+
+                {/* ============================================== */}
+                {/* PROFILE PICTURE SECTION */}
+                {/* ============================================== */}
+                <div className="mt-2 flex flex-col items-center gap-y-2">
+                    <div className="relative">
+                        <img
+                            src={PROFILE_PIC_BUILDER(sessionUser)}
+                            alt="profile-pic"
+                            className={clsx(
+                                'h-52 w-52 rounded-full object-cover cursor-pointer transition-opacity duration-300',
+                                {'opacity-50': uploadingPic}
+                            )}
+                            onClick={handleImageClick}
+                        />
+                        {uploadingPic && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
+                                <Spinner/>
+                            </div>
                         )}
-                        onClick={handleImageClick}
+                    </div>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handlePicChange}
+                        style={{display: 'none'}}
                     />
-                    {uploadingPic && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 rounded-full">
-                            <Spinner/>
+                </div>
+
+                {/* ============================================== */}
+                {/* CLAIM UI*/}
+                {/* ============================================== */}
+                {!Player &&
+                    <div className="flex flex-col gap-y-4 items-center mt-4">
+                        <div className="text-center w-full max-w-md flex justify-center gap-x-4 bg-lul-grey/50 text-lul-red px-6 py-3 text-sm uppercase font-bold rounded-md">
+                            <div>⚠️</div>
+                            <div>You do not have a player profile linked</div>
+                            <div>⚠️</div>
                         </div>
-                    )}
-                </div>
-                <input
-                    type="file"
-                    accept="image/*"
-                    ref={fileInputRef}
-                    onChange={handlePicChange}
-                    style={{display: 'none'}}
-                />
-            </div>
-
-            {/* ============================================== */}
-            {/* CLAIM UI*/}
-            {/* ============================================== */}
-            {!Player &&
-                <div className="flex flex-col gap-y-4 items-center mt-4">
-                    <div className="text-center w-full max-w-md flex justify-center gap-x-4 bg-lul-grey/50 text-lul-red px-6 py-3 text-sm uppercase font-bold rounded-md">
-                        <div>⚠️</div>
-                        <div>You do not have a player profile linked</div>
-                        <div>⚠️</div>
                     </div>
-                </div>
-            }
-
-            {!Player && unclaimedPlayerExists &&
-                <InfoCard title="Claim Your Player Profile" color="green" className="flex flex-col gap-y-2">
-                    <p className="">
-                        We found a matching unclaimed player record with the same phone number.
-                        You can claim it and start tracking your stats.
-                    </p>
-
-                    <button
-                        onClick={handleClaimPlayerProfile}
-                        className="mt-4 py-2 bg-lul-green/90 rounded text-white font-semibold hover:bg-lul-green/70 transition-colors uppercase"
-                    >
-                        Claim Player Profile
-                    </button>
-                </InfoCard>
-            }
-
-            {!Player && !unclaimedPlayerExists &&
-                <InfoCard title="No Player Profile Found" color="red" className="flex flex-col gap-y-2">
-                    <p className="">
-                        We couldn't find a matching player record with your phone number.
-                        <br/>
-                        If you think this is a mistake, please contact the season administrator.
-                    </p>
-                </InfoCard>
-            }
-
-            {/* ============================================== */}
-            {/* PLAYER INFOCARD*/}
-            {/* ============================================== */}
-            {Player &&
-                <InfoCard title="Player profile linked" className="flex flex-col gap-y-2" color="green">
-                    <div>Your user profile is linked with Player ID <span className="text-lul-green font-bold">{Player.id}</span>.</div>
-                    <div>You can view your stats over at your <Link href={`/dashboard/profile`} className="text-lul-blue underline">player profile</Link>.</div>
-                </InfoCard>
-            }
-
-            {/* ============================================== */}
-            {/* NAME FORM*/}
-            {/* ============================================== */}
-            <InputGroup
-                title="Name"
-                type="text"
-                value={name}
-                setValue={setName}
-                saving={savingName}
-                handler={handleNameChange}/>
-
-            {/* ============================================== */}
-            {/* PHONE FORM*/}
-            {/* ============================================== */}
-            <InputGroup
-                title="Phone"
-                type="tel"
-                value={phone}
-                setValue={setPhone}
-                saving={savingPhone}
-                handler={handlePhoneChange}/>
-
-            <InfoCard
-                className={secSectionOpen ? 'pb-0' : 'pb-6'}
-                color="yellow"
-                title={
-                    <button
-                        onClick={() => setSecSectionOpen(!secSectionOpen)}
-                        className="-mt-1 w-full h-full flex justify-between items-center cursor-pointer uppercase">
-                        <div>Security</div>
-                        {secSectionOpen
-                            ? <RiArrowDropUpLine className="text-lul-yellow text-4xl"/>
-                            : <RiArrowDropDownLine className="text-lul-yellow text-4xl"/>
-                        }
-                    </button>
                 }
-            >
-                {/* ============================================== */}
-                {/* EMAIL FORM*/}
-                {/* ============================================== */}
-                <div className={clsx('py-4', {'hidden': !secSectionOpen, 'block': secSectionOpen})}>
-                    <InputGroup
-                        title="Email"
-                        type="text"
-                        value={email}
-                        setValue={setEmail}
-                        isOpen={secSectionOpen}
-                        saving={savingEmail}
-                        handler={handleEmailChange}>
-                        {newEmail && <p className="pl-1 text-sm text-lul-yellow">You requested an email change; check your inbox</p>}
-                    </InputGroup>
 
-                    {/* ============================================== */}
-                    {/* PASSWORD FORM*/}
-                    {/* ============================================== */}
-                    <InputGroup
-                        title="Password"
-                        type="password"
-                        value={password}
-                        setValue={setPassword}
-                        setMessage={setPasswordError}
-                        isOpen={secSectionOpen}
-                        saving={savingPassword}
-                        handler={handlePasswordChange}/>
+                {!Player && unclaimedPlayerExists &&
+                    <InfoCard title="Claim Your Player Profile" color="green" className="flex flex-col gap-y-2">
+                        <p className="">
+                            We found a matching unclaimed player record with the same phone number.
+                            You can claim it and start tracking your stats.
+                        </p>
 
+                        <button
+                            onClick={handleClaimPlayerProfile}
+                            className="mt-4 py-2 bg-lul-green/90 rounded text-white font-semibold hover:bg-lul-green/70 transition-colors uppercase"
+                        >
+                            Claim Player Profile
+                        </button>
+                    </InfoCard>
+                }
+
+                {!Player && !unclaimedPlayerExists &&
+                    <InfoCard title="No Player Profile Found" color="red" className="flex flex-col gap-y-2">
+                        <p className="">
+                            We couldn't find a matching player record with your phone number.
+                            <br/>
+                            If you think this is a mistake, please contact the season administrator.
+                        </p>
+                    </InfoCard>
+                }
+
+                {/* ============================================== */}
+                {/* PLAYER INFOCARD*/}
+                {/* ============================================== */}
+                {Player &&
+                    <InfoCard title="Player profile linked" className="flex flex-col gap-y-2" color="green">
+                        <div>Your user profile is linked with Player ID <span className="text-lul-green font-bold">{Player.id}</span>.</div>
+                        <div>You can view your stats over at your <Link href={`/dashboard/profile`} className="text-lul-blue underline">player profile</Link>.</div>
+                    </InfoCard>
+                }
+
+                {/* ============================================== */}
+                {/* NAME FORM*/}
+                {/* ============================================== */}
+                <InputGroup
+                    title="Name"
+                    type="text"
+                    value={name}
+                    setValue={setName}
+                    saving={savingName}
+                    handler={handleNameChange}/>
+
+                {/* ============================================== */}
+                {/* PHONE FORM*/}
+                {/* ============================================== */}
+                <InputGroup
+                    title="Phone"
+                    type="tel"
+                    value={phone}
+                    setValue={setPhone}
+                    saving={savingPhone}
+                    handler={handlePhoneChange}/>
+
+                <InfoCard
+                    className={secSectionOpen ? 'pb-0' : 'pb-6'}
+                    color="yellow"
+                    title={
+                        <button
+                            onClick={() => setSecSectionOpen(!secSectionOpen)}
+                            className="-mt-1 w-full h-full flex justify-between items-center cursor-pointer uppercase">
+                            <div>Security</div>
+                            {secSectionOpen
+                                ? <RiArrowDropUpLine className="text-lul-yellow text-4xl"/>
+                                : <RiArrowDropDownLine className="text-lul-yellow text-4xl"/>
+                            }
+                        </button>
+                    }
+                >
                     {/* ============================================== */}
-                    {/* PASSWORD ERROR */}
+                    {/* EMAIL FORM*/}
                     {/* ============================================== */}
-                    <div className="w-full text-center text-lul-red">
-                        {passwordError}
+                    <div className={clsx('py-4', {'hidden': !secSectionOpen, 'block': secSectionOpen})}>
+                        <InputGroup
+                            title="Email"
+                            type="text"
+                            value={email}
+                            setValue={setEmail}
+                            isOpen={secSectionOpen}
+                            saving={savingEmail}
+                            handler={handleEmailChange}>
+                            {newEmail && <p className="pl-1 text-sm text-lul-yellow">You requested an email change; check your inbox</p>}
+                        </InputGroup>
+
+                        {/* ============================================== */}
+                        {/* PASSWORD FORM*/}
+                        {/* ============================================== */}
+                        <InputGroup
+                            title="Password"
+                            type="password"
+                            value={password}
+                            setValue={setPassword}
+                            setMessage={setPasswordError}
+                            isOpen={secSectionOpen}
+                            saving={savingPassword}
+                            handler={handlePasswordChange}/>
+
+                        {/* ============================================== */}
+                        {/* PASSWORD ERROR */}
+                        {/* ============================================== */}
+                        <div className="w-full text-center text-lul-red">
+                            {passwordError}
+                        </div>
+
                     </div>
-
-                </div>
-            </InfoCard>
-
+                </InfoCard>
+            </div>
         </Container>
     )
 }
@@ -406,7 +408,7 @@ function InputGroup({
 
     return (
         <div className={clsx('flex flex-col', {
-            'lg:w-1/2 w-full': isOpen === null,
+            'w-full': isOpen === null,
             'py-4': isOpen !== null,
             'hidden': isOpen === false,
             'flex': isOpen
