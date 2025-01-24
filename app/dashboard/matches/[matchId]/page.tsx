@@ -22,6 +22,7 @@ import { MdSports } from 'react-icons/md'
 import { IconType } from 'react-icons'
 import { FaPlusSquare, FaMinusSquare } from 'react-icons/fa'
 import Score from '@/ui/score'
+import { format, toZonedTime } from 'date-fns-tz'
 
 
 const iconMap: Record<StatType, IconType> = {
@@ -322,11 +323,8 @@ export default function Page() {
 
     if (!match) return <Empty message={EMPTY_MESSAGES.MATCH_DOES_NOT_EXIST}/>
 
-    const dateStr = new Date(match.date).toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric',
-        day: 'numeric',
-    })
+    const zonedDate = toZonedTime(match.date, 'UTC')
+    const dateStr = format(zonedDate, 'MMMM d, yyyy')
 
     const showScoreboard = match.status === 'ONGOING' || match.status === 'COMPLETED'
     const actionButtons = getStatusActions(match.status)
