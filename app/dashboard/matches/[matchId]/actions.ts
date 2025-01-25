@@ -209,18 +209,18 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
             throw new Error('Participation or match not found.')
         }
 
-        const match = participation.match
+        const {match} = participation
         const {homeTeamId, awayTeamId, seasonId, status} = match
         const playerId = participation.playerId
 
         // ----------------------------------------------------------------------
-        // 2a) If points changed and match is ongoing/completed, update scoreboard
+        // 2a) If points changed in an ongoing/completed match, update scoreboard
         // ----------------------------------------------------------------------
         if (statType === 'points' && (status === 'ONGOING' || status === 'COMPLETED')) {
             // figure out if the player is home or away
             const psd = await tx.playerSeasonDetails.findFirst({
                 where: {
-                    playerId: participation.playerId,
+                    playerId,
                     seasonId,
                     teamId: {in: [homeTeamId, awayTeamId]},
                 },
@@ -257,15 +257,10 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
         const practice = seasonRecord?.isPractice ?? false
 
         // ----------------------------------------------------------------------
-        // 3) ALWAYS update PlayerSeasonStats
+        // 3) Update season stats for points/assists/… but do NOT touch gamesPlayed here!
         // ----------------------------------------------------------------------
-        const seasonGames = await tx.playerMatchParticipation.count({
-            where: {playerId, match: {seasonId}},
-        })
         await tx.playerSeasonStats.upsert({
-            where: {
-                playerId_seasonId: {playerId, seasonId},
-            },
+            where: {playerId_seasonId: {playerId, seasonId}},
             create: {
                 playerId,
                 seasonId,
@@ -273,21 +268,17 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
                 assists: statType === 'assists' ? 1 : 0,
                 rebounds: statType === 'rebounds' ? 1 : 0,
                 fouls: statType === 'fouls' ? 1 : 0,
-                gamesPlayed: seasonGames,
+                gamesPlayed: 0, // do not increment or set here
             },
             update: {
                 [statType]: {increment: increment ? 1 : -1},
-                gamesPlayed: seasonGames,
             },
         })
 
         // ----------------------------------------------------------------------
-        // 4) ONLY update total stats if !isPractice (it's not a practice season)
+        // 4) Only update total stats if not practice. But again, do NOT increment gamesPlayed.
         // ----------------------------------------------------------------------
         if (!practice) {
-            const totalGames = await tx.playerMatchParticipation.count({
-                where: {playerId},
-            })
             await tx.playerTotalStats.upsert({
                 where: {playerId},
                 create: {
@@ -296,11 +287,10 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
                     assists: statType === 'assists' ? 1 : 0,
                     rebounds: statType === 'rebounds' ? 1 : 0,
                     fouls: statType === 'fouls' ? 1 : 0,
-                    gamesPlayed: totalGames,
+                    gamesPlayed: 0, // do not increment or set here
                 },
                 update: {
                     [statType]: {increment: increment ? 1 : -1},
-                    gamesPlayed: totalGames,
                 },
             })
         }

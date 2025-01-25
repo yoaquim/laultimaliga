@@ -118,8 +118,8 @@ export default function PlayerCard({player}: Props) {
                     <Score className="flex leading-none text-3xl items-end justify-end text-lul-yellow" value={avgRebounds}/>
 
                     <div className="flex items-end justify-end text-white text-base">FLS</div>
-                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-red" value={rebounds}/>
-                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-red" value={avgRebounds}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-red" value={fouls}/>
+                    <Score className="flex leading-none text-3xl items-end justify-end text-lul-red" value={avgFouls}/>
                 </div>
             </div>
 
