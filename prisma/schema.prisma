@@ -114,6 +114,7 @@ model Match {
   awayTeamId     String
   winner         Team?                      @relation("WinnerTeam", fields: [winnerId], references: [id], onDelete: Cascade)
   winnerId       String?
+  location       String?
   season         Season                     @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId       String
   homeScore      Int                        @default(0)

@@ -463,9 +463,10 @@ export default function Page() {
                             {/*----------------------------------------------------*/}
                             {/* DATE + SEASON */}
                             {/*----------------------------------------------------*/}
-                            <div className="flex flex-col align-bottom items-center">
-                                <p className="text-lul-blue text-lg">{match.season.name}</p>
-                                <h1 className="text-lg">{dateStr}</h1>
+                            <div className="flex flex-col align-bottom items-center text-base uppercase">
+                                <p className="text-lul-blue">{match.season.name}</p>
+                                <h1 className="text-lul-light-grey">{dateStr}</h1>
+                                <h1 className="">{match.location}</h1>
                             </div>
                         </div>
 

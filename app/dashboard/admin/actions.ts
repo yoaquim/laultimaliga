@@ -317,7 +317,7 @@ export async function bulkCreateMatchesWithParticipationsAction(rows: string[][]
     const created = []
 
     for (const row of rows) {
-        const [homeTeamId, awayTeamId, seasonId, dateStr] = row
+        const [homeTeamId, awayTeamId, seasonId, dateStr, location] = row
 
         // 1) Create the match
         const match = await prisma.match.create({
@@ -325,6 +325,7 @@ export async function bulkCreateMatchesWithParticipationsAction(rows: string[][]
                 homeTeamId,
                 awayTeamId,
                 seasonId,
+                location,
                 date: new Date(dateStr),
                 status: 'SCHEDULED',
             },

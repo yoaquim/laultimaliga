@@ -20,7 +20,7 @@ interface Props {
 
 export default function MatchCard({match, noTopRadius}: Props) {
     const zonedDate = toZonedTime(match.date, 'UTC')
-    const dateStr = format(zonedDate, 'MMMM d, yyyy')
+    const dateStr = format(zonedDate, 'MMM/d/yy')
 
     // Show scoreboard if Ongoing or Completed
     const isScoreVisible = match.status === 'COMPLETED'
@@ -95,8 +95,11 @@ export default function MatchCard({match, noTopRadius}: Props) {
 
             {/* BOTTOM ROW (DATE & SEASON) */}
             <div className="flex justify-between items-center uppercase">
-                <div className="text-lul-light-grey font-bold text-sm">{dateStr}</div>
-                <div className="text-lul-blue text-sm font-semibold">
+                <div className="w-1/3 text-lul-light-grey font-bold text-sm">{dateStr}</div>
+                {match.location &&
+                    <div className="w-1/3 text-center text-white font-bold text-sm">{match.location}</div>
+                }
+                <div className="w-1/3 text-right text-lul-blue text-sm font-semibold">
                     {match.season.shortName || match.season.name}
                 </div>
             </div>

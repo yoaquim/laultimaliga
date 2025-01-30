@@ -24,7 +24,7 @@ export default function CardGrid({title, borderTitleColor, forceLessCols = false
             </div>
 
             {/* Scrollable stats area */}
-            <div className={clsx('w-full flex-1 overflow-y-auto py-4 grid grid-cols-1 2xl:grid-cols-2 3xl:grid-cols-3 gap-6', {
+            <div className={clsx('w-full overflow-y-auto py-4 grid grid-cols-1 2xl:grid-cols-2 3xl:grid-cols-3 gap-6', {
                 'lg:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4': !forceLessCols
             })}>
                 {children}

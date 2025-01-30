@@ -127,11 +127,11 @@ export default function AdminDashboardPage() {
             'Mike Johnson,1122334455,X_LARGE,XX_LARGE,C,season-uuid-2,team-uuid-3,12,false\n',
         ROUNDROBIN: '',
         MATCHES:
-        // [homeTeamId, awayTeamId, seasonId, dateString]
-            'homeTeamId,awayTeamId,seasonId,dateString\n' +
-            'team-uuid-1,team-uuid-2,season-uuid-1,2025-03-10\n' +
-            'team-uuid-3,team-uuid-4,season-uuid-1,2025-03-15\n' +
-            'team-uuid-5,team-uuid-6,season-uuid-2,2025-03-20\n',
+        // [homeTeamId, awayTeamId, seasonId, dateString, location]
+            'homeTeamId,awayTeamId,seasonId,dateString,location\n' +
+            'team-uuid-1,team-uuid-2,season-uuid-1,2025-03-10,location_one\n' +
+            'team-uuid-3,team-uuid-4,season-uuid-1,2025-03-15,location_one\n' +
+            'team-uuid-5,team-uuid-6,season-uuid-2,2025-03-20,location_two\n',
     }
 
     return (
