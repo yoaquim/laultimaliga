@@ -51,7 +51,7 @@ export default function MatchCard({match, noTopRadius}: Props) {
                 {/*HOME TEAM*/}
                 <div className="w-1/3 flex flex-col justify-start items-center">
                     <h1 className="w-full text-white text-base text-center font-bold uppercase">HOME</h1>
-                    <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-24"/>
+                    <img src={TEAM_LOGO_URL_BUILDER(match.homeTeam.logo)} alt="team-logo" className="h-20"/>
                 </div>
 
                 {/* BALL */}
@@ -89,7 +89,7 @@ export default function MatchCard({match, noTopRadius}: Props) {
                 {/*AWAY TEAM*/}
                 <div className="w-1/3 flex flex-col justify-center items-center">
                     <h1 className="w-full text-white text-base text-center font-bold uppercase">AWAY</h1>
-                    <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-24"/>
+                    <img src={TEAM_LOGO_URL_BUILDER(match.awayTeam.logo)} alt="team-logo" className="h-20"/>
                 </div>
             </div>
 
