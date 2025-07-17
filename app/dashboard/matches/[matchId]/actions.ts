@@ -109,7 +109,10 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
                     where: {matchId},
                 })
 
-                for (const p of participants) {
+                // Only update gamesPlayed for players who were actually playing
+                const playingParticipants = participants.filter(p => p.isPlaying)
+
+                for (const p of playingParticipants) {
                     const playerId = p.playerId
 
                     // update total stats (increment gamesPlayed by 1)
@@ -182,6 +185,37 @@ export async function updateMatchStatus(matchId: string, status: MatchStatus) {
  * Update a player's stats (points/assists/rebounds) for a single match participation,
  * plus update scoreboard (if points), PlayerTotalStats & SeasonStats.
  */
+/**
+ * Toggle a player's participation status (isPlaying) for a match
+ */
+export async function togglePlayerParticipation(participationId: string) {
+    await requireAdmin()
+    return prisma.$transaction(async (tx) => {
+        // Get current participation
+        const participation = await tx.playerMatchParticipation.findUnique({
+            where: { id: participationId },
+            include: { match: true }
+        })
+        
+        if (!participation) {
+            throw new Error('Participation not found')
+        }
+        
+        // Only allow toggling if match is not completed
+        if (participation.match.status === 'COMPLETED') {
+            throw new Error('Cannot modify participation for completed matches')
+        }
+        
+        // Toggle the isPlaying status
+        const updatedParticipation = await tx.playerMatchParticipation.update({
+            where: { id: participationId },
+            data: { isPlaying: !participation.isPlaying }
+        })
+        
+        return updatedParticipation
+    })
+}
+
 export async function updatePlayerStat(playerStatId: string, statType: StatType, increment: boolean) {
     await requireAdmin()
     return prisma.$transaction(async (tx) => {
@@ -207,6 +241,11 @@ export async function updatePlayerStat(playerStatId: string, statType: StatType,
 
         if (!participation?.match) {
             throw new Error('Participation or match not found.')
+        }
+        
+        // Only allow stat updates for players who are playing
+        if (!participation.isPlaying) {
+            throw new Error('Cannot update stats for non-playing players.')
         }
 
         const {match} = participation

@@ -6,7 +6,7 @@ import { useParams, useSearchParams } from 'next/navigation'
 import { MatchStatus } from '@prisma/client'
 import MessageModal from '@/ui/message-modal'
 import { MatchWithDetails, StatType } from './types'
-import { getMatch, updateMatchStatus, updatePlayerStat } from './actions'
+import { getMatch, updateMatchStatus, updatePlayerStat, togglePlayerParticipation } from './actions'
 import { getIsAdmin } from '@/dashboard/actions'
 import Empty from '@/ui/empty'
 import { BUCKET_ENDPOINT, DOMAIN, EMPTY_MESSAGES, ERRORS, formatTimeElapsed, PROFILE_PIC_BUILDER, TEAM_LOGO_URL_BUILDER } from '@/lib/utils'
@@ -21,6 +21,7 @@ import { MdSportsHandball } from 'react-icons/md'
 import { MdSports } from 'react-icons/md'
 import { IconType } from 'react-icons'
 import { FaPlusSquare, FaMinusSquare } from 'react-icons/fa'
+import { FaCheck, FaTimes } from 'react-icons/fa'
 import Score from '@/ui/score'
 import { format, toZonedTime } from 'date-fns-tz'
 
@@ -46,6 +47,7 @@ function mergeTeamAndParticipations(team: any, participations: any[]) {
             player: playerDetail.player,
             stats: participation?.stats || {points: 0, assists: 0, rebounds: 0},
             participationExists: Boolean(participation),
+            isPlaying: participation?.isPlaying || false,
         }
     })
 }
@@ -89,6 +91,7 @@ export default function Page() {
     const [match, setMatch] = useState<MatchWithDetails | null>(null)
     const [status, setStatus] = useState<MatchStatus | null>(null)
     const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false)
+    const [isClient, setIsClient] = useState(false)
 
     // Popup Scoreboard
     const [homeTeamScore, setHomeTeamScore] = useState<number>(0)
@@ -107,6 +110,7 @@ export default function Page() {
     const [isChangingStatus, setIsChangingStatus] = useState(false)
 
     useEffect(() => {
+        setIsClient(true)
         async function fetchMatchData() {
             setUserIsAdmin(await getIsAdmin())
             setLoading(true)
@@ -277,6 +281,44 @@ export default function Page() {
             const fetched = (await getMatch(matchId)) as MatchWithDetails
             setMatch(fetched)
             setLoading(false)
+        }
+    }
+
+    /**
+     * Handle toggling player participation status
+     */
+    const handleTogglePlayerParticipation = async (participationId: string, event: React.MouseEvent) => {
+        event.stopPropagation() // Prevent click bubbling to parent Link
+        if (!match) return
+
+        try {
+            // Optimistic update - immediately update the UI
+            setMatch((prev) => {
+                if (!prev) return prev
+                
+                const updatedParticipations = prev.participations.map((participation) => {
+                    if (participation.id === participationId) {
+                        return {
+                            ...participation,
+                            isPlaying: !participation.isPlaying
+                        }
+                    }
+                    return participation
+                })
+                
+                return {
+                    ...prev,
+                    participations: updatedParticipations
+                }
+            })
+
+            // Then make the server call
+            await togglePlayerParticipation(participationId)
+        } catch (error) {
+            console.error('Error toggling player participation:', error)
+            // If there's an error, refresh to get the correct state
+            const refreshed = (await getMatch(matchId)) as MatchWithDetails
+            setMatch(refreshed)
         }
     }
 
@@ -514,7 +556,9 @@ export default function Page() {
                         match={match}
                         team="homeTeam"
                         userIsAdmin={userIsAdmin}
-                        handleUpdateStats={handleUpdateStats}/>
+                        isClient={isClient}
+                        handleUpdateStats={handleUpdateStats}
+                        handleTogglePlayerParticipation={handleTogglePlayerParticipation}/>
 
                     {/*----------------------------------------------------*/}
                     {/* AWAY TEAM */}
@@ -523,7 +567,9 @@ export default function Page() {
                         match={match}
                         team="awayTeam"
                         userIsAdmin={userIsAdmin}
-                        handleUpdateStats={handleUpdateStats}/>
+                        isClient={isClient}
+                        handleUpdateStats={handleUpdateStats}
+                        handleTogglePlayerParticipation={handleTogglePlayerParticipation}/>
                 </div>
             </Container>
         </>
@@ -534,12 +580,16 @@ function Tracker({
                      match,
                      team,
                      userIsAdmin,
-                     handleUpdateStats
+                     isClient,
+                     handleUpdateStats,
+                     handleTogglePlayerParticipation
                  }: {
     match: MatchWithDetails,
     team: 'homeTeam' | 'awayTeam'
     userIsAdmin: boolean,
-    handleUpdateStats: (id: string, statKey: StatType, increment: boolean) => void
+    isClient: boolean,
+    handleUpdateStats: (id: string, statKey: StatType, increment: boolean) => void,
+    handleTogglePlayerParticipation: (participationId: string, event: React.MouseEvent) => void
 }) {
     const statKeys = ['points', 'assists', 'rebounds', 'fouls']
     const statAbbrv: Record<string, string> = {
@@ -556,13 +606,51 @@ function Tracker({
     return (
         <CardGrid title={match[team].name} borderTitleColor={borderColor}>
             {mergeTeamAndParticipations(match[team], match.participations).map(
-                ({id, player, stats, participationExists}: any) => {
+                ({id, player, stats, participationExists, isPlaying}: any) => {
                     if (participationExists) return (
 
                         // ===================================================
                         // PLAYER CARD
                         // ===================================================
-                        <div key={id} className="relative flex flex-col p-4 bg-lul-light-grey/10 rounded-md">
+                        <div key={id} className={clsx("relative flex flex-col p-4 rounded-md", {
+                            "bg-lul-light-grey/10": isPlaying,
+                            "bg-lul-dark-grey/20": !isPlaying,
+                        })} suppressHydrationWarning>
+
+                            {/*====================================================*/}
+                            {/* PLAYING STATUS BADGE */}
+                            {/*====================================================*/}
+                            {isClient && (
+                                <div className="absolute top-2 left-2 z-10">
+                                    {userIsAdmin && match.status !== 'COMPLETED' ? (
+                                        <button
+                                            onClick={(e) => handleTogglePlayerParticipation(id, e)}
+                                            className={clsx(
+                                                "w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold transition-colors hover:scale-110",
+                                                {
+                                                    "bg-lul-green/80 text-white hover:bg-lul-green": isPlaying,
+                                                    "bg-lul-red/80 text-white hover:bg-lul-red": !isPlaying,
+                                                }
+                                            )}
+                                            title={isPlaying ? 'Click to mark as NOT PLAYING' : 'Click to mark as PLAYING'}
+                                        >
+                                            {isPlaying ? <FaCheck /> : <FaTimes />}
+                                        </button>
+                                    ) : (
+                                        <div className={clsx(
+                                            "w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold",
+                                            {
+                                                "bg-lul-green/80 text-white": isPlaying,
+                                                "bg-lul-red/80 text-white": !isPlaying,
+                                            }
+                                        )}
+                                        title={isPlaying ? 'PLAYING' : 'NOT PLAYING'}
+                                        >
+                                            {isPlaying ? <FaCheck /> : <FaTimes />}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/*====================================================*/}
                             {/* PLAYER NUMBER */}
@@ -632,22 +720,28 @@ function Tracker({
                                                     {statAbbrv[statKey]}
                                                 </div>
 
-                                                <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, true)}>
+                                                <button 
+                                                    onClick={() => handleUpdateStats(stats.id, statKey as StatType, true)}
+                                                    disabled={!isPlaying || !isClient}
+                                                >
                                                     <FaPlusSquare
                                                         className={clsx('text-3xl', {
-                                                            'text-lul-green': match.status === 'ONGOING',
-                                                            'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                            'text-lul-green': match.status === 'ONGOING' && isPlaying && isClient,
+                                                            'text-lul-dark-grey': match.status !== 'ONGOING' || !isPlaying || !isClient,
                                                         })}
                                                     />
                                                 </button>
 
                                                 <div className="text-4xl py-0.5"><Score value={stats[statKey]}/></div>
 
-                                                <button onClick={() => handleUpdateStats(stats.id, statKey as StatType, false)}>
+                                                <button 
+                                                    onClick={() => handleUpdateStats(stats.id, statKey as StatType, false)}
+                                                    disabled={!isPlaying || !isClient}
+                                                >
                                                     <FaMinusSquare
                                                         className={clsx('text-3xl', {
-                                                            'text-lul-red': match.status === 'ONGOING',
-                                                            'text-lul-dark-grey': match.status !== 'ONGOING',
+                                                            'text-lul-red': match.status === 'ONGOING' && isPlaying && isClient,
+                                                            'text-lul-dark-grey': match.status !== 'ONGOING' || !isPlaying || !isClient,
                                                         })}
                                                     />
                                                 </button>
